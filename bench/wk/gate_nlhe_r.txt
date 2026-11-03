@@ -1,0 +1,24 @@
+A = build/wk/nlhe_r_nlhe_bot.py  sha256 aac4a11c1a19  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/nlhe_bot.py  sha256 8a3af61dca46  (runtime+params+tables identical, mock-kit adapter)
+
+variant nlhe, 48000 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 8 workers, seed 9101
+A import (s, model size, numpy) per worker: [(0.2, 'small', True), (0.21, 'small', True), (0.22, 'small', True), (0.25, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.18, 'small', True), (0.2, 'small', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.203    2.031    +5.98  0.68     +17.2%      0.76      0.52
+normal  weak+crashed       2.302    2.140    +5.63  0.69     +16.2%      0.66      0.48
+normal  strong             1.437    1.497    -2.09  0.63      -6.0%      0.44      0.35
+normal  mixed              1.994    1.904    +3.15  0.67      +9.1%      0.60      0.41
+fast    weak               1.843    1.727    +4.04  0.76     +11.6%      0.81      0.41
+fast    weak+crashed       1.929    1.782    +5.11  0.78     +14.7%      0.74      0.45
+fast    strong             1.290    1.267    +0.82  0.66      +2.3%      0.40      0.16
+fast    mixed              1.692    1.569    +4.28  0.73     +12.3%      0.64      0.41
+
+mean over 8 cells: A-B +9.68% of fair (±0.71)
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       3284665   0.09   0.31   0.62  26.74       2086       0
+B       2910272   0.05   0.30   0.53  26.43       1211       0
+[280s]

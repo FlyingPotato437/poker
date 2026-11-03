@@ -1,0 +1,26 @@
+[01:28:50] variant royal: deck 20, hole 2, streets (3, 1, 1), device cuda
+[01:28:50] classes: 25 classes over 190 combos (0.0s)
+[01:28:50] preflop pass 1 (strength order): 400000 rollouts/class
+[01:28:54]   10,000,000 rollouts x 1 opp in 3.6s
+[01:28:54] preflop pass 2 (equities + ranges): 1000000 rollouts/class, 6 opponents
+[01:29:19]   25,000,000 rollouts x 6 opp in 24.4s
+[01:29:19]   strongest: AcAd (0.698), KcKd (0.633), QcQd (0.568), KcAc (0.555), KcAd (0.551)
+[01:30:42] postflop data, board 3: 2,000,000 samples (83.1s)
+[01:32:04] postflop data, board 4: 2,000,000 samples (82.3s)
+[01:33:26] postflop data, board 5: 2,000,000 samples (82.0s)
+[01:33:33]   epoch 1/20 train mse 0.03143
+[01:33:41]   epoch 5/20 train mse 0.00267
+[01:33:50]   epoch 9/20 train mse 0.00220
+[01:33:58]   epoch 13/20 train mse 0.00199
+[01:34:07]   epoch 17/20 train mse 0.00193
+[01:34:13]   epoch 20/20 train mse 0.00191
+[01:34:16]   epoch 1/20 train mse 0.04425
+[01:34:24]   epoch 5/20 train mse 0.00333
+[01:34:32]   epoch 9/20 train mse 0.00291
+[01:34:41]   epoch 13/20 train mse 0.00267
+[01:34:49]   epoch 17/20 train mse 0.00256
+[01:34:55]   epoch 20/20 train mse 0.00254
+[01:34:55] small MLP 64,32 validation MAE: 0.0196, 0.0168, 0.0170
+[01:34:55] postflop MLP validation MAE vs 1/2/3 opp: 0.0102, 0.0089, 0.0087
+[01:35:10] push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[01:35:10] wrote bundles/royal.nlb (0.1 MB)

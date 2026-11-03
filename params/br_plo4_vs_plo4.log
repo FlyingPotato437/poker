@@ -1,0 +1,16 @@
+gen  1/10: mean-params  25.76 (±1.09)  best  29.86  elite avg  27.60  sigma 0.191  (64s)
+gen  2/10: mean-params  27.03 (±1.10)  best  30.25  elite avg  29.77  sigma 0.165  (58s)
+gen  3/10: mean-params  28.89 (±1.13)  best  36.70  elite avg  33.22  sigma 0.144  (59s)
+gen  4/10: mean-params  33.00 (±1.23)  best  33.00  elite avg  32.10  sigma 0.109  (61s)
+gen  5/10: mean-params  29.50 (±1.18)  best  34.79  elite avg  34.33  sigma 0.093  (60s)
+gen  6/10: mean-params  29.77 (±1.18)  best  34.92  elite avg  34.08  sigma 0.079  (63s)
+gen  7/10: mean-params  31.79 (±1.24)  best  34.91  elite avg  34.25  sigma 0.066  (60s)
+gen  8/10: mean-params  33.29 (±1.23)  best  34.89  elite avg  34.64  sigma 0.053  (61s)
+gen  9/10: mean-params  33.60 (±1.20)  best  37.17  elite avg  36.27  sigma 0.044  (61s)
+gen 10/10: mean-params  34.02 (±1.19)  best  37.86  elite avg  36.28  sigma 0.040  (62s)
+saved params/br_plo4_vs_plo4.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:br_plo4_vs_plo4      3000      34.85    0.57    0.032    20.64       0
+prep:plo4                21000      34.74    0.22    0.033    47.63       0
+
+3000 SNGs in 18.4s; total points per table 278.0

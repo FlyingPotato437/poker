@@ -1,0 +1,17 @@
+[09:02:48] variant shortdeck: deck 36, hole 2, streets (3, 1, 1), device cuda
+[09:02:52] postflop data: reusing 9,000,000 cached samples
+[09:03:01]   epoch 1/20 train mse 0.02863
+[09:03:13]   epoch 5/20 train mse 0.00433
+[09:03:26]   epoch 9/20 train mse 0.00345
+[09:03:38]   epoch 13/20 train mse 0.00314
+[09:03:50]   epoch 17/20 train mse 0.00300
+[09:03:59]   epoch 20/20 train mse 0.00297
+[09:04:04]   epoch 1/20 train mse 0.03477
+[09:04:16]   epoch 5/20 train mse 0.00593
+[09:04:28]   epoch 9/20 train mse 0.00499
+[09:04:41]   epoch 13/20 train mse 0.00458
+[09:04:53]   epoch 17/20 train mse 0.00438
+[09:05:02]   epoch 20/20 train mse 0.00433
+[09:05:02] small MLP 64,32 validation MAE: 0.0316, 0.0311, 0.0306
+[09:05:02] postflop MLP validation MAE vs 1/2/3 opp: 0.0187, 0.0179, 0.0179
+[09:05:02] wrote bundles/shortdeck.nlb (0.1 MB)

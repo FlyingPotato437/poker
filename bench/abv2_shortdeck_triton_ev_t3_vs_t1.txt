@@ -1,0 +1,13 @@
+A = prep:params/ev_t3.json
+B = prep:params/ev_t1_g8.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   fast    zoo                       +2.35   1.32          +6.8%   0/0
+default   fast    passive                   +1.91   1.35          +5.5%   0/0
+default   fast    aggressive                +0.33   0.73          +0.9%   0/0
+default   fast    competent                 +1.88   1.37          +5.4%   0/0
+default   fast    held-out*                 +1.82   1.37          +5.2%   0/0
+default   fast    zoo+held-out              +1.63   1.21          +4.7%   0/0
+default   fast    sharks                    +0.71   1.32          +2.1%   0/0
+default   fast    h2h 4v4           A 0.994x fair
+
+mean over 7 cells: A-B +4.37% of fair (±1.37)  [17s]

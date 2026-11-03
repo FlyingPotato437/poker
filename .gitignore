@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+bundles/work_*/
+bundles/*.log
+dist/
+params/test_*.json
+.pytest_cache/
+# Regenerable: rebundled tables cached per points table, candidate builds, OS files
+bundles/bench/
+build/
+.DS_Store

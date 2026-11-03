@@ -1,0 +1,37 @@
+A = prep:params/ev_t4.json#small
+B = prep:params/ev_t4.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  zoo                       -0.49   0.91          -1.4%   0/0
+default   normal  passive                   -1.63   1.02          -4.7%   0/0
+default   normal  aggressive                -0.98   0.55          -2.8%   0/0
+default   normal  competent                 -1.59   1.25          -4.6%   0/0
+default   normal  held-out*                 +0.15   1.13          +0.4%   0/0
+default   normal  zoo+held-out              -2.05   0.99          -5.9%   0/0
+default   normal  sharks                    -1.95   1.14          -5.6%   0/0
+default   normal  h2h 4v4           A 1.003x fair
+default   fast    zoo                       +0.98   0.83          +2.8%   0/0
+default   fast    passive                   +1.96   0.99          +5.6%   0/0
+default   fast    aggressive                -1.40   0.52          -4.0%   0/0
+default   fast    competent                 -2.90   0.99          -8.4%   0/0
+default   fast    held-out*                 +0.62   1.00          +1.8%   0/0
+default   fast    zoo+held-out              -0.42   0.96          -1.2%   0/0
+default   fast    sharks                    +0.41   0.80          +1.2%   0/0
+default   fast    h2h 4v4           A 1.004x fair
+top-heavy normal  zoo                       +0.35   1.17          +1.6%   0/0
+top-heavy normal  passive                   -1.31   1.29          -6.0%   0/0
+top-heavy normal  aggressive                -1.28   0.90          -5.9%   0/0
+top-heavy normal  competent                 -2.21   1.50         -10.1%   0/0
+top-heavy normal  held-out*                 -0.02   1.44          -0.1%   0/0
+top-heavy normal  zoo+held-out              -2.56   1.30         -11.7%   0/0
+top-heavy normal  sharks                    -0.68   1.45          -3.1%   0/0
+top-heavy normal  h2h 4v4           A 1.022x fair
+top-heavy fast    zoo                       +0.25   1.11          +1.1%   0/0
+top-heavy fast    passive                   -0.77   1.14          -3.5%   0/0
+top-heavy fast    aggressive                -1.93   0.77          -8.8%   0/0
+top-heavy fast    competent                 -1.41   1.15          -6.5%   0/0
+top-heavy fast    held-out*                 +0.95   1.28          +4.3%   0/0
+top-heavy fast    zoo+held-out              -0.61   1.14          -2.8%   0/0
+top-heavy fast    sharks                    +0.43   1.09          +2.0%   0/0
+top-heavy fast    h2h 4v4           A 1.013x fair
+
+mean over 28 cells: A-B -2.72% of fair (±0.83)  [115s]

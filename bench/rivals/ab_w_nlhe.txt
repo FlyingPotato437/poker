@@ -1,0 +1,14 @@
+A = prep:params/w_nlhe.json
+B = prep:params/ev_t4.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  rival-strong              +5.39   0.92         +15.5%   0/0
+default   normal  rival-strong+prep          +0.88   0.94          +2.5%   0/0
+default   normal  rival-mid                 +6.90   0.98         +19.9%   0/0
+default   normal  rival-real                +2.82   0.93          +8.1%   0/0
+default   normal  h2h 4v4           A 0.903x fair
+default   fast    rival-strong              +2.02   0.83          +5.8%   0/0
+default   fast    rival-strong+prep          -0.92   0.83          -2.6%   0/0
+default   fast    rival-mid                 +5.19   0.98         +14.9%   0/0
+default   fast    rival-real                +0.51   0.84          +1.5%   0/0
+/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

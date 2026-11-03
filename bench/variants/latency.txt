@@ -1,0 +1,56 @@
+## royal numpy
+tables Tables, numpy yes, gc freeze, 36,193 decisions
+  all       p50 0.0093  p99 0.0363  p99.9 0.1575  max 0.707 ms   >0.5ms 3  >1ms 0
+  preflop   p50 0.0081  p99 0.0260  p99.9 0.0945  max 0.707 ms   >0.5ms 2  >1ms 0
+  postflop  p50 0.0141  p99 0.0632  p99.9 0.2826  max 0.507 ms   >0.5ms 1  >1ms 0
+## royal --no-numpy
+tables Tables, numpy no, gc freeze, 36,845 decisions
+  all       p50 0.0095  p99 0.0886  p99.9 0.2632  max 0.618 ms   >0.5ms 2  >1ms 0
+  preflop   p50 0.0083  p99 0.0158  p99.9 0.0773  max 0.216 ms   >0.5ms 0  >1ms 0
+  postflop  p50 0.0700  p99 0.1335  p99.9 0.3505  max 0.618 ms   >0.5ms 2  >1ms 0
+## holdem3 numpy
+tables Tables, numpy yes, gc freeze, 33,392 decisions
+  all       p50 0.0092  p99 0.0600  p99.9 0.1660  max 0.473 ms   >0.5ms 0  >1ms 0
+  preflop   p50 0.0083  p99 0.0492  p99.9 0.1209  max 0.410 ms   >0.5ms 0  >1ms 0
+  postflop  p50 0.0196  p99 0.0960  p99.9 0.2688  max 0.473 ms   >0.5ms 0  >1ms 0
+## holdem3 --no-numpy
+tables Tables, numpy no, gc freeze, 34,004 decisions
+  all       p50 0.0090  p99 0.0919  p99.9 0.2460  max 0.526 ms   >0.5ms 1  >1ms 0
+  preflop   p50 0.0080  p99 0.0192  p99.9 0.0883  max 0.259 ms   >0.5ms 0  >1ms 0
+  postflop  p50 0.0730  p99 0.1300  p99.9 0.3303  max 0.526 ms   >0.5ms 1  >1ms 0
+## plo4 numpy
+tables Tables, numpy yes, gc freeze, 35,760 decisions
+  all       p50 0.0097  p99 0.0439  p99.9 0.1404  max 1.199 ms   >0.5ms 3  >1ms 1
+  preflop   p50 0.0084  p99 0.0276  p99.9 0.0863  max 0.849 ms   >0.5ms 2  >1ms 0
+  postflop  p50 0.0188  p99 0.0764  p99.9 0.2269  max 1.199 ms   >0.5ms 1  >1ms 1
+## plo4 --no-numpy
+tables Tables, numpy no, gc freeze, 38,009 decisions
+  all       p50 0.0102  p99 0.1601  p99.9 0.4408  max 1.902 ms   >0.5ms 27  >1ms 5
+  preflop   p50 0.0088  p99 0.0481  p99.9 0.1132  max 1.005 ms   >0.5ms 3  >1ms 1
+  postflop  p50 0.0777  p99 0.3117  p99.9 0.6790  max 1.902 ms   >0.5ms 24  >1ms 4
+## plo5 numpy
+tables Tables, numpy yes, gc freeze, 36,033 decisions
+  all       p50 0.0113  p99 0.1220  p99.9 0.4265  max 52.114 ms   >0.5ms 29  >1ms 14
+  preflop   p50 0.0095  p99 0.0839  p99.9 0.2673  max 10.549 ms   >0.5ms 10  >1ms 5
+  postflop  p50 0.0224  p99 0.1749  p99.9 0.6950  max 52.114 ms   >0.5ms 19  >1ms 9
+## plo5 --no-numpy
+tables Tables, numpy no, gc freeze, 37,547 decisions
+  all       p50 0.0111  p99 0.2444  p99.9 0.7350  max 12.821 ms   >0.5ms 72  >1ms 23
+  preflop   p50 0.0093  p99 0.0648  p99.9 0.2170  max 4.469 ms   >0.5ms 8  >1ms 3
+  postflop  p50 0.0850  p99 0.3857  p99.9 1.4274  max 12.821 ms   >0.5ms 64  >1ms 20
+## plo4 numpy (rerun)
+  all       p50 0.0093  p99 0.0273  p99.9 0.0516  max 0.386 ms   >0.5ms 0  >1ms 0
+  preflop   p50 0.0081  p99 0.0138  p99.9 0.0434  max 0.180 ms   >0.5ms 0  >1ms 0
+  postflop  p50 0.0179  p99 0.0296  p99.9 0.0666  max 0.386 ms   >0.5ms 0  >1ms 0
+## plo4 --no-numpy (rerun)
+  all       p50 0.0096  p99 0.0929  p99.9 0.2054  max 0.455 ms   >0.5ms 0  >1ms 0
+  preflop   p50 0.0083  p99 0.0153  p99.9 0.0577  max 0.256 ms   >0.5ms 0  >1ms 0
+  postflop  p50 0.0751  p99 0.1068  p99.9 0.2831  max 0.455 ms   >0.5ms 0  >1ms 0
+## plo5 numpy (rerun)
+  all       p50 0.0097  p99 0.0326  p99.9 0.0445  max 0.369 ms   >0.5ms 0  >1ms 0
+  preflop   p50 0.0083  p99 0.0140  p99.9 0.0365  max 0.207 ms   >0.5ms 0  >1ms 0
+  postflop  p50 0.0190  p99 0.0350  p99.9 0.0505  max 0.369 ms   >0.5ms 0  >1ms 0
+## plo5 --no-numpy (rerun)
+  all       p50 0.0100  p99 0.1034  p99.9 0.2354  max 1.748 ms   >0.5ms 9  >1ms 2
+  preflop   p50 0.0084  p99 0.0162  p99.9 0.0621  max 0.540 ms   >0.5ms 1  >1ms 0
+  postflop  p50 0.0807  p99 0.1133  p99.9 0.3689  max 1.748 ms   >0.5ms 8  >1ms 2

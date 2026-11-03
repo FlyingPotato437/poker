@@ -1,0 +1,17 @@
+numpy on; 15 table sets
+  ok   nlhe.nlb                      12,554 decisions  p99.9 2.510 ms  max 6.308 ms
+  ok   shortdeck.nlb                 11,322 decisions  p99.9 3.079 ms  max 19.405 ms
+  ok   shortdeck_triton.nlb          12,350 decisions  p99.9 3.298 ms  max 7.330 ms
+  ok   royal.nlb                     14,816 decisions  p99.9 1.639 ms  max 7.357 ms
+  ok   holdem3.nlb                   14,380 decisions  p99.9 3.613 ms  max 15.331 ms
+  ok   plo4.nlb                      12,340 decisions  p99.9 4.510 ms  max 11.182 ms
+  ok   plo5.nlb                      11,792 decisions  p99.9 3.826 ms  max 13.735 ms
+  ok   heuristic:nlhe                14,367 decisions  p99.9 0.690 ms  max 5.465 ms
+  ok   heuristic:shortdeck           12,559 decisions  p99.9 1.021 ms  max 8.997 ms
+  ok   heuristic:shortdeck_triton    12,221 decisions  p99.9 0.251 ms  max 5.508 ms
+  ok   heuristic:plo4                11,735 decisions  p99.9 1.386 ms  max 5.890 ms
+  ok   heuristic:plo5                11,121 decisions  p99.9 2.061 ms  max 11.127 ms
+  ok   heuristic:holdem3             11,455 decisions  p99.9 1.489 ms  max 8.674 ms
+  ok   heuristic:royal               10,545 decisions  p99.9 0.968 ms  max 5.650 ms
+  ok   heuristic:pineapple_nodiscard  11,455 decisions  p99.9 0.772 ms  max 4.547 ms
+exit 0

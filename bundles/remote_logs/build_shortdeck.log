@@ -1,0 +1,19 @@
+[01:09:19] variant shortdeck: deck 36, hole 2, streets (3, 1, 1), device cuda
+[01:09:19] classes: 81 classes over 630 combos (0.0s)
+[01:09:19] preflop pass 1 (strength order): 246913 rollouts/class
+[01:09:25]   19,999,953 rollouts x 1 opp in 6.4s
+[01:09:25] preflop pass 2 (equities + ranges): 1000000 rollouts/class, 7 opponents
+[01:11:28]   81,000,000 rollouts x 7 opp in 123.2s
+[01:11:28]   strongest: AcAd (0.731), KcKd (0.689), QcQd (0.664), JcJd (0.638), KcAc (0.611)
+[01:13:41] postflop data, board 3: 3,000,000 samples (132.4s)
+[01:15:53] postflop data, board 4: 3,000,000 samples (132.0s)
+[01:18:04] postflop data, board 5: 3,000,000 samples (131.9s)
+[01:18:14]   epoch 1/20 train mse 0.03477
+[01:18:26]   epoch 5/20 train mse 0.00593
+[01:18:37]   epoch 9/20 train mse 0.00499
+[01:18:49]   epoch 13/20 train mse 0.00458
+[01:19:01]   epoch 17/20 train mse 0.00438
+[01:19:10]   epoch 20/20 train mse 0.00433
+[01:19:10] postflop MLP validation MAE vs 1/2/3 opp: 0.0316, 0.0311, 0.0306
+[01:19:24] push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[01:19:24] wrote bundles/shortdeck.nlb (0.0 MB)

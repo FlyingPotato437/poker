@@ -1,0 +1,23 @@
+gen  1/8: mean-params  48.28 (±1.38)  best  51.94  elite avg  51.14  sigma 0.102  (70s)
+gen  2/8: mean-params  49.43 (±1.36)  best  52.24  elite avg  51.35  sigma 0.091  (69s)
+gen  3/8: mean-params  49.28 (±1.39)  best  49.75  elite avg  49.58  sigma 0.074  (67s)
+gen  4/8: mean-params  50.45 (±1.40)  best  52.78  elite avg  51.19  sigma 0.056  (67s)
+gen  5/8: mean-params  50.20 (±1.41)  best  51.20  elite avg  50.52  sigma 0.044  (66s)
+gen  6/8: mean-params  47.80 (±1.37)  best  51.78  elite avg  50.51  sigma 0.042  (67s)
+gen  7/8: mean-params  48.61 (±1.40)  best  51.37  elite avg  50.61  sigma 0.037  (66s)
+gen  8/8: mean-params  51.93 (±1.42)  best  51.93  elite avg  51.11  sigma 0.028  (65s)
+saved params/royal.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:royal                3000      56.93    0.64    0.040     5.43       0
+prep:nlhe_final           3000      49.88    0.60    0.040     5.35       0
+prep                      3000      44.65    0.50    0.039     5.72       0
+shover                    2255      33.31    0.73    0.006     3.13       0
+nit                       1483      33.29    0.63    0.009     4.14       0
+timeout                   1806      32.74    0.28    0.001     2.08       0
+tag                       3710      31.34    0.45    0.015     4.17       0
+lag                       1857      27.52    0.75    0.023     6.68       0
+maniac                    1218       9.49    0.49    0.002     1.11       0
+random                    1218       7.94    0.32    0.002     1.46       0
+station                   1453       5.10    0.18    0.001     0.03       0
+
+3000 SNGs in 18.0s; total points per table 278.0

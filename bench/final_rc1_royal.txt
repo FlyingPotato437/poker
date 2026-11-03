@@ -1,0 +1,24 @@
+A = frozen/rc1/royal_bot.py  sha256 61d25a64617a  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/fallback/royal_bot.py  sha256 9d4ba68b6d78  (runtime+params+tables identical, mock-kit adapter)
+
+variant royal, 16000 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 4 workers, seed 8086
+A import (s, model size, numpy) per worker: [(0.29, 'small', True), (0.3, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.12, '-', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.173    2.006    +5.81  1.40     +16.7%      0.76      0.72
+normal  weak+crashed       2.261    2.121    +4.87  1.44     +14.0%      0.81      0.67
+normal  strong             1.481    1.099   +13.27  1.25     +38.2%      0.61      0.60
+normal  mixed              1.854    1.658    +6.82  1.39     +19.6%      0.65      0.63
+fast    weak               1.631    1.578    +1.86  1.53      +5.3%      0.89      0.67
+fast    weak+crashed       1.766    1.745    +0.72  1.65      +2.1%      0.71      0.53
+fast    strong             1.273    1.081    +6.67  1.28     +19.2%      0.41      0.25
+fast    mixed              1.500    1.438    +2.13  1.45      +6.1%      0.76      0.58
+
+mean over 8 cells: A-B +15.16% of fair (±1.45)
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       1069105   0.08   0.47   0.81  25.37        757       0
+B       1115822   0.07   0.38   0.72  16.47        687       0
+[316s]

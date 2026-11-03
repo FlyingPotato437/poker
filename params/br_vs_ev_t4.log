@@ -1,0 +1,14 @@
+gen  1/8: mean-params  34.27 (±1.42)  best  40.89  elite avg  39.31  sigma 0.190  (63s)
+gen  2/8: mean-params  36.64 (±1.43)  best  42.12  elite avg  40.49  sigma 0.159  (63s)
+gen  3/8: mean-params  40.73 (±1.48)  best  46.99  elite avg  43.40  sigma 0.137  (61s)
+gen  4/8: mean-params  40.09 (±1.50)  best  44.71  elite avg  43.78  sigma 0.114  (54s)
+gen  5/8: mean-params  41.73 (±1.50)  best  42.47  elite avg  41.96  sigma 0.089  (49s)
+gen  6/8: mean-params  42.90 (±1.57)  best  44.58  elite avg  43.50  sigma 0.070  (49s)
+gen  7/8: mean-params  41.25 (±1.54)  best  43.12  elite avg  42.61  sigma 0.065  (49s)
+gen  8/8: mean-params  43.29 (±1.56)  best  44.98  elite avg  43.94  sigma 0.050  (49s)
+saved params/br_vs_ev_t4.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:br_vs_ev_t4          3000      42.03    0.61    0.031    24.23       0
+prep:ev_t4               21000      33.71    0.21    0.043    52.08       0
+
+3000 SNGs in 18.1s; total points per table 278.0

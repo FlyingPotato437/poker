@@ -1,0 +1,23 @@
+gen  1/8: mean-params  48.36 (±1.34)  best  51.20  elite avg  49.86  sigma 0.100  (80s)
+gen  2/8: mean-params  47.40 (±1.37)  best  49.80  elite avg  48.61  sigma 0.085  (75s)
+gen  3/8: mean-params  47.04 (±1.36)  best  50.20  elite avg  49.78  sigma 0.069  (75s)
+gen  4/8: mean-params  46.80 (±1.37)  best  52.09  elite avg  50.26  sigma 0.055  (76s)
+gen  5/8: mean-params  48.19 (±1.40)  best  49.58  elite avg  48.76  sigma 0.046  (74s)
+gen  6/8: mean-params  47.81 (±1.38)  best  48.33  elite avg  47.85  sigma 0.038  (75s)
+gen  7/8: mean-params  49.94 (±1.37)  best  50.23  elite avg  49.89  sigma 0.031  (75s)
+gen  8/8: mean-params  46.51 (±1.39)  best  48.70  elite avg  48.24  sigma 0.027  (74s)
+saved params/plo5.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:plo5                 3000      53.13    0.64    0.047     5.48       0
+prep:nlhe_final           3000      51.62    0.61    0.048     6.67       0
+prep                      3000      44.15    0.52    0.046     4.22       0
+timeout                   1806      37.45    0.30    0.001     2.11       0
+nit                       1483      34.95    0.63    0.014     3.21       0
+tag                       3710      31.26    0.47    0.023     5.39       0
+shover                    2255      29.64    0.71    0.008     2.06       0
+lag                       1857      28.53    0.77    0.030     4.19       0
+maniac                    1218      10.11    0.55    0.002     0.07       0
+random                    1218       9.05    0.37    0.002     0.05       0
+station                   1453       5.98    0.22    0.001     2.13       0
+
+3000 SNGs in 20.7s; total points per table 278.0

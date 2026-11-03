@@ -1,0 +1,17 @@
+[09:05:07] variant shortdeck_triton: deck 36, hole 2, streets (3, 1, 1), device cuda
+[09:05:10] postflop data: reusing 9,000,000 cached samples
+[09:05:18]   epoch 1/20 train mse 0.02997
+[09:05:31]   epoch 5/20 train mse 0.00412
+[09:05:43]   epoch 9/20 train mse 0.00343
+[09:06:04]   epoch 13/20 train mse 0.00309
+[09:06:25]   epoch 17/20 train mse 0.00295
+[09:06:41]   epoch 20/20 train mse 0.00292
+[09:06:48]   epoch 1/20 train mse 0.03638
+[09:07:09]   epoch 5/20 train mse 0.00563
+[09:07:29]   epoch 9/20 train mse 0.00490
+[09:07:43]   epoch 13/20 train mse 0.00435
+[09:07:56]   epoch 17/20 train mse 0.00412
+[09:08:06]   epoch 20/20 train mse 0.00408
+[09:08:06] small MLP 64,32 validation MAE: 0.0309, 0.0294, 0.0279
+[09:08:06] postflop MLP validation MAE vs 1/2/3 opp: 0.0185, 0.0178, 0.0177
+[09:08:06] wrote bundles/shortdeck_triton.nlb (0.1 MB)

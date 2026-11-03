@@ -1,0 +1,28 @@
+A = frozen/rc1/nlhe_bot.py  sha256 8a3af61dca46  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/fallback/nlhe_bot.py  sha256 fc13446ef986  (runtime+params+tables identical, mock-kit adapter)
+
+variant nlhe, 19200 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 4 workers, seed 8086
+A import (s, model size, numpy) per worker: [(0.31, '-', False), (0.32, '-', False), (0.35, '-', False)]
+B import (s, model size, numpy) per worker: [(0.16, '-', False), (0.2, '-', False)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.050    1.965    +2.95  1.61      +8.5%      1.45      0.32
+normal  weak+crashed       2.133    2.071    +2.17  1.56      +6.2%      1.29      0.32
+normal  strong             1.506    1.264    +8.41  1.32     +24.2%      0.57      0.35
+normal  mixed              1.856    1.732    +4.30  1.49     +12.4%      0.78      0.28
+normal  attack-on-A        0.719    0.578    +4.92  1.10     +14.2%      0.26      0.14
+normal  attack-on-B        0.851    0.651    +6.92  1.15     +19.9%      0.36      0.14
+fast    weak               1.680    1.628    +1.80  1.69      +5.2%      1.37      0.33
+fast    weak+crashed       1.739    1.764    -0.86  1.77      -2.5%      1.43      0.30
+fast    strong             1.260    1.165    +3.29  1.32      +9.5%      0.53      0.14
+fast    mixed              1.599    1.527    +2.52  1.60      +7.3%      0.89      0.21
+fast    attack-on-A        0.852    0.761    +3.13  1.09      +9.0%      0.12      0.07
+fast    attack-on-B        0.890    0.791    +3.44  1.10      +9.9%      0.31      0.12
+
+mean over 12 cells: A-B +10.31% of fair (±1.18)
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       1108810   0.07   0.66   0.94  27.04        911       0
+B       1122337   0.07   0.33   0.52  12.58        277       0
+[405s]

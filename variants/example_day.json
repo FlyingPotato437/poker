@@ -1,0 +1,10 @@
+{
+  "name": "day_example_3hole_shortdeck",
+  "ranks": "6789TJQKA",
+  "suits": 4,
+  "n_hole": 3,
+  "streets": [3, 1, 1],
+  "hole_used": null,
+  "category_order": [0, 1, 2, 3, 4, 6, 5, 7, 8, 9],
+  "ace_low_straight": true
+}

@@ -1,0 +1,32 @@
+A = frozen/rc1/nlhe_bot.py  sha256 8a3af61dca46  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/fallback/nlhe_bot.py  sha256 fc13446ef986  (runtime+params+tables identical, mock-kit adapter)
+
+variant nlhe, 24600 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 4 workers, seed 8086
+A import (s, model size, numpy) per worker: [(0.14, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.05, '-', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.060    1.958    +3.53  1.44     +10.2%      0.26      0.20
+normal  weak+crashed       2.159    2.032    +4.42  1.47     +12.7%      0.27      0.17
+normal  strong             1.501    1.266    +8.18  1.26     +23.5%      0.10      0.07
+normal  mixed              1.905    1.800    +3.67  1.32     +10.6%      0.24      0.13
+normal  attack-on-A        0.749    0.624    +4.33  0.98     +12.5%      0.07      0.04
+normal  attack-on-B        0.865    0.643    +7.75  1.04     +22.3%      0.18      0.14
+fast    weak               1.715    1.674    +1.45  1.52      +4.2%      0.27      0.16
+fast    weak+crashed       1.791    1.730    +2.12  1.57      +6.1%      0.19      0.14
+fast    strong             1.299    1.157    +4.97  1.21     +14.3%      0.33      0.30
+fast    mixed              1.563    1.517    +1.62  1.37      +4.7%      0.24      0.21
+fast    attack-on-A        0.851    0.758    +3.23  1.02      +9.3%      0.19      0.09
+fast    attack-on-B        0.905    0.841    +2.21  1.02      +6.4%      0.06      0.14
+
+mean over 12 cells: A-B +11.38% of fair (±1.07)
+
+exploitability: one attacker tuned against the bot, at a table of 7 copies of it
+  attacker vs 7x A: 1.294x fair (±0.058), 300 SNGs
+  attacker vs 7x B: 1.488x fair (±0.061), 300 SNGs
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       1697033   0.03   0.16   0.37  43.54        287       0
+B       1716918   0.03   0.11   0.30  34.57        262       0
+[159s]

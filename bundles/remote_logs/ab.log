@@ -1,0 +1,4 @@
+plo4: 600,000 train / 12,000 val samples in 104s
+plo4 [64, 32]: current 0.0443  +3 features 0.0431  (+2.7% error)
+plo4 [128, 64]: current 0.0361  +3 features 0.0346  (+4.0% error)
+nlhe: 600,000 train / 12,000 val samples in 32s

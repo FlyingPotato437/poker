@@ -1,0 +1,14 @@
+numpy off; 12 table sets
+  ok   royal.nlb                     14,348 decisions  p99.9 0.199 ms  max 0.565 ms
+  ok   holdem3.nlb                   13,347 decisions  p99.9 0.921 ms  max 9.594 ms
+  ok   plo4.nlb                      11,362 decisions  p99.9 0.344 ms  max 1.143 ms
+  ok   plo5.nlb                      12,242 decisions  p99.9 1.088 ms  max 9.354 ms
+  ok   heuristic:nlhe                14,367 decisions  p99.9 0.812 ms  max 6.548 ms
+  ok   heuristic:shortdeck           12,559 decisions  p99.9 0.144 ms  max 0.271 ms
+  ok   heuristic:shortdeck_triton    12,221 decisions  p99.9 0.081 ms  max 0.354 ms
+  ok   heuristic:plo4                11,735 decisions  p99.9 0.139 ms  max 0.231 ms
+  ok   heuristic:plo5                11,121 decisions  p99.9 0.191 ms  max 1.111 ms
+  ok   heuristic:holdem3             11,455 decisions  p99.9 0.059 ms  max 0.244 ms
+  ok   heuristic:royal               10,545 decisions  p99.9 0.041 ms  max 0.063 ms
+  ok   heuristic:pineapple_nodiscard  11,455 decisions  p99.9 0.062 ms  max 0.103 ms
+exit 0

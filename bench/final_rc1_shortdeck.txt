@@ -1,0 +1,24 @@
+A = frozen/rc1/shortdeck_bot.py  sha256 861963e12481  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/fallback/shortdeck_bot.py  sha256 0d10ed2d64ff  (runtime+params+tables identical, mock-kit adapter)
+
+variant shortdeck, 16000 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 4 workers, seed 8086
+A import (s, model size, numpy) per worker: [(0.29, 'small', True), (0.3, 'small', True), (0.33, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.09, '-', True), (0.13, '-', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               1.933    1.911    +0.75  1.57      +2.2%      0.85      0.73
+normal  weak+crashed       2.115    2.042    +2.54  1.51      +7.3%      0.70      0.63
+normal  strong             1.390    1.113    +9.62  1.27     +27.7%      0.52      0.43
+normal  mixed              1.819    1.688    +4.56  1.44     +13.1%      0.80      0.59
+fast    weak               1.629    1.608    +0.73  1.57      +2.1%      0.79      0.67
+fast    weak+crashed       1.679    1.717    -1.31  1.65      -3.8%      0.67      0.48
+fast    strong             1.208    1.128    +2.80  1.30      +8.0%      0.39      0.39
+fast    mixed              1.460    1.424    +1.27  1.44      +3.6%      0.64      0.81
+
+mean over 8 cells: A-B +7.53% of fair (±1.50)
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A        963550   0.08   0.48   0.78  21.84        666       0
+B       1054083   0.07   0.39   0.70  12.68        634       0
+[322s]

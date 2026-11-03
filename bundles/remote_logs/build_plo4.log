@@ -1,0 +1,27 @@
+[02:08:29] variant plo4: deck 52, hole 4, streets (3, 1, 1), device cuda
+[02:08:31] classes: 16,432 classes over 270,725 combos (1.8s)
+[02:08:31] preflop pass 1 (strength order): 2434 rollouts/class
+[02:09:04]   39,995,488 rollouts x 1 opp in 33.0s
+[02:09:04] preflop pass 2 (equities + ranges): 24342 rollouts/class, 7 opponents
+[02:30:37]   399,987,744 rollouts x 7 opp in 1292.7s
+[02:30:37]   strongest: 8c8dAcAd (0.703), 5c5dAcAd (0.706), TcTdAcAd (0.714), 9c9dAcAd (0.711), KcKdAcAd (0.712)
+[02:33:29] postflop data, board 3: 1,500,000 samples (171.4s)
+[02:36:20] postflop data, board 4: 1,500,000 samples (171.1s)
+[02:39:10] postflop data, board 5: 1,500,000 samples (170.9s)
+[02:39:17]   epoch 1/20 train mse 0.03949
+[02:39:23]   epoch 5/20 train mse 0.00623
+[02:39:29]   epoch 9/20 train mse 0.00482
+[02:39:35]   epoch 13/20 train mse 0.00436
+[02:39:42]   epoch 17/20 train mse 0.00410
+[02:39:46]   epoch 20/20 train mse 0.00405
+[02:39:49]   epoch 1/20 train mse 0.05180
+[02:39:55]   epoch 5/20 train mse 0.00745
+[02:40:01]   epoch 9/20 train mse 0.00612
+[02:40:07]   epoch 13/20 train mse 0.00549
+[02:40:14]   epoch 17/20 train mse 0.00525
+[02:40:18]   epoch 20/20 train mse 0.00521
+[02:40:18] small MLP 64,32 validation MAE: 0.0401, 0.0391, 0.0373
+[02:40:18] postflop MLP validation MAE vs 1/2/3 opp: 0.0306, 0.0303, 0.0295
+[02:40:33] push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[02:40:35] bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.76
+[02:40:35] wrote bundles/plo4.nlb (3.1 MB)

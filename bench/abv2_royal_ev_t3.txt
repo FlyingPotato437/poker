@@ -1,0 +1,21 @@
+A = prep:params/ev_t3.json
+B = prep:params/nlhe_final_legacy.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  zoo                       -2.30   1.68          -6.6%   0/0
+default   normal  passive                   +0.99   1.69          +2.8%   0/0
+default   normal  aggressive                +2.24   1.04          +6.5%   0/0
+default   normal  competent                +10.00   1.95         +28.8%   0/0
+default   normal  held-out*                 +1.43   1.69          +4.1%   0/0
+default   normal  zoo+held-out              +1.20   1.83          +3.5%   0/0
+default   normal  sharks                   +13.19   1.90         +38.0%   0/0
+default   normal  h2h 4v4           A 1.283x fair
+default   fast    zoo                       -2.66   1.66          -7.6%   0/0
+default   fast    passive                   -3.15   1.99          -9.1%   0/0
+default   fast    aggressive                +1.27   0.97          +3.7%   0/0
+default   fast    competent                 +2.49   1.84          +7.2%   0/0
+default   fast    held-out*                 +2.50   1.81          +7.2%   0/0
+default   fast    zoo+held-out              +0.96   1.78          +2.8%   0/0
+default   fast    sharks                    +5.48   1.64         +15.8%   0/0
+default   fast    h2h 4v4           A 1.153x fair
+
+mean over 14 cells: A-B +6.92% of fair (±1.31)  [76s]

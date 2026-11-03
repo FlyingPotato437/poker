@@ -1,0 +1,24 @@
+A = build/wk/plo4_s5p0_plo4_bot.py  sha256 18b15576679b  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/plo4_bot.py  sha256 7f53d3d0300e  (runtime+params+tables identical, mock-kit adapter)
+
+variant plo4, 48000 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 8 workers, seed 9103
+A import (s, model size, numpy) per worker: [(0.25, 'big', True), (0.26, 'small', True), (0.27, 'small', True), (0.34, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.24, 'big', True), (0.25, 'big', True), (0.25, 'small', True), (0.26, 'small', True), (0.28, 'small', True), (0.34, 'small', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.073    1.890    +6.37  0.75     +18.3%      0.73      0.57
+normal  weak+crashed       2.155    2.008    +5.11  0.79     +14.7%      0.71      0.56
+normal  strong             1.405    1.482    -2.67  0.73      -7.7%      0.57      0.42
+normal  mixed              1.892    1.827    +2.26  0.74      +6.5%      0.63      0.50
+fast    weak               1.677    1.565    +3.88  0.78     +11.2%      0.67      0.58
+fast    weak+crashed       1.766    1.646    +4.17  0.83     +12.0%      0.67      0.55
+fast    strong             1.224    1.287    -2.20  0.71      -6.3%      0.46      0.28
+fast    mixed              1.578    1.489    +3.09  0.75      +8.9%      0.52      0.47
+
+mean over 8 cells: A-B +7.20% of fair (±0.77)
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       3141837   0.05   0.37   0.67  29.28       1998       0
+B       2839470   0.05   0.42   0.66  30.35       1418       0
+[305s]

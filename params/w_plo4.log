@@ -1,0 +1,11 @@
+gen  1/10: mean-params  62.52 (±0.58)  best  64.64  elite avg  64.10  sigma 0.129  (647s)
+gen  2/10: mean-params  64.98 (±0.55)  best  67.38  elite avg  66.64  sigma 0.112  (698s)
+gen  3/10: mean-params  65.18 (±0.56)  best  68.55  elite avg  67.62  sigma 0.097  (711s)
+gen  4/10: mean-params  65.81 (±0.55)  best  66.56  elite avg  66.32  sigma 0.087  (718s)
+gen  5/10: mean-params  67.00 (±0.55)  best  68.21  elite avg  67.58  sigma 0.079  (727s)
+gen  6/10: mean-params  67.25 (±0.55)  best  68.34  elite avg  67.87  sigma 0.067  (748s)
+gen  7/10: mean-params  69.50 (±0.53)  best  70.69  elite avg  70.16  sigma 0.055  (767s)
+gen  8/10: mean-params  68.34 (±0.54)  best  69.46  elite avg  69.04  sigma 0.048  (785s)
+gen  9/10: mean-params  70.00 (±0.53)  best  70.23  elite avg  70.08  sigma 0.039  (777s)
+gen 10/10: mean-params  69.70 (±0.53)  best  69.87  elite avg  69.55  sigma 0.035  (808s)
+saved params/w_plo4.json

@@ -1,0 +1,17 @@
+A = prep:params/xplo4_full.json
+B = prep:params/rc1_plo4.json
+style                        A-B % of fair    ±se
+tag                                 +22.7%    5.1
+lag                                  +0.7%    3.3
+shover                               +2.8%    3.0
+nit                                 +21.7%    5.4
+station                             +17.8%    4.7
+maniac                               +4.8%    2.4
+timeout                              +0.0%    0.0
+random                               +4.5%    4.7
+jammer                               +2.0%    1.7
+bully                               +10.5%    2.1
+trapper                              +6.3%    6.8
+sizer                                +2.3%    3.3
+/opt/homebrew/Cellar/python@3.12/3.12.10/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

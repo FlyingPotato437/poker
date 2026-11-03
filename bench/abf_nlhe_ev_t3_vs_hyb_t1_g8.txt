@@ -1,0 +1,21 @@
+A = prep:params/ev_t3.json
+B = prep:params/hyb_t1_g8.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  fresh*                    +1.03   1.29          +3.0%   0/0
+default   normal  fresh+old-tunes*          +6.50   1.32         +18.7%   0/0
+default   normal  fresh+zoo*                -1.46   1.13          -4.2%   0/0
+default   normal  h2h 4v4           A 1.053x fair
+default   fast    fresh*                    +0.97   1.26          +2.8%   0/0
+default   fast    fresh+old-tunes*          +3.45   1.21          +9.9%   0/0
+default   fast    fresh+zoo*                +1.12   1.08          +3.2%   0/0
+default   fast    h2h 4v4           A 1.022x fair
+top-heavy normal  fresh*                    +1.05   1.59          +4.8%   0/0
+top-heavy normal  fresh+old-tunes*          +7.72   1.56         +35.3%   0/0
+top-heavy normal  fresh+zoo*                -2.03   1.45          -9.3%   0/0
+top-heavy normal  h2h 4v4           A 1.083x fair
+top-heavy fast    fresh*                    +3.46   1.49         +15.8%   0/0
+top-heavy fast    fresh+old-tunes*          -0.58   1.45          -2.7%   0/0
+top-heavy fast    fresh+zoo*                +2.63   1.37         +12.0%   0/0
+top-heavy fast    h2h 4v4           A 1.065x fair
+
+mean over 12 cells: A-B +7.45% of fair (±1.56)  [126s]

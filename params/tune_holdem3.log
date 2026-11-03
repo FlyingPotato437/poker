@@ -1,0 +1,23 @@
+gen  1/8: mean-params  48.39 (±1.35)  best  49.50  elite avg  49.20  sigma 0.096  (64s)
+gen  2/8: mean-params  51.63 (±1.35)  best  52.97  elite avg  52.35  sigma 0.081  (64s)
+gen  3/8: mean-params  49.72 (±1.38)  best  50.36  elite avg  50.03  sigma 0.071  (62s)
+gen  4/8: mean-params  50.24 (±1.36)  best  51.03  elite avg  50.43  sigma 0.058  (63s)
+gen  5/8: mean-params  51.48 (±1.35)  best  51.48  elite avg  51.38  sigma 0.046  (62s)
+gen  6/8: mean-params  50.11 (±1.39)  best  53.03  elite avg  52.52  sigma 0.040  (63s)
+gen  7/8: mean-params  49.85 (±1.36)  best  51.03  elite avg  50.73  sigma 0.036  (63s)
+gen  8/8: mean-params  51.88 (±1.35)  best  52.60  elite avg  51.91  sigma 0.032  (63s)
+saved params/holdem3.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:holdem3              3000      55.65    0.62    0.041     6.79       0
+prep:nlhe_final           3000      54.30    0.60    0.041     9.71       0
+prep                      3000      42.00    0.49    0.040     5.68       0
+nit                       1483      35.80    0.67    0.011     3.61       0
+timeout                   1806      35.22    0.30    0.001     3.08       0
+tag                       3710      31.84    0.48    0.018     3.60       0
+shover                    2255      30.76    0.71    0.007     3.66       0
+lag                       1857      25.10    0.72    0.026     3.59       0
+maniac                    1218       9.06    0.48    0.002     1.53       0
+random                    1218       7.42    0.28    0.002     0.05       0
+station                   1453       4.99    0.19    0.001     1.51       0
+
+3000 SNGs in 17.3s; total points per table 278.0

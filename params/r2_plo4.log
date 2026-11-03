@@ -1,0 +1,9 @@
+gen  1/8: mean-params  47.99 (±0.52)  best  49.33  elite avg  48.34  sigma 0.122  (1084s)
+gen  2/8: mean-params  48.74 (±0.53)  best  49.65  elite avg  48.88  sigma 0.098  (1094s)
+gen  3/8: mean-params  47.54 (±0.52)  best  48.50  elite avg  48.33  sigma 0.084  (1131s)
+gen  4/8: mean-params  48.00 (±0.53)  best  49.80  elite avg  48.95  sigma 0.073  (863s)
+gen  5/8: mean-params  46.48 (±0.53)  best  48.66  elite avg  48.12  sigma 0.067  (699s)
+gen  6/8: mean-params  48.45 (±0.53)  best  49.25  elite avg  48.95  sigma 0.058  (697s)
+gen  7/8: mean-params  47.74 (±0.53)  best  49.07  elite avg  48.64  sigma 0.052  (700s)
+gen  8/8: mean-params  48.79 (±0.53)  best  49.01  elite avg  48.82  sigma 0.043  (691s)
+saved params/r2_plo4.json

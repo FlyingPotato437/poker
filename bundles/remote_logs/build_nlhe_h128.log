@@ -1,0 +1,10 @@
+[01:09:38] variant nlhe: deck 52, hole 2, streets (3, 1, 1), device cuda
+[01:09:48] postflop data: reusing 9,000,000 cached samples
+[01:09:57]   epoch 1/20 train mse 0.03262
+[01:10:16]   epoch 5/20 train mse 0.00440
+[01:10:34]   epoch 9/20 train mse 0.00363
+[01:10:53]   epoch 13/20 train mse 0.00322
+[01:11:12]   epoch 17/20 train mse 0.00307
+[01:11:29]   epoch 20/20 train mse 0.00303
+[01:11:29] postflop MLP validation MAE vs 1/2/3 opp: 0.0174, 0.0173, 0.0172
+[01:11:29] wrote bundles/nlhe_h128.nlb (0.1 MB)

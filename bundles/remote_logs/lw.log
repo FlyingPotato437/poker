@@ -1,0 +1,9 @@
+nlhe 450k samples 64x32: MAE 0.0355
+nlhe 450k samples 128x64: MAE 0.0272
+nlhe 450k samples 256x128: MAE 0.0224
+nlhe 450k samples 512x256: MAE 0.0170
+plo4 450k samples 64x32: MAE 0.0435
+plo4 450k samples 128x64: MAE 0.0365
+plo4 450k samples 256x128: MAE 0.0298
+plo4 450k samples 512x256: MAE 0.0249
+LW_DONE

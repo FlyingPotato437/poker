@@ -1,0 +1,31 @@
+=== tune shortdeck start 03:30:54
+=== tune shortdeck done 03:39:18: gen  8/8: mean-params  47.16 (±1.36)  best  48.54  elite avg  48.12  sigma 0.029  (62s)
+prep:shortdeck            3000      54.37    0.62    0.040     4.59       0
+prep:nlhe_final           3000      51.58    0.60    0.040     5.58       0
+prep                      3000      43.31    0.51    0.039     4.89       0
+=== tune holdem3 start 03:39:35
+=== tune holdem3 done 03:47:59: gen  8/8: mean-params  51.88 (±1.35)  best  52.60  elite avg  51.91  sigma 0.032  (63s)
+prep:holdem3              3000      55.65    0.62    0.041     6.79       0
+prep:nlhe_final           3000      54.30    0.60    0.041     9.71       0
+prep                      3000      42.00    0.49    0.040     5.68       0
+=== tune royal start 03:48:17
+=== tune royal done 03:57:14: gen  8/8: mean-params  51.93 (±1.42)  best  51.93  elite avg  51.11  sigma 0.028  (65s)
+prep:royal                3000      56.93    0.64    0.040     5.43       0
+prep:nlhe_final           3000      49.88    0.60    0.040     5.35       0
+prep                      3000      44.65    0.50    0.039     5.72       0
+=== tune plo4 start 03:57:32
+=== tune plo4 done 04:07:07: gen  8/8: mean-params  48.76 (±1.34)  best  49.67  elite avg  48.99  sigma 0.026  (71s)
+prep:nlhe_final           3000      53.61    0.61    0.045     4.69       0
+prep:plo4                 3000      53.29    0.61    0.045     5.57       0
+prep                      3000      43.22    0.52    0.044     5.65       0
+=== tune shortdeck_triton start 04:07:26
+=== tune shortdeck_triton done 04:15:44: gen  8/8: mean-params  48.53 (±1.35)  best  50.67  elite avg  49.89  sigma 0.028  (61s)
+prep:shortdeck_triton     3000      54.59    0.60    0.038     6.59       0
+prep:nlhe_final           3000      52.16    0.60    0.039     5.56       0
+prep                      3000      44.46    0.51    0.038     4.96       0
+=== tune plo5 start 04:16:01
+=== tune plo5 done 04:26:06: gen  8/8: mean-params  46.51 (±1.39)  best  48.70  elite avg  48.24  sigma 0.027  (74s)
+prep:plo5                 3000      53.13    0.64    0.047     5.48       0
+prep:nlhe_final           3000      51.62    0.61    0.048     6.67       0
+prep                      3000      44.15    0.52    0.046     4.22       0
+=== tune_all done 04:26:27

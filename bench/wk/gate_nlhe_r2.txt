@@ -1,0 +1,24 @@
+A = build/wk/nlhe_r2_nlhe_bot.py  sha256 5df14184246e  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/nlhe_bot.py  sha256 8a3af61dca46  (runtime+params+tables identical, mock-kit adapter)
+
+variant nlhe, 48000 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 8 workers, seed 9102
+A import (s, model size, numpy) per worker: [(0.2, 'small', True), (0.21, 'small', True), (0.23, 'small', True), (0.24, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.16, 'small', True), (0.17, 'small', True), (0.19, 'small', True), (0.2, 'big', True), (0.2, 'small', True), (0.21, 'big', True), (0.21, 'small', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.238    2.051    +6.52  0.70     +18.8%      1.30      0.97
+normal  weak+crashed       2.319    2.139    +6.26  0.70     +18.0%      1.18      0.98
+normal  strong             1.446    1.500    -1.89  0.65      -5.4%      0.91      0.67
+normal  mixed              2.011    1.923    +3.07  0.66      +8.8%      1.04      0.84
+fast    weak               1.869    1.734    +4.67  0.78     +13.4%      1.38      0.97
+fast    weak+crashed       1.926    1.779    +5.10  0.80     +14.7%      1.17      0.85
+fast    strong             1.264    1.285    -0.70  0.63      -2.0%      0.72      0.47
+fast    mixed              1.712    1.623    +3.10  0.72      +8.9%      0.96      0.78
+
+mean over 8 cells: A-B +9.40% of fair (±0.72)
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       3277719   0.08   0.31   1.12  26.01       3617       0
+B       2906466   0.05   0.40   0.88  23.11       2441       0
+[282s]

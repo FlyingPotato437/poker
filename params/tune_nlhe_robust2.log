@@ -1,0 +1,11 @@
+gen  1/10: mean-params  52.69 (±1.05)  best  53.04  elite avg  52.80  sigma 0.075  (47s)
+gen  2/10: mean-params  53.04 (±1.05)  best  54.17  elite avg  53.21  sigma 0.060  (66s)
+gen  3/10: mean-params  49.53 (±1.04)  best  52.21  elite avg  51.94  sigma 0.056  (44s)
+gen  4/10: mean-params  52.22 (±1.07)  best  53.41  elite avg  52.71  sigma 0.050  (39s)
+gen  5/10: mean-params  50.91 (±1.07)  best  51.76  elite avg  51.32  sigma 0.044  (38s)
+gen  6/10: mean-params  52.41 (±1.04)  best  53.52  elite avg  53.33  sigma 0.043  (38s)
+gen  7/10: mean-params  51.49 (±1.06)  best  52.10  elite avg  51.78  sigma 0.036  (37s)
+gen  8/10: mean-params  49.05 (±1.03)  best  51.87  elite avg  51.37  sigma 0.034  (38s)
+gen  9/10: mean-params  50.22 (±1.07)  best  51.91  elite avg  51.42  sigma 0.031  (37s)
+gen 10/10: mean-params  52.75 (±1.04)  best  54.20  elite avg  53.45  sigma 0.029  (38s)
+saved params/nlhe_robust2.json

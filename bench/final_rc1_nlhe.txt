@@ -1,0 +1,32 @@
+A = frozen/rc1/nlhe_bot.py  sha256 8a3af61dca46  (runtime+params+tables identical, mock-kit adapter)
+B = frozen/rc1/fallback/nlhe_bot.py  sha256 fc13446ef986  (runtime+params+tables identical, mock-kit adapter)
+
+variant nlhe, 49200 SNGs, payouts [100, 65, 45, 30, 20, 12, 6, 0], limit 1.0 ms, 4 workers, seed 8086
+A import (s, model size, numpy) per worker: [(0.33, 'small', True), (0.34, 'small', True), (0.36, 'small', True)]
+B import (s, model size, numpy) per worker: [(0.11, '-', True), (0.15, '-', True), (0.16, '-', True)]
+
+blinds  field           A x fair B x fair  A-B pts   ±se  A-B %fair  A pen/1k  B pen/1k
+normal  weak               2.040    1.987    +1.86  1.01      +5.3%      0.82      0.72
+normal  weak+crashed       2.134    2.044    +3.11  1.02      +9.0%      0.72      0.65
+normal  strong             1.489    1.278    +7.31  0.88     +21.0%      0.47      0.40
+normal  mixed              1.912    1.801    +3.86  0.93     +11.1%      0.69      0.69
+normal  attack-on-A        0.743    0.611    +4.59  0.68     +13.2%      0.18      0.09
+normal  attack-on-B        0.865    0.657    +7.24  0.72     +20.8%      0.40      0.39
+fast    weak               1.718    1.694    +0.82  1.05      +2.4%      0.76      0.65
+fast    weak+crashed       1.753    1.720    +1.12  1.07      +3.2%      0.58      0.58
+fast    strong             1.288    1.158    +4.53  0.85     +13.0%      0.27      0.29
+fast    mixed              1.612    1.570    +1.44  0.96      +4.1%      0.56      0.43
+fast    attack-on-A        0.878    0.772    +3.67  0.72     +10.6%      0.14      0.22
+fast    attack-on-B        0.898    0.810    +3.06  0.71      +8.8%      0.29      0.18
+
+mean over 12 cells: A-B +10.22% of fair (±0.74)
+
+exploitability: one attacker tuned against the bot, at a table of 7 copies of it
+  attacker vs 7x A: 1.311x fair (±0.040), 600 SNGs
+  attacker vs 7x B: 1.466x fair (±0.043), 600 SNGs
+
+decision time through get_action(), all cells (ms)
+bot   decisions    p50    p99  p99.9    max over limit  errors
+A       3388959   0.07   0.44   0.71  20.21       1560       0
+B       3446195   0.07   0.41   0.66  19.90       1470       0
+[1016s]

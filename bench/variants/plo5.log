@@ -1,0 +1,58 @@
+default   normal prep:params/plo5.json       zoo                 1.84x ±0.05  errors 0
+default   normal prep:params/plo5.json       passive             1.93x ±0.06  errors 0
+default   normal prep:params/plo5.json       aggressive          2.04x ±0.03  errors 0
+default   normal prep:params/plo5.json       competent           1.43x ±0.05  errors 0
+default   normal prep:params/plo5.json       exploiter           1.16x ±0.05  errors 0
+default   normal prep:params/plo5.json       3 of us + zoo       1.43x ±0.03  errors 0
+default   normal prep:params/plo5.json       mirror (8 of us)    1.00x ±0.02  errors 0
+default   normal prep:params/nlhe_final.json zoo                 1.86x ±0.04  errors 0
+default   normal prep:params/nlhe_final.json passive             2.05x ±0.06  errors 0
+default   normal prep:params/nlhe_final.json aggressive          2.03x ±0.03  errors 0
+default   normal prep:params/nlhe_final.json competent           1.62x ±0.05  errors 0
+default   normal prep:params/nlhe_final.json exploiter           1.10x ±0.05  errors 0
+default   normal prep:params/nlhe_final.json 3 of us + zoo       1.42x ±0.03  errors 0
+default   normal prep:params/nlhe_final.json mirror (8 of us)    1.00x ±0.02  errors 0
+default   fast   prep:params/plo5.json       zoo                 1.54x ±0.05  errors 0
+default   fast   prep:params/plo5.json       passive             1.67x ±0.06  errors 0
+default   fast   prep:params/plo5.json       aggressive          1.90x ±0.03  errors 0
+default   fast   prep:params/plo5.json       competent           1.21x ±0.05  errors 0
+default   fast   prep:params/plo5.json       exploiter           1.12x ±0.05  errors 0
+default   fast   prep:params/plo5.json       3 of us + zoo       1.35x ±0.03  errors 0
+default   fast   prep:params/plo5.json       mirror (8 of us)    1.00x ±0.02  errors 0
+default   fast   prep:params/nlhe_final.json zoo                 1.55x ±0.05  errors 0
+default   fast   prep:params/nlhe_final.json passive             1.71x ±0.06  errors 0
+default   fast   prep:params/nlhe_final.json aggressive          1.89x ±0.03  errors 0
+default   fast   prep:params/nlhe_final.json competent           1.21x ±0.05  errors 0
+default   fast   prep:params/nlhe_final.json exploiter           1.02x ±0.05  errors 0
+default   fast   prep:params/nlhe_final.json 3 of us + zoo       1.36x ±0.03  errors 0
+default   fast   prep:params/nlhe_final.json mirror (8 of us)    1.00x ±0.02  errors 0
+top-heavy normal prep:params/plo5.json       zoo                 2.32x ±0.09  errors 0
+top-heavy normal prep:params/plo5.json       passive             2.76x ±0.11  errors 0
+top-heavy normal prep:params/plo5.json       aggressive          2.45x ±0.07  errors 0
+top-heavy normal prep:params/plo5.json       competent           1.64x ±0.09  errors 0
+top-heavy normal prep:params/plo5.json       exploiter           1.29x ±0.09  errors 0
+top-heavy normal prep:params/plo5.json       3 of us + zoo       1.60x ±0.05  errors 0
+top-heavy normal prep:params/plo5.json       mirror (8 of us)    1.00x ±0.04  errors 0
+top-heavy normal prep:params/nlhe_final.json zoo                 2.41x ±0.09  errors 0
+top-heavy normal prep:params/nlhe_final.json passive             2.95x ±0.10  errors 0
+top-heavy normal prep:params/nlhe_final.json aggressive          2.45x ±0.07  errors 0
+top-heavy normal prep:params/nlhe_final.json competent           1.93x ±0.09  errors 0
+top-heavy normal prep:params/nlhe_final.json exploiter           1.22x ±0.08  errors 0
+top-heavy normal prep:params/nlhe_final.json 3 of us + zoo       1.60x ±0.05  errors 0
+top-heavy normal prep:params/nlhe_final.json mirror (8 of us)    1.00x ±0.04  errors 0
+top-heavy fast   prep:params/plo5.json       zoo                 1.89x ±0.09  errors 0
+top-heavy fast   prep:params/plo5.json       passive             2.38x ±0.11  errors 0
+top-heavy fast   prep:params/plo5.json       aggressive          2.19x ±0.07  errors 0
+top-heavy fast   prep:params/plo5.json       competent           1.41x ±0.09  errors 0
+top-heavy fast   prep:params/plo5.json       exploiter           1.05x ±0.08  errors 0
+top-heavy fast   prep:params/plo5.json       3 of us + zoo       1.53x ±0.05  errors 0
+top-heavy fast   prep:params/plo5.json       mirror (8 of us)    1.00x ±0.04  errors 0
+top-heavy fast   prep:params/nlhe_final.json zoo                 1.87x ±0.09  errors 0
+top-heavy fast   prep:params/nlhe_final.json passive             2.43x ±0.11  errors 0
+top-heavy fast   prep:params/nlhe_final.json aggressive          2.19x ±0.07  errors 0
+top-heavy fast   prep:params/nlhe_final.json competent           1.47x ±0.09  errors 0
+top-heavy fast   prep:params/nlhe_final.json exploiter           1.01x ±0.08  errors 0
+top-heavy fast   prep:params/nlhe_final.json 3 of us + zoo       1.49x ±0.05  errors 0
+top-heavy fast   prep:params/nlhe_final.json mirror (8 of us)    1.00x ±0.04  errors 0
+
+wrote bench/variants/plo5.md (58s)

@@ -1,0 +1,21 @@
+A = prep:params/ev_t3.json
+B = prep:params/nlhe_final_legacy.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  fresh*                    +1.87   1.32          +5.4%   0/0
+default   normal  fresh+old-tunes*          +9.72   1.38         +28.0%   0/0
+default   normal  fresh+zoo*                -1.63   1.18          -4.7%   0/0
+default   normal  h2h 4v4           A 1.148x fair
+default   fast    fresh*                    +0.49   1.29          +1.4%   0/0
+default   fast    fresh+old-tunes*          +3.81   1.26         +11.0%   0/0
+default   fast    fresh+zoo*                -0.71   1.23          -2.1%   0/0
+default   fast    h2h 4v4           A 1.050x fair
+top-heavy normal  fresh*                    +2.61   1.65         +11.9%   0/0
+top-heavy normal  fresh+old-tunes*          +9.92   1.54         +45.4%   0/0
+top-heavy normal  fresh+zoo*                -1.23   1.51          -5.6%   0/0
+top-heavy normal  h2h 4v4           A 1.212x fair
+top-heavy fast    fresh*                    +2.94   1.55         +13.4%   0/0
+top-heavy fast    fresh+old-tunes*          +1.80   1.48          +8.3%   0/0
+top-heavy fast    fresh+zoo*                +0.55   1.53          +2.5%   0/0
+top-heavy fast    h2h 4v4           A 1.085x fair
+
+mean over 12 cells: A-B +9.57% of fair (±1.62)  [123s]

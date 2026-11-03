@@ -1,0 +1,26 @@
+[01:35:14] variant holdem3: deck 52, hole 3, streets (3, 1, 1), device cuda
+[01:35:14] classes: 1,755 classes over 22,100 combos (0.0s)
+[01:35:14] preflop pass 1 (strength order): 22792 rollouts/class
+[01:35:45]   39,999,960 rollouts x 1 opp in 31.0s
+[01:35:45] preflop pass 2 (equities + ranges): 227920 rollouts/class, 7 opponents
+[01:55:51]   399,999,600 rollouts x 7 opp in 1205.8s
+[01:55:51]   strongest: AcAdAh (0.910), JcJdJh (0.904), TcTdTh (0.903), QcQdQh (0.903), KcKdKh (0.903)
+[01:59:26] postflop data, board 3: 2,000,000 samples (215.4s)
+[02:03:01] postflop data, board 4: 2,000,000 samples (214.5s)
+[02:06:35] postflop data, board 5: 2,000,000 samples (214.6s)
+[02:06:45]   epoch 1/20 train mse 0.03458
+[02:06:54]   epoch 5/20 train mse 0.00545
+[02:07:03]   epoch 9/20 train mse 0.00422
+[02:07:11]   epoch 13/20 train mse 0.00377
+[02:07:20]   epoch 17/20 train mse 0.00360
+[02:07:26]   epoch 20/20 train mse 0.00356
+[02:07:29]   epoch 1/20 train mse 0.04550
+[02:07:38]   epoch 5/20 train mse 0.00615
+[02:07:46]   epoch 9/20 train mse 0.00488
+[02:07:55]   epoch 13/20 train mse 0.00444
+[02:08:03]   epoch 17/20 train mse 0.00426
+[02:08:10]   epoch 20/20 train mse 0.00423
+[02:08:10] small MLP 64,32 validation MAE: 0.0306, 0.0293, 0.0282
+[02:08:10] postflop MLP validation MAE vs 1/2/3 opp: 0.0231, 0.0232, 0.0227
+[02:08:25] push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[02:08:25] wrote bundles/holdem3.nlb (0.4 MB)

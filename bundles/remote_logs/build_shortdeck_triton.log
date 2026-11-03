@@ -1,0 +1,19 @@
+[01:19:29] variant shortdeck_triton: deck 36, hole 2, streets (3, 1, 1), device cuda
+[01:19:29] classes: 81 classes over 630 combos (0.0s)
+[01:19:29] preflop pass 1 (strength order): 246913 rollouts/class
+[01:19:35]   19,999,953 rollouts x 1 opp in 6.5s
+[01:19:35] preflop pass 2 (equities + ranges): 1000000 rollouts/class, 7 opponents
+[01:21:07]   81,000,000 rollouts x 7 opp in 92.2s
+[01:21:07]   strongest: AcAd (0.756), KcKd (0.715), QcQd (0.692), JcJd (0.668), TcTd (0.645)
+[01:23:10] postflop data, board 3: 3,000,000 samples (122.7s)
+[01:25:12] postflop data, board 4: 3,000,000 samples (122.2s)
+[01:27:14] postflop data, board 5: 3,000,000 samples (121.7s)
+[01:27:25]   epoch 1/20 train mse 0.03638
+[01:27:38]   epoch 5/20 train mse 0.00563
+[01:27:52]   epoch 9/20 train mse 0.00490
+[01:28:05]   epoch 13/20 train mse 0.00435
+[01:28:18]   epoch 17/20 train mse 0.00412
+[01:28:28]   epoch 20/20 train mse 0.00408
+[01:28:28] postflop MLP validation MAE vs 1/2/3 opp: 0.0309, 0.0294, 0.0279
+[01:28:43] push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[01:28:43] wrote bundles/shortdeck_triton.nlb (0.0 MB)

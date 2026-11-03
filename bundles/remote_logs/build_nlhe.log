@@ -1,0 +1,18 @@
+[16:47:56] variant nlhe: deck 52, hole 2, streets (3, 1, 1), device mps
+[16:47:56] classes: 169 classes over 1,326 combos (0.0s)
+[16:47:56] preflop pass 1 (strength order): 5917 rollouts/class
+[16:48:00]   999,973 rollouts x 1 opp in 3.9s
+[16:48:00] preflop pass 2 (equities + ranges): 40000 rollouts/class, 7 opponents
+[16:49:45]   6,760,000 rollouts x 7 opp in 104.5s
+[16:49:45]   strongest: AcAd (0.854), KcKd (0.824), QcQd (0.796), JcJd (0.771), TcTd (0.750)
+[16:50:26] postflop data, board 3: 150,000 samples (41.1s)
+[16:51:06] postflop data, board 4: 150,000 samples (39.9s)
+[16:51:46] postflop data, board 5: 150,000 samples (40.6s)
+[16:51:51]   epoch 1/12 train mse 0.06858
+[16:51:52]   epoch 5/12 train mse 0.01015
+[16:51:56]   epoch 9/12 train mse 0.00858
+[16:52:01]   epoch 12/12 train mse 0.00827
+[16:52:02] postflop MLP validation MAE vs 1/2/3 opp: 0.0445, 0.0458, 0.0446
+[16:52:20] push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[16:52:20] wrote bundles/nlhe.nlb (0.1 MB)
+.venv/bin/python -m gpu.build_tables --variant nlhe --out bundles/nlhe.nlb     74.63s user 6.84s system 30% cpu 4:27.11 total

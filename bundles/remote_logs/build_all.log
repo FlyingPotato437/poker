@@ -1,0 +1,13 @@
+=== shortdeck start 01:09:16
+=== shortdeck done 01:19:26: [01:19:10] postflop MLP validation MAE vs 1/2/3 opp: 0.0316, 0.0311, 0.0306
+=== shortdeck_triton start 01:19:26
+=== shortdeck_triton done 01:28:47: [01:28:28] postflop MLP validation MAE vs 1/2/3 opp: 0.0309, 0.0294, 0.0279
+=== royal start 01:28:47
+=== royal done 01:35:11: [01:34:55] postflop MLP validation MAE vs 1/2/3 opp: 0.0102, 0.0089, 0.0087
+=== holdem3 start 01:35:11
+=== holdem3 done 02:08:26: [02:08:10] postflop MLP validation MAE vs 1/2/3 opp: 0.0231, 0.0232, 0.0227
+=== plo4 start 02:08:26
+=== plo4 done 02:40:36: [02:40:18] postflop MLP validation MAE vs 1/2/3 opp: 0.0306, 0.0303, 0.0295
+=== plo5 start 02:40:36
+=== plo5 done 03:28:53: [03:28:33] postflop MLP validation MAE vs 1/2/3 opp: 0.0380, 0.0385, 0.0383
+=== all done 03:28:53

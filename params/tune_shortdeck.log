@@ -1,0 +1,23 @@
+gen  1/8: mean-params  49.34 (±1.38)  best  51.53  elite avg  50.51  sigma 0.098  (65s)
+gen  2/8: mean-params  48.66 (±1.37)  best  51.85  elite avg  50.90  sigma 0.090  (63s)
+gen  3/8: mean-params  45.86 (±1.32)  best  49.43  elite avg  49.03  sigma 0.074  (64s)
+gen  4/8: mean-params  47.61 (±1.37)  best  50.33  elite avg  49.27  sigma 0.059  (63s)
+gen  5/8: mean-params  49.89 (±1.38)  best  52.95  elite avg  51.44  sigma 0.048  (62s)
+gen  6/8: mean-params  49.25 (±1.37)  best  51.07  elite avg  49.95  sigma 0.038  (62s)
+gen  7/8: mean-params  49.28 (±1.35)  best  49.64  elite avg  49.40  sigma 0.034  (62s)
+gen  8/8: mean-params  47.16 (±1.36)  best  48.54  elite avg  48.12  sigma 0.029  (62s)
+saved params/shortdeck.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:shortdeck            3000      54.37    0.62    0.040     4.59       0
+prep:nlhe_final           3000      51.58    0.60    0.040     5.58       0
+prep                      3000      43.31    0.51    0.039     4.89       0
+timeout                   1806      36.06    0.30    0.001     1.05       0
+nit                       1483      34.75    0.62    0.009     4.59       0
+tag                       3710      32.88    0.49    0.016     3.65       0
+shover                    2255      29.19    0.70    0.007     3.12       0
+lag                       1857      27.23    0.76    0.024     5.17       0
+maniac                    1218      10.27    0.58    0.002     1.08       0
+random                    1218       8.70    0.33    0.002     1.08       0
+station                   1453       5.55    0.23    0.001     0.04       0
+
+3000 SNGs in 17.1s; total points per table 278.0

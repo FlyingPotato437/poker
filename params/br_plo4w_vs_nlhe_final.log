@@ -1,0 +1,16 @@
+gen  1/10: mean-params  26.67 (±1.09)  best  30.15  elite avg  29.69  sigma 0.191  (80s)
+gen  2/10: mean-params  28.10 (±1.08)  best  31.21  elite avg  30.31  sigma 0.165  (64s)
+gen  3/10: mean-params  30.13 (±1.18)  best  36.75  elite avg  33.39  sigma 0.136  (62s)
+gen  4/10: mean-params  31.31 (±1.16)  best  34.31  elite avg  33.66  sigma 0.120  (61s)
+gen  5/10: mean-params  34.98 (±1.26)  best  38.91  elite avg  36.68  sigma 0.108  (63s)
+gen  6/10: mean-params  35.05 (±1.25)  best  37.22  elite avg  35.55  sigma 0.081  (63s)
+gen  7/10: mean-params  33.11 (±1.22)  best  38.30  elite avg  36.73  sigma 0.068  (62s)
+gen  8/10: mean-params  34.89 (±1.26)  best  36.85  elite avg  36.37  sigma 0.063  (63s)
+gen  9/10: mean-params  38.18 (±1.29)  best  39.40  elite avg  38.54  sigma 0.048  (62s)
+gen 10/10: mean-params  37.81 (±1.26)  best  39.19  elite avg  38.38  sigma 0.040  (62s)
+saved params/br_plo4w_vs_nlhe_final.json
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:br_plo4w_vs_nlhe_final    3000      36.15    0.58    0.038    20.86       0
+prep:nlhe_final          21000      34.55    0.22    0.041    78.45       0
+
+3000 SNGs in 22.1s; total points per table 278.0

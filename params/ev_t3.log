@@ -1,0 +1,9 @@
+gen  1/8: mean-params  51.95 (±0.82)  best  53.52  elite avg  52.75  sigma 0.066  (96s)
+gen  2/8: mean-params  50.48 (±0.83)  best  51.15  elite avg  50.96  sigma 0.058  (97s)
+gen  3/8: mean-params  49.77 (±0.81)  best  51.66  elite avg  51.35  sigma 0.052  (102s)
+gen  4/8: mean-params  49.11 (±0.83)  best  49.38  elite avg  49.06  sigma 0.043  (99s)
+gen  5/8: mean-params  49.93 (±0.82)  best  50.74  elite avg  50.38  sigma 0.042  (97s)
+gen  6/8: mean-params  51.05 (±0.83)  best  51.75  elite avg  51.33  sigma 0.038  (123s)
+gen  7/8: mean-params  48.70 (±0.80)  best  50.42  elite avg  50.11  sigma 0.034  (136s)
+gen  8/8: mean-params  49.77 (±0.80)  best  51.46  elite avg  51.23  sigma 0.031  (130s)
+saved params/ev_t3.json
