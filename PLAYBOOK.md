@@ -175,10 +175,10 @@ simulator command with `{bot}`):
 .venv/bin/python scripts/day.py build v0 --points <points> --adapter my_adapter.py --kit-cmd "<kit>"
 .venv/bin/python scripts/day.py submit v0 --as <file name the kit wants>
 # the upgraded bot, once the kit sim shows 0 exceptions / illegal moves and parity is 100%
-.venv/bin/python scripts/day.py build c1 --params params/cand_nlhe.json --points <points> [--ante-bb <a>] --adapter my_adapter.py --kit-cmd "<kit>"
+.venv/bin/python scripts/day.py build c1 --params params/cand3_nlhe.json --points <points> [--ante-bb <a>] --adapter my_adapter.py --kit-cmd "<kit>"
 .venv/bin/python scripts/day.py submit c1
 # same, numpy never used (if the kit shows latency spikes with numpy)
-.venv/bin/python scripts/day.py build c1p --pure-python --params params/cand_nlhe.json --points <points> --adapter my_adapter.py --kit-cmd "<kit>"
+.venv/bin/python scripts/day.py build c1p --pure-python --params params/cand3_nlhe.json --points <points> --adapter my_adapter.py --kit-cmd "<kit>"
 # rc1 exactly as frozen (runtime, params, tables), only the adapter swapped; push/fold stays at the placeholder points
 .venv/bin/python scripts/day.py build rc1k --from-frozen rc1 --adapter my_adapter.py --kit-cmd "<kit>"
 ```
@@ -206,14 +206,14 @@ are not meaningful, and ev_t4 under the same load had the same over-1-ms rate):
   memory 73.7 / 63.8 / 62.7 MB.
 - **Checks:** 0 errors or illegal moves. Mock-kit parity 6246/6246. kit2 parity 100%
   (heuristic and EV tables).
-- **Fuzz** (`--params params/cand_nlhe.json`, all 30 table sets, numpy and no numpy): ok.
+- **Fuzz** (`--params params/cand3_nlhe.json`, all 30 table sets, numpy and no numpy): ok.
 - **pytest:** 107 passed. 9 skipped, because **this .venv has no torch**.
   `gpu.pushfold` needs no torch, but `build_tables` / `range_eq` (the new-variant path)
   do. Check `.venv/bin/python -c "import torch"` on the laptop before the event.
 
 Re-time on the idle laptop:
 ```bash
-.venv/bin/python scripts/bench_latency.py --bundle bundles/nlhe_rng.nlb --params params/cand_nlhe.json --no-numpy --gc settle
+.venv/bin/python scripts/bench_latency.py --bundle bundles/nlhe_rng.nlb --params params/cand3_nlhe.json --no-numpy --gc settle
 ```
 
 ## T1–T6 (20 minutes apart)

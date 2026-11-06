@@ -105,8 +105,8 @@ no `pip install`.
 
 | Variant | v1 params | Notes |
 |---|---|---|
-| NLHE preset | `params/cand_nlhe.json` (upgraded bot) | fallbacks: `params/ev_t4.json`; rc1 bytes via `day.py build rc1k --from-frozen rc1 --adapter my_adapter.py --kit-cmd ...` |
-| Other presets (plo4, plo5, shortdeck, shortdeck_triton, royal, holdem3) | `params/ev_t3.json` | cand_nlhe is tuned on NLHE only |
+| NLHE preset | `params/cand3_nlhe.json` (upgraded bot) | fallbacks: `params/ev_t4.json`; rc1 bytes via `day.py build rc1k --from-frozen rc1 --adapter my_adapter.py --kit-cmd ...` |
+| Other presets (plo4, plo5, shortdeck, shortdeck_triton, royal, holdem3) | `params/cand_<preset>.json` (see variants/PARAMS_MAP.json) | fallback `params/ev_t3.json` |
 | New variant, hold'em-like (2 hole cards, any 5 of 7) | `params/ev_t4.json` | bundle built on the day |
 | New variant, anything else | `params/ev_t3.json` | bundle built on the day |
 | Heuristic v0 (`--heuristic`) | `params/nlhe_final_legacy.json` (day.py default) | |

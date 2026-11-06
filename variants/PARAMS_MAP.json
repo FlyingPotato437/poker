@@ -2,7 +2,7 @@
   "_comment": "The ONE place go.py picks params. preset.<name> = v1 params when that preset's bundle is used. new_variant = params on a bundle built on the day (holdem_like: 2 hole cards, any 5 of 7; other: everything else). heuristic_v0 = params for the heuristic-tables v0 (rules engine). Nov 6: per-variant cand_* winners vs ev_t3 (bench/variants_upgrade/CONFIRM.md): plo4/shortdeck/plo5/royal confirmed at 1500 SNGs (+7.3% to +8.7%), holdem3/shortdeck_triton screened at 800 SNGs (+9.8%, +8.5%); no losing cell. new_variant_no_range_net = params for <tag>_v1, the day-built bundle before its range net exists (kit2 A/B: ev_t3 there was -9.3% vs v0, the rules engine +1.8%).",
   "heuristic_v0": "params/nlhe_final_legacy.json",
   "preset": {
-    "nlhe": "params/cand_nlhe.json",
+    "nlhe": "params/cand3_nlhe.json",
     "plo4": "params/cand_plo4.json",
     "plo5": "params/cand_plo5.json",
     "shortdeck": "params/cand_shortdeck.json",
