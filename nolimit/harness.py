@@ -88,16 +88,24 @@ def make_agent(entry, seed):
 
 
 def _run_job(job):
-    games, sng_kw = job
+    games, sng_kw = job[0], job[1]
+    log_labels = job[2] if len(job) > 2 else None
     out = []
+    logs = []
     for seats, seed in games:
         agents = [make_agent(e, seed * 31 + i) for i, e in enumerate(seats)]
-        sng = SNG(_W["variant"], agents, rng=random.Random(seed), evaluator=_W["tables"].ev, **sng_kw)
+        kw = dict(sng_kw, log_hands=True) if log_labels else sng_kw
+        sng = SNG(_W["variant"], agents, rng=random.Random(seed), evaluator=_W["tables"].ev, **kw)
         pts = sng.run()
         for i, e in enumerate(seats):
             tm = sng.timing[i]
             out.append((e["label"], pts[i], tm.count, tm.total, tm.max, tm.over, sng.errors[i], seed))
-    return out
+        if log_labels:
+            for r in sng.hand_log:
+                lab = seats[r["seat"]]["label"]
+                if lab in log_labels:
+                    logs.append(dict(r, label=lab, sng_seed=seed, points=pts[r["seat"]]))
+    return (out, logs) if log_labels else out
 
 
 def build_seatings(field, n_sngs, seed, fixed=(), n_seats=8, shuffle=True):
@@ -120,18 +128,29 @@ def make_pool(bundle=None, variant=None, workers=None):
                                         initargs=(bundle, variant))
 
 
-def run_games(games, bundle=None, variant=None, workers=None, sng_kw=None, chunk=8, pool=None, raw=False):
+def run_games(games, bundle=None, variant=None, workers=None, sng_kw=None, chunk=8, pool=None, raw=False,
+              log_labels=None):
+    """log_labels: per-hand records (engine log_hands) for the seats with these labels; then
+    returns (result, records). Off by default, so plain runs pay nothing for it."""
     sng_kw = sng_kw or {}
-    jobs = [(games[i:i + chunk], sng_kw) for i in range(0, len(games), chunk)]
+    if log_labels:
+        jobs = [(games[i:i + chunk], sng_kw, tuple(log_labels)) for i in range(0, len(games), chunk)]
+    else:
+        jobs = [(games[i:i + chunk], sng_kw) for i in range(0, len(games), chunk)]
     workers = workers or os.cpu_count()
     if pool is not None:
-        rows = [r for part in pool.imap_unordered(_run_job, jobs) for r in part]
+        parts = list(pool.imap_unordered(_run_job, jobs))
     elif workers <= 1:
         _init(bundle, variant)
-        rows = [r for j in jobs for r in _run_job(j)]
+        parts = [_run_job(j) for j in jobs]
     else:
         with make_pool(bundle, variant, workers) as p:
-            rows = [r for part in p.imap_unordered(_run_job, jobs) for r in part]
+            parts = list(p.imap_unordered(_run_job, jobs))
+    if log_labels:
+        rows = [r for part, _ in parts for r in part]
+        logs = [r for _, lg in parts for r in lg]
+        return (rows if raw else summarize(rows)), logs
+    rows = [r for part in parts for r in part]
     return rows if raw else summarize(rows)
 
 
