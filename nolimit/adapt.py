@@ -47,6 +47,11 @@ ARCHETYPES = (
     # prepped teams like us
     "prep_ev_t4", "prep_ev_t3", "prep_legacy", "prep_hyb",
 )
+BASE_ARCHETYPES = ARCHETYPES          # the "uniform" proposal covers these (fixed: saved records use it)
+# GitHub-modeled LLM-written bots (nolimit/rivals.py GITHUB_BOTS)
+GITHUB = ("gh_catscore", "gh_opus", "gh_tiers", "gh_flash", "gh_minnit", "gh_invstation", "gh_potodds",
+          "gh_mc1jam", "gh_ladder", "gh_shark", "gh_classifier", "gh_hobbyraise")
+ARCHETYPES = ARCHETYPES + GITHUB
 
 # Style groups: the unit random mixtures and drift work on.
 GROUPS = {
@@ -59,6 +64,7 @@ GROUPS = {
     "maniac": ("maniac", "lag", "bully", "rv_lag", "overbet", "barrel", "cbet", "sizer"),
     "broken": ("timeout", "flaky", "rv_buggy", "rv_frozen"),
     "mid": ("rv_mc", "rv_aggro", "rv_math", "mc"),
+    "github": GITHUB,
 }
 
 
@@ -99,8 +105,13 @@ SCENARIOS = {
     "rival_mid": _norm({"rv_mc": 1, "rv_aggro": 1, "rv_math": 1}),
     "strong_mixed": _norm({"rv_tag": 1, "rv_lag": 1, "rv_gto": 1, "rv_exploit": 1, "rv_icm": 1,
                            "prep_ev_t4": 1.5, "positional": 1, "barrel": 1}),
-    # broad proposal with full support: makes MIS reweighting to random mixtures possible
-    "uniform": _norm({k: 1 for k in ARCHETYPES}),
+    # GitHub-modeled LLM-written bots: the `github` field's weights, and the four where cand gains least
+    "github_heavy": _norm({k: (1.5 if k in ("gh_catscore", "gh_opus", "gh_tiers", "gh_flash", "gh_minnit",
+                                            "gh_mc1jam") else 1) for k in GITHUB}),
+    "github_tough": _norm({"gh_ladder": 2, "gh_flash": 2, "gh_hobbyraise": 2, "gh_potodds": 2, "gh_shark": 1,
+                           "rv_tag": 1}),
+    # broad proposal over the base styles: makes MIS reweighting to random mixtures possible
+    "uniform": _norm({k: 1 for k in BASE_ARCHETYPES}),
 }
 NAMED = tuple(k for k in SCENARIOS if k != "uniform")
 
@@ -329,6 +340,8 @@ class Pool:
     def weights(self, target):
         lw = [log_q(r["opps"], target) - lm for r, lm in zip(self.recs, self.lmix)]
         mx = max(lw)
+        if mx == -math.inf:
+            raise ValueError("no pooled SNG has positive probability under this mixture")
         w = [math.exp(x - mx) if x > -math.inf else 0.0 for x in lw]
         t = sum(w)
         return [x / t for x in w]

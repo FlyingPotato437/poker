@@ -66,7 +66,12 @@ def report(sched):
     names = list(adapt.PORTFOLIO)
     mat = {}
     for scn, mix in adapt.SCENARIOS.items():
-        w = pool.weights(mix)
+        try:
+            w = pool.weights(mix)
+        except ValueError:
+            continue              # no support in the pooled SNGs (see the additive model in event_sim.md)
+        if pool.ess(w) < 100:
+            continue
         pay, se, ess = pool.payoff(mix, FAIR)
         diffs = [paired_se(recs, w, j, 0) for j in range(len(names))]
         mat[scn] = {"xfair": dict(zip(names, pay)), "se": dict(zip(names, se)), "ess": ess,
@@ -82,20 +87,20 @@ def report(sched):
              "± paired se. ESS = effective SNGs behind each row after reweighting.", "",
              "| scenario | " + " | ".join(names) + " | best | gain vs cand | ESS |",
              "|---|" + "---|" * (len(names) + 3)]
-    for scn in adapt.SCENARIOS:
+    for scn in mat:
         m = mat[scn]
         best = max(names, key=lambda n: m["xfair"][n])
         lines.append(f"| {scn} | " + " | ".join(f"{m['xfair'][n]:.3f}" for n in names)
                      + f" | {best} | {100 * m['d_vs_cand'][best]:+.1f} ±{100 * m['d_se'][best]:.1f} | {m['ess']:.0f} |")
     lines += ["", "Paired difference vs cand, % of fair (± se):", "",
               "| scenario | " + " | ".join(names[1:]) + " |", "|---|" + "---|" * (len(names) - 1)]
-    for scn in adapt.SCENARIOS:
+    for scn in mat:
         m = mat[scn]
         lines.append(f"| {scn} | " + " | ".join(f"{100 * m['d_vs_cand'][n]:+.1f} ±{100 * m['d_se'][n]:.1f}"
                                                 for n in names[1:]) + " |")
     lines += ["", "Aggregate opponent stats (what a hand log gives):", "",
               "| scenario | " + " | ".join(adapt.STAT_KEYS) + " |", "|---|" + "---|" * len(adapt.STAT_KEYS)]
-    for scn in adapt.SCENARIOS:
+    for scn in mat:
         lines.append(f"| {scn} | " + " | ".join(f"{mat[scn]['stats'][k]:.3f}" for k in adapt.STAT_KEYS) + " |")
     open(os.path.join(OUT, f"matrix_{sched}.md"), "w").write("\n".join(lines) + "\n")
     print("\n".join(lines))

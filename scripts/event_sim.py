@@ -65,7 +65,10 @@ def weighted_score(xs):
 class Model:
     """Additive-in-opponents model of points (per strategy) and of hand-log counts per hand."""
 
-    def __init__(self, recs, lam=3.0):
+    def __init__(self, recs, lam=3.0, lam_d=500.0):
+        """lam: ridge on cand's per-seat values; lam_d: stronger ridge on the other strategies'
+        per-seat differences from cand (toward their pooled mean difference), so that a strategy
+        only beats cand vs an archetype when the data clearly say so."""
         X = np.zeros((len(recs), len(ARCH)))
         for i, r in enumerate(recs):
             for a in r["opps"]:
@@ -75,8 +78,14 @@ class Model:
         C = np.array([[r["counts"][k] for k in CNT] for r in recs], dtype=float) / H[:, None]
         # ridge toward a common per-seat value: center on the per-seat mean
         A = X.T @ X + lam * np.eye(len(ARCH))
-        m = Y.mean(0) / 7.0
-        self.beta = m[None, :] + np.linalg.solve(A, X.T @ (Y - 7.0 * m[None, :]))   # A x J
+        y0 = Y[:, :1]
+        m0 = y0.mean() / 7.0
+        b0 = m0 + np.linalg.solve(A, X.T @ (y0 - 7.0 * m0))                          # A x 1
+        D = Y - y0
+        md = D.mean(0) / 7.0
+        Ad = X.T @ X + lam_d * np.eye(len(ARCH))
+        bd = md[None, :] + np.linalg.solve(Ad, X.T @ (D - 7.0 * md[None, :]))         # A x J
+        self.beta = b0 + bd
         mc = C.mean(0) / 7.0
         self.gam = mc[None, :] + np.linalg.solve(A, X.T @ (C - 7.0 * mc[None, :]))  # A x CNT
         self.gam = np.maximum(self.gam, 1e-6)
@@ -213,11 +222,14 @@ class Knowledge:
         p = np.exp(ll)
         return p / p.sum()
 
-    def bayes_pick(self, post, exclude=None):
+    def bayes_pick(self, post, exclude=None, margin=0.01):
+        """Posterior-mean best strategy; leave cand only for an expected gain > margin."""
         e = post @ self.HP
         if exclude is not None:
             e[exclude] = -np.inf
-        return int(np.argmax(e))
+            return int(np.argmax(e))
+        j = int(np.argmax(e))
+        return j if e[j] - e[0] > margin else 0
 
 
 def run_policy(policy, K, P, S, practice_stats, world, obs_rng, cfg, obs_noise=None):
@@ -294,6 +306,17 @@ def pol_centroid(t, K, s, y, st, state, cfg):
     return K.centroid_pick(st[-1][0]) if st else 0
 
 
+def pol_station(vpip=0.35, pfr=0.12):
+    """One narrow level-2 rule: a loose-passive field (opponents' VPIP > vpip, PFR < pfr) ->
+    r2p0 (full exploit params, +7% in station_heavy); otherwise cand."""
+    def f(t, K, s, y, st, state, cfg):
+        if not st:
+            return 0
+        x = st[-1][0]
+        return NAMES.index("r2p0") if (x[0] > vpip and x[1] < pfr) else 0
+    return f
+
+
 def pol_bayes_l12(t, K, s, y, st, state, cfg):
     post = K.posterior(s, y, stats=st[-1:], sig_t=cfg["sig_t"], sig_b=cfg["sig_b_assumed"])
     return K.bayes_pick(post)
@@ -306,9 +329,11 @@ def policies(thr):
         "c_handoff_rule": pol_handoff(thr),
         "c2_bayes_L1": pol_bayes_l1,
         "d_classifier_L2": pol_clf(0.01),
+        "d3_classifier_L2_m3": pol_clf(0.03),
         "d2_centroid_L2": pol_centroid,
         "e_explore_L1": pol_explore,
         "g_bayes_L1+L2": pol_bayes_l12,
+        "h_station_rule_L2": pol_station(),
         "f_oracle": pol_oracle,
     }
 
@@ -454,6 +479,8 @@ def main():
     ap.add_argument("--sngs", type=int, default=300)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--val-events", type=int, default=2)
+    ap.add_argument("--val-scenarios", default="jammer_heavy,prepped_heavy,realistic")
+    ap.add_argument("--handoff-thr", type=float, default=0.15)
     args = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     t0 = time.time()
@@ -489,6 +516,15 @@ def main():
           "| scenario | level err | gain err | best direct | best model |", "|---|---|---|---|---|"]
     for scn, le, de, bd, bm in out["model_check"]:
         md.append(f"| {scn} | {100 * le:.1f}% | {100 * de:.1f}% | {NAMES[bd]} | {NAMES[bm]} |")
+    md += ["", "Truth-model x-fair per named scenario (all records; this is the matrix the event sim plays on):", "",
+           "| scenario | " + " | ".join(NAMES) + " | best | best − cand |", "|---|" + "---|" * (J + 2)]
+    full = Model(recs)
+    out["model_matrix"] = {}
+    for scn in adapt.NAMED:
+        p = full.payoff(vec(adapt.SCENARIOS[scn]))
+        out["model_matrix"][scn] = dict(zip(NAMES, p.tolist()))
+        md.append(f"| {scn} | " + " | ".join(f"{x:.3f}" for x in p) + f" | {NAMES[int(np.argmax(p))]} | "
+                  f"{100 * (p.max() - p[0]):+.1f}% |")
     configs = [
         ("main: practice 1000 hands, bias sd 5%, drift 8%/step", dict(practice_hands=args.practice_hands, sig_b=args.sig_b)),
         ("no practice, bias sd 5%", dict(practice_hands=0, sig_b=args.sig_b)),
