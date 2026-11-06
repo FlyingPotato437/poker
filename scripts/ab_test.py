@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from benchmark import FIELDS, PAYOUTS, SCHEDULES, rebundle  # noqa: E402
 from final_check import final_fields  # noqa: E402
 from nolimit.harness import build_seatings, make_pool, parse_entry, run_games  # noqa: E402
+from nolimit.rivals import whale_fields  # noqa: E402
 from nolimit.zoo import DEFAULT_FIELD_MIX, FRESH, HELD_OUT  # noqa: E402
 
 AB_FIELDS = dict(FIELDS)
@@ -42,6 +43,8 @@ AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startsw
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("llm")})
 # GitHub-bot designs (nolimit/rivals.py GITHUB_BOTS): evaluation fields, not in the default list.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("github")})
+# Whale tables (nolimit/rivals.py whale_fields): (mix, entries seated at every table), opt-in.
+AB_FIELDS.update(whale_fields())
 
 
 def paired(rows, a, b):
@@ -61,10 +64,11 @@ def main():
     ap.add_argument("--sngs", type=int, default=800)
     ap.add_argument("--workers", type=int, default=os.cpu_count())
     ap.add_argument("--fields", default=",".join(
-        k for k in AB_FIELDS if not k.startswith(("fresh", "gate-", "rival", "llm", "github"))))
+        k for k in AB_FIELDS if not k.startswith(("fresh", "gate-", "rival", "llm", "github", "whale"))))
     ap.add_argument("--payouts", default="default,top-heavy")
     ap.add_argument("--schedules", default="normal,fast")
     ap.add_argument("--seed", type=int, default=21)
+    ap.add_argument("--no-h2h", action="store_true", help="skip the 4 v 4 head-to-head cell")
     # The kit's rules on the day, instead of editing benchmark.py:
     ap.add_argument("--points", help="the kit's points 1st..last, e.g. 12,8,5,3,2,1,0,0 (replaces --payouts)")
     ap.add_argument("--keep-bundle", action="store_true", help="use --bundle's push/fold as is (already solved "
@@ -104,8 +108,11 @@ def main():
                 ea, eb = parse_entry(args.a), parse_entry(args.b)
                 ea["label"], eb["label"] = "A", "B"
                 for fname in args.fields.split(","):
-                    field = [parse_entry(k, w) for k, w in AB_FIELDS[fname].items()]
-                    base = build_seatings(field, args.sngs, args.seed, fixed=[{"label": "slot"}])
+                    spec, fixed = AB_FIELDS[fname], []
+                    if isinstance(spec, tuple):          # whale table: (mix, seated at every table)
+                        spec, fixed = spec[0], [parse_entry(x) for x in spec[1]]
+                    field = [parse_entry(k, w) for k, w in spec.items()]
+                    base = build_seatings(field, args.sngs, args.seed, fixed=[{"label": "slot"}] + fixed)
                     games = []
                     for seats, seed in base:
                         for e in (ea, eb):
@@ -118,6 +125,8 @@ def main():
                     total["n"] += 1
                     print(f"{pname:<10}{sname:<8}{fname:<16}{m:>+15.2f}{se:>7.2f}{100 * m / fair:>+14.1f}%   "
                           f"{errs[0]}/{errs[1]}", flush=True)
+                if args.no_h2h:
+                    continue
                 # head to head: 4 A + 4 B, replayed with every seat flipped
                 games = []
                 for g in range(args.sngs // 2):
