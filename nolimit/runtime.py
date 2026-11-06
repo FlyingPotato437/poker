@@ -7,6 +7,7 @@ postflop equity MLP, and everything falls back to pure Python without it.
 from __future__ import annotations
 
 import base64
+import bisect
 import gc
 import itertools
 import json
@@ -419,6 +420,7 @@ class Tables:
             self.bf = arrs["icm_bf"][0]
             self.bf_shares = meta["bf_shares"]
             self.bf_fracs = meta["bf_fracs"]
+            self._bf_mids = _midpoints(self.bf_shares)
         self._post_cache = {}
 
     # -- preflop ----------------------------------------------------------
@@ -607,8 +609,8 @@ class Tables:
             return None
         n = min(n, len(self.bf) // (len(self.bf_shares) ** 2 * len(self.bf_fracs)) + 1)
         sh = self.bf_shares
-        i = min(range(len(sh)), key=lambda k: abs(sh[k] - hero_share))
-        j = min(range(len(sh)), key=lambda k: abs(sh[k] - villain_share))
+        i = _nearest(sh, self._bf_mids, hero_share)
+        j = _nearest(sh, self._bf_mids, villain_share)
         fr = self.bf_fracs
         F = len(fr)
         base = (((n - 2) * len(sh) + i) * len(sh) + j) * F
@@ -618,6 +620,26 @@ class Tables:
                 t = (f - fr[k]) / (fr[k + 1] - fr[k])
                 return self.bf[base + k] * (1 - t) + self.bf[base + k + 1] * t
         return self.bf[base + F - 1]
+
+
+def _midpoints(grid):
+    return [(a + b) / 2 for a, b in zip(grid, grid[1:])]
+
+
+def _nearest(grid, mids, x):
+    """Index of the grid point nearest x, ties to the lower index: the same answer as
+    min(range(len(grid)), key=lambda k: abs(grid[k] - x)) for an ascending grid, in O(log n).
+    Bisecting the midpoints finds the cell; the neighbour checks redo the exact abs()
+    comparison so float rounding at a midpoint can't pick a different index. Far outside
+    the grid (or NaN) every distance can round to the same value, so scan as before."""
+    if not -4.0 < x < 4.0:
+        return min(range(len(grid)), key=lambda k: abs(grid[k] - x))
+    k = bisect.bisect_left(mids, x)
+    if k and abs(grid[k - 1] - x) <= abs(grid[k] - x):
+        return k - 1
+    if k + 1 < len(grid) and abs(grid[k + 1] - x) < abs(grid[k] - x):
+        return k + 1
+    return k
 
 
 class _LazyCurve:
