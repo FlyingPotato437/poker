@@ -4,9 +4,7 @@ Everything runs on the laptop, offline, from the repo root. `<adapter>` = your f
 copy of `adapter_template.py`. Details: `PLAYBOOK.md` (who does what), `VARIANTS.md` (rule
 types), `variants/ANNOUNCE.md` (every JSON key).
 
-**On the day the assistant is Codex, not Claude.** Codex reads `AGENTS.md` (the repo rules
-for an agent) by itself. `CODEX_PROMPTS.md` has one copy-paste prompt per step below, each with
-what to check in the answer.
+Codex: see AGENTS.md and CODEX_PROMPTS.md.
 
 ## T+0: write the rules down once
 
