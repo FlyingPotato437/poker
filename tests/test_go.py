@@ -24,9 +24,9 @@ def ok(raw):
 
 @pytest.mark.parametrize("name,preset,params", [
     ("examples/nlhe_points_ante.json", "nlhe", "params/cand_nlhe.json"),
-    ("examples/plo4.json", "plo4", "params/ev_t3.json"),
+    ("examples/plo4.json", "plo4", "params/cand_plo4.json"),
     ("examples/kit2_tahoe.json", None, "params/ev_t3.json"),
-    ("examples/custom_7plus_flush.json", None, "params/ev_t4.json"),
+    ("examples/custom_7plus_flush.json", None, "params/ev_t3.json"),
 ])
 def test_examples_resolve(name, preset, params):
     spec, _, _ = ok(load(name))
