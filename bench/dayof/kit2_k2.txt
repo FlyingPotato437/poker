@@ -1,0 +1,26 @@
+$ .venv/bin/python -m gpu.pushfold --bundle bundles/holdem3_rng.nlb --payouts 12,8,5,3,2,1,0,0 --out <dry-run copy>/bundles/day/k2.nlb --workers 2 --ante-bb 0.25
+push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.58
+wrote <dry-run copy>/bundles/day/k2.nlb (4.8 MB)
+$ .venv/bin/python scripts/package_bot.py --params params/cand_nlhe.json --adapter my_adapter.py --out <dry-run copy>/dist/day/k2.py --bundle <dry-run copy>/bundles/day/k2.nlb
+wrote <dry-run copy>/dist/day/k2.py (6.5 MB total)
+smoke ok: variant holdem3, tables Tables, numpy False, import 0.27s, worst decision 6.568 ms
+check numpy   : import 0.8s, peak memory 80.4 MB, 6399 decisions p99 0.385 ms, p99.9 6.564 ms, max 16.73 ms, over 1 ms 37, errors/illegal 0
+check no numpy: import 0.7s, peak memory 64.5 MB, 6217 decisions p99 6.469 ms, p99.9 19.355 ms, max 36.4 ms, over 1 ms 180, errors/illegal 0
+loaded <dry-run copy>/dist/day/k2.py in 0.59s
+game   1: seat p0  points  6.00  hands  85  decisions   97  max 12.297 ms
+game   2: seat p1  points 10.00  hands 126  decisions  115  max  8.383 ms
+game   3: seat p2  points  4.00  hands  87  decisions  101  max 11.267 ms
+game   4: seat p3  points 10.00  hands  93  decisions  132  max  3.288 ms
+game   5: seat p4  points 10.00  hands  78  decisions  132  max 11.106 ms
+game   6: seat p5  points  2.00  hands 111  decisions   42  max  3.543 ms
+game   7: seat p6  points  6.00  hands  80  decisions   86  max 10.028 ms
+game   8: seat p7  points  1.00  hands 145  decisions   11  max 13.340 ms
+game   9: seat p0  points 10.00  hands  95  decisions   85  max  2.288 ms
+game  10: seat p1  points  3.00  hands  58  decisions   72  max  8.927 ms
+10 games: 6.20 points per game (fair share 3.25); 873 decisions, 31 over 1.0 ms, 0 exceptions, 0 illegal
+$ .venv/bin/python scripts/freeze.py --tag k2 --files <dry-run copy>/dist/day/k2.py
+k2.py                                6.5 MB  87e7e759366f  params ['params/cand_nlhe.json']  bundle []  adapter other
+wrote <dry-run copy>/frozen/k2/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+built and froze k2 in 67s, sha 87e7e759366f. To submit: python scripts/day.py submit k2

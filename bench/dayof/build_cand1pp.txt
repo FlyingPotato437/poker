@@ -1,0 +1,15 @@
+$ .venv/bin/python -m gpu.pushfold --bundle bundles/nlhe_rng.nlb --payouts 100,65,45,30,20,12,6,0 --out <dry-run copy>/bundles/day/cand1pp.nlb --workers 2
+push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.76
+wrote <dry-run copy>/bundles/day/cand1pp.nlb (4.5 MB)
+$ .venv/bin/python scripts/package_bot.py --params params/cand_nlhe.json --adapter examples/adapter_mock_solution.py --out <dry-run copy>/dist/day/cand1pp.py --bundle <dry-run copy>/bundles/day/cand1pp.nlb --pure-python
+wrote <dry-run copy>/dist/day/cand1pp.py (6.1 MB total)
+smoke ok: variant nlhe, tables Tables, numpy False, import 0.51s, worst decision 14.630 ms
+check no numpy: import 0.57s, peak memory 62.7 MB, 6276 decisions p99 4.786 ms, p99.9 13.019 ms, max 21.95 ms, over 1 ms 93, errors/illegal 0
+40 SNGs: via mock kit 63.7 pts/table, direct 62.5 (similar numbers = adapter maps state correctly)
+decision parity: 6246/6246 identical to the bot fed our Obs directly
+$ .venv/bin/python scripts/freeze.py --tag cand1pp --files <dry-run copy>/dist/day/cand1pp.py
+cand1pp.py                           6.1 MB  81c33c1d264f  params ['params/cand_nlhe.json']  bundle ['bundles/nlhe_rng.nlb']  adapter other
+wrote <dry-run copy>/frozen/cand1pp/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+built and froze cand1pp in 125s, sha 81c33c1d264f. To submit: python scripts/day.py submit cand1pp

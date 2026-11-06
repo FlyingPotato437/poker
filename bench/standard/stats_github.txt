@@ -1,0 +1,164 @@
+## gh.jsonl  (400 SNGs)
+
+VPIP  48.7% (n=51165)  PFR  46.7% (n=51165)
+
+VPIP/PFR by table size and stack band:
+  full   60+bb: 32/31 (n=14733)  30-60bb: 39/38 (n=6006)  20-30bb: 46/45 (n=2001)  12-20bb: 49/48 (n=1091)  <=12bb: 66/65 (n=496)
+  short  60+bb: 50/48 (n=3988)  30-60bb: 54/52 (n=7137)  20-30bb: 58/57 (n=4588)  12-20bb: 59/58 (n=3029)  <=12bb: 78/73 (n=2687)
+  HU     60+bb: 68/63 (n=38)  30-60bb: 65/58 (n=971)  20-30bb: 63/55 (n=1385)  12-20bb: 62/57 (n=1430)  <=12bb: 80/74 (n=1585)
+
+RFI raise% (incl jam) [jam%] [limp%] by position x band:
+  UTG      60+bb:   31 [j0 l0] n=736  30-60bb:   51 [j0 l0] n=117  20-30bb:   67 [j0 l0] n=18
+  MP       60+bb:   37 [j0 l0] n=1300  30-60bb:   48 [j0 l0] n=402  20-30bb:   52 [j0 l0] n=123  12-20bb:   38 [j5 l0] n=42
+  LJ       60+bb:   42 [j0 l0] n=1727  30-60bb:   46 [j0 l0] n=759  20-30bb:   54 [j0 l0] n=292  12-20bb:   43 [j11 l0] n=108  <=12bb:   43 [j43 l0] n=14
+  HJ       60+bb:   49 [j0 l0] n=1918  30-60bb:   53 [j0 l0] n=1288  20-30bb:   55 [j0 l0] n=570  12-20bb:   45 [j17 l0] n=216  <=12bb:   48 [j48 l0] n=44
+  CO       60+bb:   58 [j0 l0] n=1712  30-60bb:   62 [j0 l0] n=1791  20-30bb:   65 [j0 l0] n=881  12-20bb:   53 [j20 l0] n=416  <=12bb:   66 [j66 l0] n=147
+  BTN      60+bb:   76 [j0 l0] n=1322  30-60bb:   80 [j0 l0] n=2056  20-30bb:   84 [j0 l0] n=1368  12-20bb:   71 [j33 l0] n=943  <=12bb:   84 [j84 l1] n=553
+  SB       60+bb:   85 [j0 l8] n=741  30-60bb:   89 [j0 l5] n=1131  20-30bb:   92 [j0 l3] n=849  12-20bb:   93 [j52 l2] n=787  <=12bb:   88 [j88 l7] n=1258
+  SB(HU)   60+bb:   89 [j0 l4] n=27  30-60bb:   83 [j0 l6] n=632  20-30bb:   80 [j0 l9] n=884  12-20bb:   76 [j39 l5] n=891  <=12bb:   83 [j83 l8] n=1145
+
+RFI raise% 6-8 handed only (compare to full-ring charts):
+  UTG      60+bb:   31 n=736  30-60bb:   51 n=117  20-30bb:   67 n=18
+  MP       60+bb:   37 n=1300  30-60bb:   48 n=402  20-30bb:   52 n=123
+  LJ       60+bb:   42 n=1727  30-60bb:   46 n=759  20-30bb:   54 n=292
+  HJ       60+bb:   50 n=1268  30-60bb:   57 n=572  20-30bb:   62 n=237
+  CO       60+bb:   57 n=884  30-60bb:   66 n=454  20-30bb:   76 n=170
+  BTN      60+bb:   77 n=602  30-60bb:   81 n=355  20-30bb:   89 n=123
+  SB       60+bb:   90 n=362  30-60bb:   90 n=248  20-30bb:   87 n=86
+
+open size (non-jam) 60+bb: median 2.84bb mean 2.85 n=5030
+open size (non-jam) 30-60bb: median 2.84bb mean 2.84 n=5581
+open size (non-jam) 20-30bb: median 2.84bb mean 2.84 n=3752
+open size (non-jam) 12-20bb: median 2.84bb mean 2.84 n=1259
+
+vs single open (no callers): 3bet% / call% / defend% by position x band:
+  MP       60+bb: 0/3/3 n=37
+  LJ       60+bb: 0/0/0 n=103  30-60bb: 0/4/4 n=28
+  HJ       60+bb: 0/0/0 n=203  30-60bb: 0/0/0 n=76  20-30bb: 0/0/0 n=13
+  CO       60+bb: 0/1/1 n=331  30-60bb: 0/1/1 n=109  20-30bb: 0/2/2 n=55  12-20bb: 0/0/0 n=24
+  BTN      60+bb: 1/1/2 n=394  30-60bb: 1/0/1 n=203  20-30bb: 3/0/3 n=78  12-20bb: 0/0/0 n=47  <=12bb: 0/0/0 n=10
+  SB       60+bb: 1/2/3 n=442  30-60bb: 0/2/2 n=320  20-30bb: 1/2/3 n=135  12-20bb: 0/0/0 n=100  <=12bb: 6/0/6 n=36
+  BB       60+bb: 1/24/26 n=479  30-60bb: 1/26/27 n=488  20-30bb: 2/27/29 n=225  12-20bb: 15/13/28 n=189  <=12bb: 26/0/26 n=167
+  BB(HU)   30-60bb: 0/34/34 n=80  20-30bb: 2/27/29 n=85  12-20bb: 27/12/39 n=110  <=12bb: 40/0/40 n=80
+  3bets 60+bb: jam share 0%, median size 3.1x open, n=15
+  3bets 30-60bb: jam share 0%, median size 3.0x open, n=8
+  3bets 20-30bb: jam share 50%, median size 4.4x open, n=10
+  3bets 12-20bb: jam share 100%, median size 10.2x open, n=58
+  3bets <=12bb: jam share 100%, median size 18.4x open, n=77
+
+BB defend% / 3bet% vs open size (no callers):
+  ('2.1-2.6x', '12-20bb'): defend 25% 3bet 8% n=12
+  ('2.1-2.6x', '20-30bb'): defend 37% 3bet 0% n=19
+  ('2.1-2.6x', '30-60bb'): defend 16% 3bet 0% n=32
+  ('2.1-2.6x', '60+bb'): defend 22% 3bet 0% n=18
+  ('2.6-3.5x', '12-20bb'): defend 24% 3bet 16% n=173
+  ('2.6-3.5x', '20-30bb'): defend 16% 3bet 2% n=186
+  ('2.6-3.5x', '30-60bb'): defend 17% 3bet 1% n=302
+  ('2.6-3.5x', '60+bb'): defend 17% 3bet 2% n=292
+  ('2.6-3.5x', '<=12bb'): defend 18% 3bet 18% n=131
+  ('>3.5x', '12-20bb'): defend 0% 3bet 0% n=32
+  ('>3.5x', '20-30bb'): defend 15% 3bet 8% n=39
+  ('>3.5x', '30-60bb'): defend 0% 3bet 0% n=54
+  ('>3.5x', '60+bb'): defend 7% 3bet 0% n=61
+  ('>3.5x', '<=12bb'): defend 2% 3bet 2% n=41
+  ('min(<=2.1x)', '12-20bb'): defend 63% 3bet 35% n=82
+  ('min(<=2.1x)', '20-30bb'): defend 74% 3bet 2% n=66
+  ('min(<=2.1x)', '30-60bb'): defend 58% 3bet 1% n=180
+  ('min(<=2.1x)', '60+bb'): defend 59% 3bet 0% n=112
+  ('min(<=2.1x)', '<=12bb'): defend 71% 3bet 71% n=72
+
+Facing 3bet after our open: fold% / 4bet%:
+  vs3b 60+bb: fold 63% 4bet/jam 3% n=485
+  vs3b 30-60bb: fold 65% 4bet/jam 7% n=391
+  vs3b 20-30bb: fold 65% 4bet/jam 10% n=252
+  vs3b 12-20bb: fold 64% 4bet/jam 24% n=74
+  vs3b_jam 60+bb: fold 93% 4bet/jam 0% n=169
+  vs3b_jam 30-60bb: fold 89% 4bet/jam 0% n=181
+  vs3b_jam 20-30bb: fold 88% 4bet/jam 0% n=156
+  vs3b_jam 12-20bb: fold 91% 4bet/jam 0% n=47
+
+BB vs limp: raise% 60+bb:  16.1% (n=1416)  30-60bb:  15.3% (n=1518)  20-30bb:  13.7% (n=1129)  12-20bb:  30.6% (n=1050)  <=12bb:  55.4% (n=981)
+
+SB first-in (folded to SB): raise / jam / limp / fold:
+  SB 60+bb: raise 85 jam 0 limp 8 fold 7 n=741
+  SB 30-60bb: raise 89 jam 0 limp 5 fold 6 n=1131
+  SB 20-30bb: raise 92 jam 0 limp 3 fold 5 n=849
+  SB 12-20bb: raise 41 jam 52 limp 2 fold 5 n=787
+  SB <=12bb: raise 0 jam 88 limp 7 fold 4 n=1258
+  SB(HU) 60+bb: raise 89 jam 0 limp 4 fold 7 n=27
+  SB(HU) 30-60bb: raise 83 jam 0 limp 6 fold 10 n=632
+  SB(HU) 20-30bb: raise 80 jam 0 limp 9 fold 11 n=884
+  SB(HU) 12-20bb: raise 37 jam 39 limp 5 fold 19 n=891
+  SB(HU) <=12bb: raise 0 jam 83 limp 8 fold 9 n=1145
+
+Call% vs a single all-in (no callers):
+  ('BB', '12-20bb'): 0% n=29
+  ('BB', '20-30bb'): 4% n=49
+  ('BB', '30-60bb'): 1% n=74
+  ('BB', '60+bb'): 2% n=90
+  ('BB', '<=12bb'): 30% n=33
+  ('BBvsSB', '<=12bb'): 40% n=20
+  ('BTN', '20-30bb'): 0% n=23
+  ('BTN', '30-60bb'): 0% n=54
+  ('BTN', '60+bb'): 0% n=97
+  ('CO', '20-30bb'): 0% n=13
+  ('CO', '30-60bb'): 0% n=29
+  ('CO', '60+bb'): 0% n=84
+  ('HJ', '30-60bb'): 0% n=10
+  ('HJ', '60+bb'): 0% n=36
+  ('HU', '<=12bb'): 54% n=24
+  ('LJ', '60+bb'): 0% n=26
+  ('SB', '12-20bb'): 0% n=27
+  ('SB', '20-30bb'): 0% n=47
+  ('SB', '30-60bb'): 0% n=112
+  ('SB', '60+bb'): 1% n=109
+  ('SB', '<=12bb'): 5% n=19
+
+Postflop:
+    c-bet ('HU', 'IP'):  71.6% (n=1510)
+    c-bet ('HU', 'OOP'):  61.5% (n=1024)
+    c-bet ('MW', 'IP'):  37.5% (n=96)
+    c-bet ('MW', 'OOP'):  51.8% (n=220)
+  flop c-bet HU  67.5% (n=2534)  MW  47.5% (n=316)
+    c-bet with 2 players:  67.5% (n=2534)
+    c-bet with 3 players:  49.0% (n=288)
+    c-bet with 4 players:  33.3% (n=27)
+    c-bet with 5 players:   0.0% (n=1)
+  c-bet size HU: median 0.66 pot, mean 1.08, <=40%: 36%  >=90%: 31%
+  c-bet size MW: median 0.66 pot, mean 0.69, <=40%: 41%  >=90%: 25%
+  fold to c-bet HU  89.0% (n=155)  MW  66.7% (n=3)   raise c-bet HU   1.3% (n=155)
+    fold to c-bet ('HU', '40-75%'):  85.7% (n=56)
+    fold to c-bet ('HU', '<=40%'):  76.9% (n=13)
+    fold to c-bet ('HU', '>75%'):  93.0% (n=86)
+    fold to c-bet ('MW', '40-75%'): 100.0% (n=2)
+    fold to c-bet ('MW', '<=40%'):   0.0% (n=1)
+  donk/lead into PFR (flop): HU  58.8% (n=662) MW  53.3% (n=45)
+  HU fold vs single bet by street x size (MDF = 1-b/(1+b) of pot frac b):
+    ('flop', '40-60%'): fold 71% n=390  (mean bet 0.51 pot; MDF-implied max fold 34%)
+    ('flop', '60-85%'): fold 75% n=288  (mean bet 0.72 pot; MDF-implied max fold 42%)
+    ('flop', '85-120%'): fold 84% n=178  (mean bet 0.99 pot; MDF-implied max fold 50%)
+    ('flop', '<=40%'): fold 72% n=43  (mean bet 0.35 pot; MDF-implied max fold 26%)
+    ('flop', '>120%'): fold 97% n=72  (mean bet 1.75 pot; MDF-implied max fold 64%)
+    ('flop', 'allin'): fold 93% n=256  (mean bet 29.37 pot; MDF-implied max fold 97%)
+    ('river', '40-60%'): fold 70% n=30  (mean bet 0.51 pot; MDF-implied max fold 34%)
+    ('river', '60-85%'): fold 77% n=116  (mean bet 0.71 pot; MDF-implied max fold 42%)
+    ('river', '85-120%'): fold 69% n=35  (mean bet 0.98 pot; MDF-implied max fold 50%)
+    ('river', '<=40%'): fold 82% n=11  (mean bet 0.33 pot; MDF-implied max fold 25%)
+    ('river', '>120%'): fold 83% n=12  (mean bet 1.37 pot; MDF-implied max fold 58%)
+    ('river', 'allin'): fold 47% n=57  (mean bet 0.77 pot; MDF-implied max fold 43%)
+    ('turn', '40-60%'): fold 70% n=180  (mean bet 0.51 pot; MDF-implied max fold 34%)
+    ('turn', '60-85%'): fold 67% n=123  (mean bet 0.72 pot; MDF-implied max fold 42%)
+    ('turn', '85-120%'): fold 68% n=63  (mean bet 0.99 pot; MDF-implied max fold 50%)
+    ('turn', '<=40%'): fold 55% n=22  (mean bet 0.34 pot; MDF-implied max fold 25%)
+    ('turn', '>120%'): fold 100% n=20  (mean bet 1.56 pot; MDF-implied max fold 61%)
+    ('turn', 'allin'): fold 62% n=48  (mean bet 2.59 pot; MDF-implied max fold 72%)
+  flop: fold vs bet HU  79.8% (n=1227)  raise   2.6% (n=1227)  bet when unbet HU  68.5% (n=6272) MW  39.9% (n=1732)  check-raise HU   0.0% (n=433)
+     bet size median 0.66 pot; all-in share 1%; buckets <=0.4:26% 0.4-0.8:44% 0.8-1.2:15% >1.2:15%
+  turn: fold vs bet HU  68.6% (n=456)  raise   2.4% (n=456)  bet when unbet HU  52.4% (n=3437) MW  20.8% (n=945)  check-raise HU   0.0% (n=173)
+     bet size median 0.33 pot; all-in share 2%; buckets <=0.4:55% 0.4-0.8:27% 0.8-1.2:7% >1.2:12%
+  river: fold vs bet HU  69.0% (n=261)  raise   6.9% (n=261)  bet when unbet HU  52.9% (n=2594) MW  27.2% (n=702)  check-raise HU   0.0% (n=137)
+     bet size median 0.50 pot; all-in share 23%; buckets <=0.4:48% 0.4-0.8:23% 0.8-1.2:8% >1.2:22%
+  HU river bets (all, n=1372): share with eq-vs-random <50% (air) 25%, <65% 45%
+  HU river bets (non-allin, n=1039): share with eq-vs-random <50% (air) 32%, <65% 58%
+  WTSD (of flops seen)  30.9% (n=9464)  W$SD  39.8% (n=2929)  won when our river bet/raise reached SD  61.2% (n=1094)
+

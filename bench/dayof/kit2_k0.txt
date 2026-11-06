@@ -1,0 +1,23 @@
+heuristic tables: no push/fold charts, so --points/--ante-bb do not apply
+$ .venv/bin/python scripts/package_bot.py --params <dry-run copy>/params/nlhe_final_legacy.json --adapter my_adapter.py --out <dry-run copy>/dist/day/k0.py --variant variants/day.json
+wrote <dry-run copy>/dist/day/k0.py (0.1 MB total)
+smoke ok: variant tahoe, tables HeuristicTables, numpy False, import 0.09s, worst decision 7.719 ms
+check numpy   : import 0.58s, peak memory 35.7 MB, 6230 decisions p99 0.136 ms, p99.9 5.471 ms, max 10.77 ms, over 1 ms 28, errors/illegal 0
+check no numpy: import 0.11s, peak memory 26.1 MB, 6064 decisions p99 0.116 ms, p99.9 7.389 ms, max 10.79 ms, over 1 ms 25, errors/illegal 0
+loaded <dry-run copy>/dist/day/k0.py in 0.13s
+game   1: seat p0  points  4.00  hands  93  decisions  113  max  0.645 ms
+game   2: seat p1  points 10.00  hands 126  decisions  125  max  4.822 ms
+game   3: seat p2  points  6.00  hands  98  decisions  105  max  0.436 ms
+game   4: seat p3  points  2.00  hands  86  decisions   70  max 11.068 ms
+game   5: seat p4  points  2.00  hands  92  decisions   35  max  8.647 ms
+game   6: seat p5  points  4.00  hands 111  decisions   97  max  0.701 ms
+game   7: seat p6  points  6.00  hands  91  decisions   94  max  2.520 ms
+game   8: seat p7  points 10.00  hands  70  decisions   79  max 10.534 ms
+game   9: seat p0  points  6.00  hands  78  decisions   74  max  0.121 ms
+game  10: seat p1  points  3.00  hands  61  decisions   45  max  2.894 ms
+10 games: 5.30 points per game (fair share 3.25); 837 decisions, 8 over 1.0 ms, 0 exceptions, 0 illegal
+$ .venv/bin/python scripts/freeze.py --tag k0 --files <dry-run copy>/dist/day/k0.py
+k0.py                                0.1 MB  bfbdf5a8d3d6  params ['params/nlhe_final_legacy.json']  bundle os.environ.setdefault('NOLIMIT_VARIANT', '{"name":"tahoe","ranks":"23456789TJQKA","suits":4,"n_hole":3,"streets":[3,1,1],"hole_used":2,"category_order":[0,1,2,3,4,5,6,7,8,9],"ace_low_straight":true}')  adapter other
+wrote <dry-run copy>/frozen/k0/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+built and froze k0 in 6s, sha bfbdf5a8d3d6. To submit: python scripts/day.py submit k0

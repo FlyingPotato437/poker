@@ -1,0 +1,17 @@
+A = prep:params/cand_plo5.json
+B = prep:params/ev_t3.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  gate-weak                 +6.61   1.39         +19.0%   0/0
+default   normal  gate-strong               +1.56   1.30          +4.5%   0/0
+default   normal  gate-mixed                +4.85   1.37         +13.9%   0/0
+default   normal  rival-real                +0.14   1.47          +0.4%   0/0
+default   normal  llm-bugs                  +1.91   1.33          +5.5%   0/0
+default   normal  h2h 4v4           A 0.950x fair
+default   fast    gate-weak                 +3.91   1.52         +11.3%   0/0
+default   fast    gate-strong               +2.34   1.18          +6.7%   0/0
+default   fast    gate-mixed                +3.55   1.42         +10.2%   0/0
+default   fast    rival-real                +2.70   1.30          +7.8%   0/0
+default   fast    llm-bugs                  +2.61   1.41          +7.5%   0/0
+default   fast    h2h 4v4           A 0.949x fair
+
+mean over 10 cells: A-B +8.69% of fair (±1.25)  [1097s]

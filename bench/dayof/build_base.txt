@@ -1,0 +1,16 @@
+$ .venv/bin/python -m gpu.pushfold --bundle bundles/nlhe_rng.nlb --payouts 100,65,45,30,20,12,6,0 --out <dry-run copy>/bundles/day/base.nlb --workers 2
+push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.76
+wrote <dry-run copy>/bundles/day/base.nlb (4.5 MB)
+$ .venv/bin/python scripts/package_bot.py --params params/ev_t4.json --adapter examples/adapter_mock_solution.py --out <dry-run copy>/dist/day/base.py --bundle <dry-run copy>/bundles/day/base.nlb
+wrote <dry-run copy>/dist/day/base.py (6.1 MB total)
+smoke ok: variant nlhe, tables Tables, numpy False, import 0.52s, worst decision 14.366 ms
+check numpy   : import 1.47s, peak memory 74.1 MB, 6646 decisions p99 0.851 ms, p99.9 18.185 ms, max 27.81 ms, over 1 ms 62, errors/illegal 0
+check no numpy: import 0.56s, peak memory 64.5 MB, 6528 decisions p99 1.567 ms, p99.9 16.649 ms, max 24.48 ms, over 1 ms 80, errors/illegal 0
+40 SNGs: via mock kit 63.2 pts/table, direct 60.6 (similar numbers = adapter maps state correctly)
+decision parity: 5717/5717 identical to the bot fed our Obs directly
+$ .venv/bin/python scripts/freeze.py --tag base --files <dry-run copy>/dist/day/base.py
+base.py                              6.1 MB  875a0940df9e  params ['params/ev_t3_hpre.json', 'params/ev_t4.json', 'params/rival_prep.json']  bundle ['bundles/nlhe_rng.nlb']  adapter other
+wrote <dry-run copy>/frozen/base/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+built and froze base in 123s, sha 875a0940df9e. To submit: python scripts/day.py submit base

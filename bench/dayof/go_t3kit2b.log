@@ -1,0 +1,73 @@
+[+00:00] go.py variants/examples/kit2_tahoe.json --adapter examples/answers/kit2_adapter.py --tag t3kit2b --variant-out variants/day_t3kit2.json --device cpu   (2026-11-06 04:29:44)
+[+00:00] Game: tahoe (high, no-limit)
+[+00:00]   deck 13 ranks 23456789TJQKA x 4 suits = 52 cards; 3 hole cards; board 3+1+1; exactly 2 hole + 3 board; ace low yes
+[+00:00]   ranking (weakest first): high < pair < two_pair < trips < straight < flush < full_house < quads < straight_flush < five_kind
+[+00:00]   -> NEW variant (no preset matches)
+[+00:00] Table: 8 players, stack 1500, 10 blind levels every 15 hands (10/20, 15/30, 25/50, 40/80, 60/120, 100/200, ...), hand cap 200
+[+00:00]   ante: every-player 5 chips -> push/fold solved at ante 0.0625 bb (ante 5 at level 40/80 (first level with stack <= 25 bb))
+[+00:00]   points 1st..last: 10,6,4,3,2,1,0,0
+[+00:00]   time limit 1 ms per decision
+[+00:00] Kit: raise-to, cards ints suit*13+rank, class PokerBot.get_move, submit as bot.py
+[+00:00] Params for v1: params/ev_t3.json (PARAMS_MAP new_variant.other)
+[+00:00] variant: writing variants/day_t3kit2.json
+[+00:00] $ /Users/revanthguda/poker/.venv/bin/python scripts/variant_stats.py --variant variants/day_t3kit2.json --samples 20000
+[+00:08]     tahoe: deck 52, 3 hole, board (3, 1, 1), hole_used=2
+[+00:08]     category          5-card freq  best at showdown   rank here (0 = weakest)
+[+00:08]     high                  50.610%            8.535%   0
+[+00:08]     pair                  41.870%           37.700%   1
+[+00:08]     two_pair               4.645%           31.260%   2
+[+00:08]     trips                  2.080%            7.720%   3
+[+00:08]     straight               0.435%            6.890%   4
+[+00:08]     flush                  0.170%            3.815%   5
+[+00:08]     full_house             0.150%            3.660%   6
+[+00:08]     quads                  0.040%            0.355%   7
+[+00:08]     straight_flush         0.000%            0.065%   8
+[+00:08]     five_kind              0.000%            0.000%   9
+[+00:08]     -> exit 0 after 9s
+[+00:08] tables: no bundle for this variant -> background build (fast profile, device cpu, v1 (no range net) in ~23 min, v2 (range net) in ~44 min; measured on a loaded machine, see DAYOF.md): bench/dayof/go_t3kit2b_tables.sh
+[+00:08]         progress: tail -f bench/dayof/go_t3kit2b_tables.log
+[+00:08]         started, pid 22738
+[+00:08] --- t3kit2b_v0: heuristic tables, exact rules (submittable while tables build) ---
+[+00:08] $ /Users/revanthguda/poker/.venv/bin/python scripts/day.py build t3kit2b_v0 --adapter examples/answers/kit2_adapter.py --sngs 20 --workers 3 --heuristic variants/day_t3kit2.json --params params/nlhe_final_legacy.json --kit-cmd '/Users/revanthguda/poker/.venv/bin/python examples/kit2/simulate.py {bot} --games 10'
+[+00:09]     heuristic tables: no push/fold charts, so --points/--ante-bb do not apply
+[+00:09]     $ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/nlhe_final_legacy.json --adapter examples/answers/kit2_adapter.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v0.py --variant variants/day_t3kit2.json
+[+00:09]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v0.py (0.1 MB total)
+[+00:18]     smoke ok: variant tahoe, tables HeuristicTables, numpy False, import 1.18s, worst decision 169.220 ms
+[+00:53]     check numpy   : import 7.29s, peak memory 32.9 MB, 3750 decisions p99 40.181 ms, p99.9 163.892 ms, max 240.22 ms, over 1 ms 208, errors/illegal 0
+[+01:18]     check no numpy: import 3.25s, peak memory 22.3 MB, 3859 decisions p99 28.35 ms, p99.9 165.572 ms, max 346.62 ms, over 1 ms 179, errors/illegal 0
+[+01:45]     loaded /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v0.py in 3.91s
+[+01:45]     game   1: seat p0  points  6.00  hands  89  decisions   97  max 113.864 ms
+[+01:45]     game   2: seat p1  points 10.00  hands  75  decisions   76  max 13.170 ms
+[+01:45]     game   3: seat p2  points 10.00  hands 116  decisions  129  max 256.615 ms
+[+01:45]     game   4: seat p3  points  2.00  hands  86  decisions   70  max 89.260 ms
+[+01:45]     game   5: seat p4  points  2.00  hands  90  decisions   35  max  0.383 ms
+[+01:45]     game   6: seat p5  points  4.00  hands 111  decisions   95  max 28.208 ms
+[+01:45]     game   7: seat p6  points  4.00  hands 134  decisions   88  max 181.733 ms
+[+01:45]     game   8: seat p7  points 10.00  hands  77  decisions   77  max  0.837 ms
+[+01:45]     game   9: seat p0  points  6.00  hands  78  decisions   75  max 199.728 ms
+[+01:45]     game  10: seat p1  points  3.00  hands  65  decisions   75  max 170.448 ms
+[+01:45]     
+[+01:45]     10 games: 5.70 points per game (fair share 3.25); 817 decisions, 48 over 1.0 ms, 0 exceptions, 0 illegal
+[+01:45]     
+[+01:45]     $ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t3kit2b_v0 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v0.py
+[+01:48]     t3kit2b_v0.py                        0.1 MB  bfbdf5a8d3d6  params ['params/nlhe_final_legacy.json']  bundle os.environ.setdefault('NOLIMIT_VARIANT', '{"name":"tahoe","ranks":"23456789TJQKA","suits":4,"n_hole":3,"streets":[3,1,1],"hole_used":2,"category_order":[0,1,2,3,4,5,6,7,8,9],"ace_low_straight":true}')  adapter other
+[+01:48]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t3kit2b_v0/MANIFEST.json
+[+01:49]     WARNING: more than 2 decisions per 1000 over 1 ms
+[+01:49]     
+[+01:49]     built and froze t3kit2b_v0 in 100s, sha bfbdf5a8d3d6. To submit: python scripts/day.py submit t3kit2b_v0
+[+01:49]     -> exit 0 after 101s
+[+01:49] *** t3kit2b_v0 READY: python scripts/day.py submit t3kit2b_v0 --as bot.py
+[+01:49] 
+[+01:49] === COPY THESE ===
+[+01:49] python scripts/day.py submit t3kit2b_v0 --as bot.py     # then upload dist/SUBMIT/bot.py
+[+01:49] # the background chain builds t3kit2b_v1 (tables, no range net, ETA ~23 min) and then t3kit2b_v2 (with the range net, ~44 min); progress: tail -f bench/dayof/go_t3kit2b_tables.log
+[+01:49] python scripts/day.py submit t3kit2b_v1 --as bot.py     # once the log says 't3kit2b_v1 ... built and froze'
+[+01:49] python scripts/day.py submit t3kit2b_v2 --as bot.py     # once it says 't3kit2b_v2 built' / GO_TABLES_DONE
+[+01:49] # if the chain stopped, build by hand (v1 needs bundles/day/<tag>_base.nlb, v2 the _base_rng one):
+[+01:49]   .venv/bin/python scripts/day.py build t3kit2b_v1 --adapter examples/answers/kit2_adapter.py --sngs 20 --workers 3 --bundle bundles/day/t3kit2b_base.nlb --params params/ev_t3.json --points 10,6,4,3,2,1,0,0 --ante-bb 0.0625 --kit-cmd '.venv/bin/python examples/kit2/simulate.py {bot} --games 10'
+[+01:49]   .venv/bin/python scripts/day.py build t3kit2b_v2 --adapter examples/answers/kit2_adapter.py --sngs 20 --workers 3 --bundle bundles/day/t3kit2b_base_rng.nlb --params params/ev_t3.json --points 10,6,4,3,2,1,0,0 --ante-bb 0.0625 --kit-cmd '.venv/bin/python examples/kit2/simulate.py {bot} --games 10'
+[+01:49] python scripts/day.py rollback                          # back to the previous submission (sha-checked)
+[+01:49] python scripts/day.py status                            # what is live
+[+01:49] # A/B gate, newest table bot vs the heuristic v0, kit rules (~400 paired SNGs; use the bundles/day/<tag>.nlb of the tag you test):
+[+01:49]   .venv/bin/python scripts/ab_test.py --bundle bundles/day/t3kit2b_v2.nlb --keep-bundle --a prep:params/ev_t3.json --b heur:params/nlhe_final_legacy.json --sngs 400 --workers 3 --points 10,6,4,3,2,1,0,0 --fields zoo,passive,aggressive --schedule 10/20,15/30,25/50,40/80,60/120,100/200,150/300,250/500,400/800,600/1200 --hands-per-level 15 --stack 1500 --ante 5 --max-hands 200
+[+01:49] log: bench/dayof/go_t3kit2b.log

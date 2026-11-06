@@ -1,6 +1,6 @@
 """Per-style x-fair for A and B, one seat vs 7 copies of each style, paired; normal and fast blinds.
 
-    python scripts/style_xfair.py prep:params/x_nlhe.json prep:params/ev_t4.json phase,raiseby 800 9812
+    python scripts/style_xfair.py prep:params/x_nlhe.json prep:params/ev_t4.json phase,raiseby 800 9812 [workers]
 """
 import math
 import os
@@ -22,7 +22,8 @@ def main():
     fair = sum(DEFAULT_PAYOUTS) / len(DEFAULT_PAYOUTS)
     ea, eb = parse_entry(a), parse_entry(b)
     ea["label"], eb["label"] = "A", "B"
-    pool = make_pool(os.path.join(ROOT, "bundles", "nlhe_rng.nlb"), None, 4)
+    workers = int(sys.argv[6]) if len(sys.argv) > 6 else 4
+    pool = make_pool(os.path.join(ROOT, "bundles", "nlhe_rng.nlb"), None, workers)
     print(f"A = {a}\nB = {b}\n{'blinds':<8}{'style':<12}{'A xfair':>9}{'±se':>6}{'B xfair':>9}{'±se':>6}{'A-B %fair':>11}{'±se':>6}")
     try:
         for hpl, sname in ((25, "normal"), (10, "fast")):

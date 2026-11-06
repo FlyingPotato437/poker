@@ -1,0 +1,12 @@
+wrote <dry-run copy>/dist/day/rc1k.py: frozen/rc1/nlhe_bot.py with adapter examples/adapter_mock_solution.py
+check numpy   : import 0.81s, peak memory 75.4 MB, 6493 decisions p99 0.468 ms, p99.9 8.415 ms, max 11.26 ms, over 1 ms 43, errors/illegal 0
+check no numpy: import 0.3s, peak memory 63.2 MB, 6976 decisions p99 0.759 ms, p99.9 13.607 ms, max 27.96 ms, over 1 ms 58, errors/illegal 0
+40 SNGs: via mock kit 63.2 pts/table, direct 60.6 (similar numbers = adapter maps state correctly)
+decision parity: 5717/5717 identical to the bot fed our Obs directly
+
+$ .venv/bin/python scripts/freeze.py --tag rc1k --files <dry-run copy>/dist/day/rc1k.py
+rc1k.py                              6.1 MB  fe6141db210c  params ['params/ev_t3_hpre.json', 'params/ev_t4.json', 'params/rival_prep.json']  bundle ['bundles/nlhe_rng.nlb']  adapter other
+wrote <dry-run copy>/frozen/rc1k/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+
+built and froze rc1k in 12s, sha fe6141db210c. To submit: python scripts/day.py submit rc1k

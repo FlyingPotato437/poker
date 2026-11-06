@@ -2,6 +2,7 @@
 
     python scripts/fuzz.py                       # every bundle in bundles/ + heuristic tables
     python scripts/fuzz.py --games 400 --no-numpy
+    python scripts/fuzz.py --params params/cand_nlhe.json   # tuned params (exploit, sh_open, ... paths)
 
 Layer 1 plays real SNGs under extreme setups (2-9 seats, 5-500 bb stacks, antes, odd
 blinds) with PrepBot in debug mode, so any internal exception fails loudly, and checks
@@ -18,6 +19,9 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+
+
+PARAMS = None    # --params: tuned params for every PrepBot (default: DEFAULT_PARAMS)
 
 
 class Violation(Exception):
@@ -66,11 +70,11 @@ def layer1(T, games, seed, worst):
         agents = []
         for i in range(n):
             if rng.random() < 0.5:
-                agents.append(Checked(T, seed=g * 10 + i, debug=True))
+                agents.append(Checked(T, PARAMS, seed=g * 10 + i, debug=True))
             else:
                 agents.append(ZOO[rng.choice(list(ZOO))](T, seed=g * 10 + i))
         if not any(isinstance(a, Checked) for a in agents):
-            agents[0] = Checked(T, seed=g, debug=True)
+            agents[0] = Checked(T, PARAMS, seed=g, debug=True)
         sng = SNG(T.v, agents, rng=random.Random(g), start_stack=stack, schedule=sched,
                   hands_per_level=rng.choice((5, 25)), max_hands=rng.choice((30, 200)), ante=ante,
                   payouts=sorted((rng.random() * 100 for _ in range(n)), reverse=True))
@@ -88,7 +92,7 @@ def layer2(T, n, seed, worst):
     from nolimit.runtime import CALL, FOLD, POST, RAISE, Obs, PrepBot
     rng = random.Random(seed)
     v = T.v
-    bot = PrepBot(T, seed=seed, debug=True)
+    bot = PrepBot(T, PARAMS, seed=seed, debug=True)
     for i in range(n):
         seats = rng.choice((2, 3, 6, 8, 9))
         me = rng.randrange(seats)
@@ -140,7 +144,14 @@ def main():
     ap.add_argument("--cases", type=int, default=20000, help="layer-2 random observations per table set")
     ap.add_argument("--no-numpy", action="store_true")
     ap.add_argument("--bundles", nargs="*")
+    ap.add_argument("--params", help="tuned params JSON for the fuzzed PrepBots")
+    ap.add_argument("--no-heuristic", action="store_true", help="skip the heuristic table sets")
     args = ap.parse_args()
+    global PARAMS
+    if args.params:
+        import json
+        with open(args.params) as fh:
+            PARAMS = json.load(fh)
     if args.no_numpy:
         os.environ["NOLIMIT_NO_NUMPY"] = "1"
     from nolimit.runtime import PRESETS, HeuristicTables, Tables, np
@@ -149,9 +160,9 @@ def main():
     for path in args.bundles or sorted(glob.glob(os.path.join(ROOT, "bundles", "*.nlb"))):
         with open(path, "rb") as fh:
             sets.append((os.path.basename(path), Tables(fh.read())))
-    for name in PRESETS:
+    for name in () if args.no_heuristic else PRESETS:
         sets.append((f"heuristic:{name}", HeuristicTables(name)))
-    print(f"numpy {'on' if np is not None else 'off'}; {len(sets)} table sets")
+    print(f"numpy {'on' if np is not None else 'off'}; {len(sets)} table sets; params {args.params or 'default'}")
     failed = 0
     for name, T in sets:
         worst = []
