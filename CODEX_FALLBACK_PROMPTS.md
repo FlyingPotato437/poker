@@ -14,7 +14,7 @@ self-contained, and each step ends in something you can submit.
 | 1 | 0–8 | always-legal check/fold bot, wired to the kit |
 | 2 | 8–18 | push/fold + opening bot (**submit this**) |
 | 3 | 18–28 | + postflop buckets (**submit**) |
-| 4 | 28–35 | + opponent stats and exploits (**submit**) |
+| 4 | 28–35 | + opponent stats and exploits (optional: measured gain ~0; do step 5 first if late) |
 | 5 | 35–45 | tests, speed check, final submit |
 | — | 45–60 | slack. Fix whatever the kit simulator shows. Don't add features. |
 
@@ -115,7 +115,7 @@ Run the kit simulator.
 <paste FALLBACK_SPEC.md §4 here>
 ```
 
-## Prompt 4: opponent model and exploits (spec §5)
+## Prompt 4: opponent model and exploits (spec §5, optional)
 
 Paste §5 after this:
 

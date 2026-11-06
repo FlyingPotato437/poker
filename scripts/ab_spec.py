@@ -61,7 +61,32 @@ class _SpecExactBoth(_SpecExactPost, _SpecExactPre):
     pass
 
 
+class _All:
+    def __contains__(self, _x):
+        return True
+
+    def add(self, _x):
+        pass
+
+
+class _SpecNoStats(SpecBot):
+    """Ablation: opponent stats never update (every rate stays at its prior)."""
+
+    def new_table(self, seat, n_seats):
+        super().new_table(seat, n_seats)
+        self.done = _All()
+
+
+class _SpecPreOnly(SpecBot):
+    """Ablation: the build-order step 2 bot, preflop only, postflop check/fold."""
+
+    def postflop(self, o):
+        return (1, 0) if o.to_call == 0 else (0, 0)
+
+
 H.ZOO["spec"] = _spec
+H.ZOO["spec_nostats"] = lambda tables=None, seed=None: _SpecNoStats(tables, seed=seed)
+H.ZOO["spec_preonly"] = lambda tables=None, seed=None: _SpecPreOnly(tables, seed=seed)
 H.ZOO["spec_xpost"] = lambda tables=None, seed=None: _SpecExactPost(tables, seed=seed)
 H.ZOO["spec_xpre"] = lambda tables=None, seed=None: _SpecExactPre(tables, seed=seed)
 H.ZOO["spec_xboth"] = lambda tables=None, seed=None: _SpecExactBoth(tables, seed=seed)

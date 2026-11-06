@@ -1,0 +1,15 @@
+A = spec
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  github            2.024    2.116    -3.18  1.62      -9.1%   0/0
+normal  llm-bugs          1.775    1.937    -5.63  1.39     -16.2%   0/0
+normal  rival-real        1.263    1.384    -4.20  1.48     -12.1%   0/0
+normal  gate-mixed        1.738    1.964    -7.84  1.48     -22.6%   0/0
+normal  h2h 4v4           0.929  (A's x fair with 4 A + 4 B)
+fast    github            1.712    1.761    -1.70  1.64      -4.9%   0/0
+fast    llm-bugs          1.496    1.625    -4.51  1.52     -13.0%   0/0
+fast    rival-real        1.086    1.146    -2.09  1.30      -6.0%   0/0
+fast    gate-mixed        1.495    1.655    -5.57  1.50     -16.0%   0/0
+fast    h2h 4v4           0.989  (A's x fair with 4 A + 4 B)
+
+mean over 8 cells: A 1.574x fair, B 1.699x fair, A-B -12.49% of fair (±1.52)  [2214s]

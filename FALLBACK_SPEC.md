@@ -10,12 +10,43 @@ The game assumed is NLHE: 8 seats, 2,000 chips, blinds 10/20 rising every 25 han
 200-hand cap with ICM, 1 ms per decision. For another variant, keep sections 0, 5 and 6, and
 replace the tables in section 1 (see the end of this file).
 
-**If time is short, build in this order:**
-1. Section 6 (safety), the push/fold charts (§2) and opening (§3). Stop there for a playable bot.
-2. Postflop buckets (§4).
-3. Opponent stats (§5).
+**If time is short, build in this order** (from the ablations below):
+1. Section 6 (safety), the push/fold charts (§2) and opening (§3). A preflop-only bot that
+   checks and folds postflop scores 1.35x fair.
+2. Postflop buckets **with the ADJ feature terms** (§4): +17% of fair over step 1. This is
+   the biggest single lever; the buckets without ADJ lose a further 12%.
+3. Opponent stats (§5): no measurable gain on these fields (−2 ±4%). Do this last, or skip it.
 
 Push/fold covers every decision at or below 21 bb, which is most of the second half of each table.
+
+## Measured (`scripts/ab_spec.py`, files in `bench/fallback/`)
+
+The spec bot against our full bot (`prep:params/ev_t4.json`): 800 paired SNGs per cell,
+default points, seed 9701. Both bots sit in the same seat against the same field and the same cards.
+
+| blinds | field | spec x fair | full bot x fair | spec − full, % of fair |
+|---|---|---|---|---|
+| normal | github | 2.02 | 2.12 | −9.1 ±4.7 |
+| normal | llm-bugs | 1.78 | 1.94 | −16.2 ±4.0 |
+| normal | rival-real | 1.26 | 1.38 | −12.1 ±4.3 |
+| normal | gate-mixed | 1.74 | 1.96 | −22.6 ±4.3 |
+| fast | github | 1.71 | 1.76 | −4.9 ±4.7 |
+| fast | llm-bugs | 1.50 | 1.63 | −13.0 ±4.4 |
+| fast | rival-real | 1.09 | 1.15 | −6.0 ±3.7 |
+| fast | gate-mixed | 1.50 | 1.66 | −16.0 ±4.3 |
+| | **mean** | **1.57** | **1.70** | **−12.5 ±1.5** |
+
+**Head-to-head** (4 spec + 4 full bots): spec 0.93x fair at normal blinds and 0.99x at fast.
+
+**Reading it:**
+- The spec bot keeps about 93% of the full bot's score against LLM-style fields.
+- `params/cand_nlhe.json` is a further +10% over ev_t4, so the gap to our newest bot is about 20%.
+
+**Where the rest goes** (seed 77, rival-real, 200 SNGs, `bench/fallback/diag_77.txt`):
+- **Postflop equity is most of it.** With the bundle's equity net in place of the buckets,
+  the spec bot gains 15% of fair; the ADJ terms recover most of that.
+- **The preflop range-equity fit costs nothing measurable.**
+- **The rules engine itself** (`nlhe_final_legacy` on exact tables) sits about 10% below the EV engine.
 
 ---
 

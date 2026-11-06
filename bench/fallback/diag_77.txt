@@ -1,0 +1,44 @@
+# Diagnostics: seed 77, 200 paired SNGs, normal blinds, vs prep:params/ev_t4.json.
+# Runs 1-4 use the buckets-only postflop (before the ADJ feature terms). Run 1 is spec, run 2 is
+# prep:nlhe_final_legacy (the same rules engine on exact tables), run 3 is spec_xpost (the bundle's
+# equity net postflop), and run 4 is spec_xboth (also the exact preflop eq table).
+# The last run is the final spec, with the ADJ terms.
+
+A = spec
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.146    1.452   -10.65  2.95     -30.6%   0/0
+normal  github            2.009    2.102    -3.24  2.93      -9.3%   0/0
+
+mean over 2 cells: A 1.577x fair, B 1.777x fair, A-B -19.98% of fair (±5.98)  [227s]
+A = prep:params/nlhe_final_legacy.json
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.355    1.452    -3.38  2.93      -9.7%   0/0
+normal  github            2.158    2.102    +1.94  2.95      +5.6%   0/0
+
+mean over 2 cells: A 1.756x fair, B 1.777x fair, A-B -2.07% of fair (±5.98)  [216s]
+
+[exited with code 0]
+A = spec_xpost
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.299    1.452    -5.31  2.95     -15.3%   0/0
+
+mean over 1 cells: A 1.299x fair, B 1.452x fair, A-B -15.27% of fair (±8.48)  [329s]
+A = spec_xboth
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.285    1.452    -5.79  2.98     -16.7%   0/0
+
+mean over 1 cells: A 1.285x fair, B 1.452x fair, A-B -16.66% of fair (±8.59)  [300s]
+
+[exited with code 0]
+A = spec
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.270    1.452    -6.34  3.10     -18.3%   0/0
+
+mean over 1 cells: A 1.270x fair, B 1.452x fair, A-B -18.26% of fair (±8.93)  [64s]
+
+[exited with code 0]

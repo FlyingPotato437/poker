@@ -1,0 +1,21 @@
+A = spec
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.278    1.417    -4.85  2.21     -14.0%   0/0
+normal  llm-bugs          1.770    1.951    -6.31  2.04     -18.1%   0/0
+
+mean over 2 cells: A 1.524x fair, B 1.684x fair, A-B -16.05% of fair (±4.33)  [206s]
+A = spec_nostats
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.277    1.417    -4.90  2.21     -14.1%   0/0
+normal  llm-bugs          1.811    1.951    -4.86  2.09     -14.0%   0/0
+
+mean over 2 cells: A 1.544x fair, B 1.684x fair, A-B -14.04% of fair (±4.38)  [198s]
+A = spec_preonly
+B = prep:params/ev_t4.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  rival-real        1.019    1.417   -13.85  2.17     -39.8%   0/0
+normal  llm-bugs          1.684    1.951    -9.29  1.93     -26.7%   0/0
+
+mean over 2 cells: A 1.352x fair, B 1.684x fair, A-B -33.29% of fair (±4.17)  [180s]
