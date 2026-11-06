@@ -31,6 +31,9 @@ try:
     if os.environ.get("NOLIMIT_NO_NUMPY"):
         raise ImportError("numpy disabled by NOLIMIT_NO_NUMPY")
     import numpy as np
+    # macOS Accelerate's matmul raises spurious divide/overflow/invalid flags on finite
+    # inputs; the warnings machinery then costs time inside decisions. Results are unchanged.
+    np.seterr(all="ignore")
 except Exception:  # numpy is optional at runtime
     np = None
 
