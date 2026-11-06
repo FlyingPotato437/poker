@@ -2,6 +2,7 @@
 
     python scripts/day.py build v0 --preset nlhe --points 100,65,45,30,20,12,6,0 --adapter my_adapter.py
     python scripts/day.py build v0 --heuristic variants/day.json --adapter my_adapter.py   # new variant, no tables yet
+    python scripts/day.py build rc1k --from-frozen rc1 --adapter my_adapter.py   # rc1 bytes + today's adapter
     python scripts/day.py submit v0              # puts the frozen file at dist/SUBMIT/<name>: upload that
     python scripts/day.py rollback               # back to the previously submitted tag
     python scripts/day.py status
@@ -111,6 +112,8 @@ def build(args):
     if os.path.exists(os.path.join(ROOT, "frozen", args.tag)):
         sys.exit(f"frozen/{args.tag} exists: tags are never overwritten, pick a new one")
     t0 = time.time()
+    if args.from_frozen:
+        return build_from_frozen(args, t0)
     if args.heuristic:      # no tables yet: rules engine on heuristic tables for the exact rules
         bundle = None
         params = args.params or os.path.join(ROOT, "params", "nlhe_final_legacy.json")
@@ -144,6 +147,33 @@ def build(args):
            "params": os.path.relpath(params, ROOT),
            "points": args.points, "ante_bb": args.ante_bb, "adapter": os.path.relpath(args.adapter, ROOT),
            "bytes": os.path.getsize(out), "checks": {}}
+    finish(args, out, rep, t0)
+
+
+def build_from_frozen(args, t0):
+    """The frozen file (runtime, params, tables: exact bytes) with only its adapter replaced."""
+    from freeze import with_adapter
+    rel = f"{args.preset}_bot.py"
+    src = os.path.join(ROOT, "frozen", args.from_frozen, rel)
+    for p in (src, args.adapter):
+        if not os.path.exists(p):
+            sys.exit(f"missing {p}")
+    if args.points or args.ante_bb or args.pure_python or args.params or args.bundle or args.heuristic:
+        print(f"--from-frozen keeps frozen/{args.from_frozen}/{rel} as it is: --points/--ante-bb/--params/"
+              "--bundle/--pure-python/--heuristic are ignored (push/fold stays at the placeholder points)")
+        args.points, args.ante_bb, args.pure_python = None, 0.0, False
+    os.makedirs(os.path.join(ROOT, "dist", "day"), exist_ok=True)
+    out = os.path.join(ROOT, "dist", "day", f"{args.tag}.py")
+    with open(out, "w") as fh:
+        fh.write(with_adapter(src, args.adapter))
+    print(f"wrote {out}: frozen/{args.from_frozen}/{rel} with adapter {args.adapter}")
+    rep = {"tag": args.tag, "bundle": f"frozen/{args.from_frozen}/{rel}", "params": f"frozen/{args.from_frozen}/{rel}",
+           "points": None, "ante_bb": 0.0, "adapter": os.path.relpath(args.adapter, ROOT),
+           "bytes": os.path.getsize(out), "checks": {}}
+    finish(args, out, rep, t0)
+
+
+def finish(args, out, rep, t0):
     for numpy in ((False,) if args.pure_python else (True, False)):
         c = check(out, args.sngs, numpy)
         rep["checks"]["numpy" if numpy else "no_numpy"] = c
@@ -247,6 +277,8 @@ def main():
                    "for a new variant while its tables build)")
     b.add_argument("--points", help="announced points 1st..8th, e.g. 100,65,45,30,20,12,6,0")
     b.add_argument("--ante-bb", type=float, default=0.0)
+    b.add_argument("--from-frozen", metavar="TAG", help="fallback: frozen/TAG/<preset>_bot.py byte for byte "
+                   "(its runtime, params and tables) with only the adapter swapped, e.g. --from-frozen rc1")
     b.add_argument("--adapter", required=True)
     b.add_argument("--pure-python", action="store_true")
     b.add_argument("--kit-cmd", help='shell command running the kit simulator on "{bot}"')
