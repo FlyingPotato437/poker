@@ -21,6 +21,9 @@ import zlib
 from array import array
 from operator import mul as _mul
 
+# Python 3.12+: one C call per dot product. Older Pythons use sum(map(mul, ...)).
+_sumprod = getattr(math, "sumprod", None)
+
 # Our matmuls are tiny; a multi-threaded BLAS only adds jitter (measured on a 2.1 GHz Xeon:
 # decisions over 1 ms dropped from 16-19 to 4-5 per 34k with one thread). This only takes
 # effect if the host hasn't imported numpy before us.
@@ -511,6 +514,8 @@ class Tables:
             o = h @ w3 + b3
             return (1.0 / (1.0 + np.exp(-np.clip(o, -60.0, 60.0)))).tolist()
         h2 = self._hidden(f, net or self.mlp)
+        if _sumprod is not None:
+            return [1.0 / (1.0 + _exp(-(b + _sumprod(h2, col)))) for b, col in zip(b3, w3)]
         return [1.0 / (1.0 + _exp(-(b + sum(map(_mul, h2, col))))) for b, col in zip(b3, w3)]
 
     @staticmethod
@@ -522,6 +527,11 @@ class Tables:
             if x:                       # features are sparse: only nonzero inputs contribute
                 xs.append(x)
                 rows.append(r)
+        if _sumprod is not None:
+            h = [b + _sumprod(xs, col) for b, col in zip(b1, zip(*rows))] if xs else list(b1)
+            h = [x if x > 0.0 else 0.0 for x in h]
+            h2 = [b + _sumprod(h, col) for b, col in zip(b2, w2)]
+            return [x if x > 0.0 else 0.0 for x in h2]
         h = [b + sum(map(_mul, xs, col)) for b, col in zip(b1, zip(*rows))] if xs else list(b1)
         h = [x if x > 0.0 else 0.0 for x in h]
         h2 = [b + sum(map(_mul, h, col)) for b, col in zip(b2, w2)]
@@ -656,7 +666,11 @@ class _LazyCurve:
     def __getitem__(self, j):
         v = self.vals[j]
         if v is None:
-            v = self.vals[j] = 1.0 / (1.0 + _exp(-(self.b3[j] + sum(map(_mul, self.h2, self.w3[j])))))
+            if _sumprod is not None:
+                z = _sumprod(self.h2, self.w3[j])
+            else:
+                z = sum(map(_mul, self.h2, self.w3[j]))
+            v = self.vals[j] = 1.0 / (1.0 + _exp(-(self.b3[j] + z)))
         return v
 
     def __len__(self):
