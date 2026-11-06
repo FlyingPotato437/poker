@@ -1,0 +1,13 @@
+A = prep:params/cand_nlhe.json
+B = prep:params/ev_t4.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  whale1                    +3.33   1.06          +9.6%   0/0
+default   normal  whale-mirror              +1.08   1.01          +3.1%   0/0
+default   normal  whale2                    +3.36   1.03          +9.7%   0/0
+default   normal  whale-br                  +2.97   0.99          +8.6%   0/0
+default   fast    whale1                    +2.62   0.98          +7.5%   0/0
+default   fast    whale-mirror              +0.11   0.95          +0.3%   0/0
+default   fast    whale2                    +0.61   0.94          +1.8%   0/0
+default   fast    whale-br                  +1.36   0.93          +3.9%   0/0
+
+mean over 8 cells: A-B +5.55% of fair (±1.00)  [731s]

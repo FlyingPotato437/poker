@@ -922,13 +922,14 @@ class SeatStats:
     # min-raises (min-bets) short of all-in; they flag degenerate bots (exploit "degen_n").
     __slots__ = ("hands", "vpip", "pfr", "shove", "faced", "folded", "aggr", "passive",
                  "bet_opp", "bets", "raised", "faced_ab", "folded_ab", "prior",
-                 "acts", "allin", "minr")
+                 "acts", "allin", "minr", "f3o", "f3f")
 
     def __init__(self):
         self.hands = self.vpip = self.pfr = self.shove = 0
         self.faced = self.folded = self.aggr = self.passive = 0
         self.bet_opp = self.bets = self.raised = self.faced_ab = self.folded_ab = 0
         self.acts = self.allin = self.minr = 0
+        self.f3o = self.f3f = 0      # preflop: faced a re-raise of our own raise / folded to it
         self.prior = PRIORS
 
     def rate(self, name):
@@ -991,6 +992,8 @@ def ingest_history(stats, history):
     bets = {}
     aggr = set()
     bb = inc = 1
+    praised = set()      # preflop raisers so far, to count fold to a re-raise
+    nraise = {}
     for seat, st, kind, amt, all_in in history:
         seen.add(seat)
         if st != street:
@@ -1015,9 +1018,16 @@ def ingest_history(stats, history):
             elif not all_in:
                 s.minr += 1
         if st == 0:
+            if seat in praised and cur > prev and nraise.get(seat, 0) < nraise.get(-1, 0):
+                s.f3o += 1
+                s.f3f += kind == FOLD
+                nraise[seat] = nraise[-1]
             if kind == RAISE:
                 vp.add(seat)
                 pr.add(seat)
+                praised.add(seat)
+                nraise[-1] = nraise.get(-1, 0) + 1
+                nraise[seat] = nraise[-1]
                 if all_in:
                     sh.add(seat)
             elif kind == CALL and amt > prev:
@@ -1194,6 +1204,7 @@ class PrepBot(BotBase):
         # the hand, so the bot exploits only when everyone it is up against looks exploitable.
         ex = self.p.pop("exploit", None)
         self._ex = ex
+        self._sg = None
         if ex:
             assert tuple(ex["feats"]) == EXPLOIT_FEATS, "exploit rule fitted on other features"
             # z = b0 + sum(bl * v + bq * v^2), v = (r - mu) / sd, expanded into a + b*r per rate.
@@ -1227,6 +1238,19 @@ class PrepBot(BotBase):
             self._ex_rec = float(ex.get("rec", 0.0))
             self._ex_rec_w = int(ex.get("rec_w", 30))
             self._ex_rec_z = float(ex.get("rec_z", 2.5))
+            # Optional strong-seat ("whale") mode, off when absent. A seat whose stats look
+            # near-equilibrium after n hands is flagged strong; pots with it play at lam 0 with
+            # extra caution (taxes below), pots without it while one sits at the table may play
+            # past the exploit params (boost), and a strong seat's measurable over-folding to
+            # 3-bets is attacked. Keys (defaults = no effect): n, p_max, vpip (lo, hi), pfr_r,
+            # agg (lo, hi), ftb (lo, hi), ai_max, boost, steal, shove, pf_tax, pre_tax, call_tax,
+            # cont, f3_thr, f3_k, f3_n, lam0.
+            sg = ex.get("strong")
+            self._sg = dict(sg) if sg else None
+            if sg and float(sg.get("boost", 0.0)) > 0:
+                t = 1.0 + float(sg["boost"])
+                self._ex_levels.append({k: (1 - t) * v + t * tgt[k] if isinstance(v, float) else tgt[k]
+                                        for k, v in self.p.items()})
         self._p_base = self.p
         self._rule = alt
         self._arms = [dict(self.p, **a["params"]) for a in alt["arms"]] if alt else []
@@ -1252,6 +1276,8 @@ class PrepBot(BotBase):
         self._ingested_keys = set()
         self._cls = None
         self._ex_cache = {}      # seat -> (hands seen, lam, degenerate kind, lam if still to act)
+        self._sg_cache = {}      # seat -> (hands seen, strong flag): strong-seat mode only
+        self._sg_in = ()         # strong seats that matter in the current decision
         self._ex_snap = [[] for _ in range(n_seats)]   # per seat: recent (hands, vpip, aggr, passive)
         self._nh = 0             # hands seen at this table (own count: hand ids may be anything)
         self._hn_seen = set()
@@ -1334,6 +1360,8 @@ class PrepBot(BotBase):
         self.seat = obs.seat
         if self._ex:
             self.p = self._ex_levels[self._ex_level(obs)]
+            if self._sg is not None:
+                self._sg_mark(obs)
         if self.p["cap_fade"] > 0:
             self._cap_fade()
         if obs.street == 0:
@@ -1439,6 +1467,56 @@ class PrepBot(BotBase):
             kind = 1
         self._ex_cache[s] = (st.hands, lam, kind, 1.0 - (1.0 - lam) * min(1.0, self._ex_rel_k * rates[0]) if self._ex_rel == 2 else lam)
         return lam
+
+    def _strong(self, s):
+        """Strong-seat flag of seat s (cached per hands seen): near-equilibrium stats."""
+        st = self.stats[s]
+        got = self._sg_cache.get(s)
+        if got is not None and got[0] == st.hands:
+            return got[1]
+        g = self._sg
+        flag = False
+        if st.hands >= g.get("n", 40):
+            r = _ex_rates(st)
+            c = self._ex_coef
+            z = c[0]
+            for (a, b), x in zip(c[1], r):
+                z += x * (a + b * x)
+            pe = 1.0 / (1.0 + math.exp(-_clamp(z, -30.0, 30.0)))
+            vlo, vhi = g.get("vpip", (0.0, 1.0))
+            alo, ahi = g.get("agg", (0.0, 1.0))
+            flo, fhi = g.get("ftb", (0.0, 1.0))
+            flag = (pe <= g.get("p_max", 1.0) and vlo <= r[0] <= vhi and r[1] >= g.get("pfr_r", 0.0) * r[0]
+                    and alo <= r[2] <= ahi and flo <= r[3] <= fhi
+                    and st.allin <= g.get("ai_max", 1.0) * max(st.acts, 1))
+        self._sg_cache[s] = (st.hands, flag)
+        return flag
+
+    def _sg_mark(self, obs):
+        """Strong seats that matter now: in the hand and (preflop) raised or still to act."""
+        me = obs.seat
+        out = []
+        if obs.street == 0:
+            acted, raisers = set(), set()
+            for h in obs.history:
+                if h[2] != POST:
+                    acted.add(h[0])
+                    if h[2] == RAISE:
+                        raisers.add(h[0])
+        for s, live in enumerate(obs.in_hand):
+            if live and s != me and self._strong(s):
+                if obs.street == 0 and s in acted and s not in raisers:
+                    continue
+                out.append(s)
+        self._sg_in = out
+        g = self._sg
+        if out:
+            if g.get("lam0", 0) and self.p is not self._ex_levels[0]:
+                self.p = self._ex_levels[0]
+        elif len(self._ex_levels) > EXPLOIT_LEVELS and self.p is self._ex_levels[EXPLOIT_LEVELS - 1]:
+            # every villain here exploitable while a strong seat sits at the table: push harder
+            if any(obs.stacks[s] > 0 and s != me and self._strong(s) for s in range(len(obs.stacks))):
+                self.p = self._ex_levels[EXPLOIT_LEVELS]
 
     def table_view(self):
         """Mean VPIP, PFR, aggression and fold-to-bet of the other seats seen so far, and the
@@ -1566,6 +1644,8 @@ class PrepBot(BotBase):
                 # Steal wider when the players left to act rarely play (crashed bots fold).
                 vp = sum(self.stats[s].rate("vpip") for s in behind) / len(behind)
                 thr = min(1.0, thr * (PRIORS["vpip"] / max(vp, 0.05)) ** (0.5 * p["steal_exploit"]))
+                if self._sg_in and not limpers:
+                    thr *= self._sg.get("steal", 1.0)
             if pct <= thr:
                 return self._raise(obs, p["open_bb"] * obs.bb + limpers * obs.bb)
             comp = p["sb_complete_pct"]
@@ -1586,12 +1666,22 @@ class PrepBot(BotBase):
             eq = eq ** (1 + 0.6 * (n_live - 1))
         pot_odds = obs.to_call / max(obs.pot + obs.to_call, 1)
         risk = obs.to_call >= obs.stacks[me]
-        if eq >= p["reraise_eq"] and len(raises) < 4 and obs.min_raise_to > 0:
+        rr_eq = p["reraise_eq"]
+        tax = 0.0
+        if self._sg_in and raiser in self._sg_in:
+            g = self._sg
+            tax = g.get("pre_tax", 0.0)
+            rs = self.stats[raiser]
+            if len(raises) == 1 and g.get("f3_k", 0.0) and rs.f3o >= g.get("f3_n", 8):
+                f3 = rs.f3f / rs.f3o
+                if f3 > g.get("f3_thr", 1.0):
+                    rr_eq -= g["f3_k"] * (f3 - g["f3_thr"])
+        if eq >= rr_eq and len(raises) < 4 and obs.min_raise_to > 0:
             target = cur_bet * p["reraise_mult"]
             if target >= 0.35 * my_total:
                 return self._shove(obs)
             return self._raise(obs, target)
-        if eq * p["pre_realize"] >= self._need(obs, raiser, pot_odds + (p["bust_tax"] if risk else 0.0)):
+        if eq * p["pre_realize"] >= self._need(obs, raiser, pot_odds + (p["bust_tax"] if risk else 0.0)) + tax:
             return (CALL, 0)
         return (FOLD, 0)
 
@@ -1609,6 +1699,8 @@ class PrepBot(BotBase):
                 call_rate = sum(self.stats[s].rate("vpip") for s in behind) / len(behind)
                 thr *= (PRIORS["vpip"] / max(call_rate, 0.05)) ** (0.5 * p["pf_exploit"])
             thr = _clamp(thr * p["pf_shove_scale"], 0.0, 1.0)
+            if self._sg_in and any(s in self._sg_in for s in behind):
+                thr *= self._sg.get("shove", 1.0)       # a strong seat behind calls correctly
             if obs.to_call == 0:
                 # Limped to the big blind: shove for value only.
                 return self._shove(obs) if pct <= thr * 0.6 else (CALL, 0)
@@ -1623,6 +1715,8 @@ class PrepBot(BotBase):
             return self._resteal(obs, cls, shover)
         spos = order.index(shover) if shover in order else 0
         need = self._need(obs, shover, None) + p["pf_margin"]
+        if self._sg_in and shover in self._sg_in:
+            need += self._sg.get("pf_tax", 0.0)
         if obs.to_call >= obs.stacks[me] and not getattr(T, "has_bf", False):
             need += p["bust_tax"]   # the bubble factor already prices elimination risk
         st = self.stats[shover]
@@ -1903,6 +1997,8 @@ class PrepBot(BotBase):
 
         facing = obs.to_call > 0
         cmul = p["raise_cont"] if facing else 1.0
+        sg_in = self._sg_in if self._sg is not None else ()
+        sg_c = self._sg.get("cont", 1.0) if sg_in else 1.0
 
         def ev_raise(R):
             R = min(R, max(stacks[s] + bets[s] for s in opps))   # excess comes back
@@ -1917,7 +2013,7 @@ class PrepBot(BotBase):
                     c = 1.0
                 else:
                     po = d / max(pot_after + d, 1)
-                    c = _clamp(self._cont(s, po, rngs[s]) * cmul, 0.02, 1.0)
+                    c = _clamp(self._cont(s, po, rngs[s]) * cmul * (sg_c if s in sg_in else 1.0), 0.02, 1.0)
                 q = eq_vs(s, min(1.0, c * p["call_width"])) * real
                 w = (1.0 - c) + c * q
                 W *= w
@@ -1948,6 +2044,8 @@ class PrepBot(BotBase):
             A = min(obs.to_call, stacks[me])
             best_ev, best = 0.0, (FOLD, 0)
             ev_call = P * W_now - A * (1.0 - W_now) * bf(A) - p["call_ev_margin"] * A
+            if sg_in and self._aggressor(obs) in sg_in:
+                ev_call -= self._sg.get("call_tax", 0.0) * A
             if ev_call > best_ev:
                 best_ev, best = ev_call, (CALL, 0)
             alt_ev = ev_call

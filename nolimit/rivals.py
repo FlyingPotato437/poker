@@ -814,6 +814,106 @@ class LlmFtsBluff(_LlmTag):
         return self._raise(obs, max(obs.bets) * 2.5) if eq >= k["nut"] else (CALL, 0)
 
 
+# ---------------------------------------------------------------------------
+# Strong-bot proxy ("whale"): what a near-equilibrium, well-tuned bot looks like.
+# ---------------------------------------------------------------------------
+
+class StrongEq(_Rival):
+    """Near-equilibrium proxy for a heavily-computed rival: ICM push/fold straight from the
+    solved charts, positional raise-or-fold opens with mixed borders, a linear-plus-bluff
+    3-bet range, and balanced postflop play: bet sizes drawn at random per spot, bluffs at
+    s / (1 + 2s) of the value bets for size s, defence by minimum defence frequency (with the
+    ICM price as a floor). It never adapts to opponents' stats (equilibrium bots don't), and
+    its equities are near-exact (no Monte Carlo noise to speak of)."""
+    ranged = True
+    rollouts = 4000
+    SPEC = {"pf_bb": (14, 16), "o7": (0.12, 0.14), "mix": (0.25, 0.4), "three": (0.03, 0.04),
+            "vflop": (0.62, 0.66), "vturn": (0.66, 0.70), "vriver": (0.70, 0.74), "def": (0.92, 1.0)}
+    OPEN = (0.50, 0.48, 0.40, 0.30, 0.24, 0.19, 0.16, 0.13)   # by players left behind (1 = SB)
+
+    def _behind(self, obs):
+        order = self._order(obs)
+        pos = order.index(obs.seat) if obs.seat in order else 0
+        return len(order) - pos - 1
+
+    def decide(self, obs):
+        k, r = self.k, self.rng
+        pct = self.T.pct(self.T.hole_class(obs.hole))
+        bb = obs.bb
+        if obs.street == 0:
+            if self._eff_bb(obs) <= k["pf_bb"]:
+                return self._pushfold(obs)
+            raises = self._raises(obs, 0)
+            nb = self._behind(obs)
+            if not raises:
+                limpers = sum(1 for h in obs.history if h[1] == 0 and h[2] == CALL and h[3] > 0)
+                if limpers:
+                    w = 0.10 if obs.to_call else 0.16
+                    if pct <= w or (pct <= 1.3 * w and r.random() < k["mix"]):
+                        return self._raise(obs, (3 + limpers) * bb)
+                    if obs.to_call == 0:
+                        return (CALL, 0)
+                    return (CALL, 0) if pct <= 0.22 and obs.to_call <= bb else (FOLD, 0)
+                if obs.to_call == 0:
+                    return (CALL, 0)
+                w = self.OPEN[min(nb, 7)] * (k["o7"] / 0.13 if nb >= 5 else 1.0)
+                if pct <= w or (pct <= 1.25 * w and r.random() < k["mix"]):
+                    return self._raise(obs, (2.2 + 0.3 * r.random()) * bb)
+                return (FOLD, 0)
+            opener = raises[0][0]
+            o_order = self._order(obs)
+            o_nb = len(o_order) - (o_order.index(opener) if opener in o_order else 0) - 1
+            y_open = self.OPEN[min(o_nb, 7)]            # assumes an equilibrium opener: no reads
+            n_r = len(raises)
+            if n_r == 1:
+                v3 = k["three"] * (1.0 + y_open)
+                if pct <= v3:
+                    return self._raise(obs, max(obs.bets) * (3.0 if nb else 3.6))
+                # bluff 3-bets: hands just outside the flatting range, mixed
+                if 2.2 * v3 < pct <= 3.2 * v3 and r.random() < 0.35:
+                    return self._raise(obs, max(obs.bets) * (3.0 if nb else 3.6))
+                eq = self._pre_eq(obs, y_open)
+                return (CALL, 0) if eq * 0.92 >= self._need(obs) + 0.02 else (FOLD, 0)
+            if n_r == 2:
+                if pct <= 0.022:
+                    return self._shove(obs) if self._eff_bb(obs) <= 40 else self._raise(obs, max(obs.bets) * 2.3)
+                if pct <= 0.03 and r.random() < 0.3:
+                    return self._shove(obs) if self._eff_bb(obs) <= 40 else self._raise(obs, max(obs.bets) * 2.3)
+                eq = self._pre_eq(obs, 0.06)
+                return (CALL, 0) if pct <= 0.07 and eq >= self._need(obs) else (FOLD, 0)
+            return (self._shove(obs) if pct <= 0.015 else (CALL, 0) if pct <= 0.025 else self._cf(obs))
+        eq = self._post_eq(obs)
+        st = obs.street
+        vthr = (k["vflop"], k["vturn"], k["vriver"])[min(st, 3) - 1]
+        n_v = len(self._villains(obs))
+        my_stack = obs.stacks[obs.seat]
+        if obs.to_call == 0:
+            s = r.choice((0.33, 0.66, 0.66, 1.0) if st == 1 else (0.5, 0.75, 1.0, 1.25))
+            if n_v > 1:
+                vthr += 0.06 * (n_v - 1)
+            if eq >= vthr:
+                if my_stack <= 1.2 * obs.pot:
+                    return self._shove(obs)
+                return self._raise(obs, s * obs.pot)
+            if n_v <= 2:
+                # bluffs : value = s / (1 + 2s); value share ~ (1 - vthr) / 0.4 of the range
+                share = (1.0 - vthr) / 0.4 * s / (1 + 2 * s)
+                lo, hi = (0.25, 0.45) if st < 3 else (0.0, 0.22)
+                if lo <= eq <= hi and r.random() < share / max(hi - lo, 0.05) * 0.4 / n_v:
+                    return self._raise(obs, s * obs.pot)
+            return (CALL, 0)
+        b = obs.to_call / max(obs.pot - obs.to_call, 1)
+        mdf = 1.0 / (1.0 + b)
+        need = self._need(obs)
+        if eq >= 0.86 or (eq <= 0.3 and st < 3 and r.random() < 0.05):
+            if r.random() < 0.6:
+                if my_stack <= 2.0 * obs.pot:
+                    return self._shove(obs)
+                return self._raise(obs, max(obs.bets) * (2.7 + 0.5 * r.random()))
+        thr = max(need - 0.04, (1.0 - mdf) * k["def"])
+        return (CALL, 0) if eq >= min(thr, need + 0.08) else (FOLD, 0)
+
+
 LLM_BUGS = {
     "phase": LlmPhase, "raiseby": LlmRaiseBy, "huequity": LlmHuEquity, "revsizer": LlmRevSizer,
     "limpjam": LlmLimpJam, "resteal": LlmResteal, "capclock": LlmCapClock, "ftsbluff": LlmFtsBluff,
@@ -2178,6 +2278,7 @@ RIVALS = {
     **LLM_BUGS,
     **GITHUB_BOTS,
     **EVENT_BOTS,
+    "strong_eq": StrongEq,
 }
 RIVAL_STRONG = ("rv_tag", "rv_lag", "rv_gto", "rv_exploit", "rv_icm")
 RIVAL_MID = ("rv_mc", "rv_aggro", "rv_math")
@@ -2196,4 +2297,28 @@ def rival_fields(prepped="prep:params/rival_prep.json"):
         "rival-real": {**strong, **{k: 0.6 for k in RIVAL_MID}, **{k: 0.4 for k in RIVAL_WEAK},
                        prepped: 0.5, "timeout": 0.2},
         "rival-oos": {k: 1 for k in RIVAL_HOLDOUT},
+    }
+
+
+WHALE_STRONG = "strong_eq"
+WHALE_MIRROR = "prep:params/whale_mirror.json"     # a copy of cand_nlhe ("same research, more of it")
+WHALE_BR = "prep:params/whale_br.json"             # best response tuned vs 7x cand_nlhe
+
+
+def whale_fields(prepped="prep:params/rival_prep.json"):
+    """Tables with one (or two) very strong rivals seated at every table, plus seats drawn
+    from a realistic mix (rival-real, LLM-bug and GitHub designs). Each value is
+    (weighted mix for the drawn seats, list of entries seated at every table)."""
+    rf = rival_fields(prepped)["rival-real"]
+    mix = {**rf, **{k: 0.35 for k in LLM_BUGS},
+           **{k: (0.5 if k in GITHUB_COMMON else 0.3) for k in GITHUB_BOTS}}
+    return {
+        "whale1": (mix, [WHALE_STRONG]),
+        "whale-mirror": (mix, [WHALE_MIRROR]),
+        "whale2": (mix, [WHALE_STRONG, WHALE_MIRROR]),
+        "whale-br": (mix, [WHALE_BR]),
+        # added after the main runs: the event-repo archetypes as the drawn seats
+        "whale-event": (dict(EVENT_WEIGHTS), [WHALE_STRONG]),
+        "whale-event-cfr": (dict(EVENT_WEIGHTS), ["ev_cfr_pushfold"]),
+        "whale-event-br": (dict(EVENT_WEIGHTS), [WHALE_BR]),
     }
