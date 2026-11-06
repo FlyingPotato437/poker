@@ -39,7 +39,7 @@ from nolimit.engine import DEFAULT_PAYOUTS, SNG  # noqa: E402
 from nolimit.harness import build_seatings, parse_entry  # noqa: E402
 from nolimit.runtime import CALL, FOLD, RAISE, BotBase  # noqa: E402
 from nolimit.zoo import FINAL_STRONG, FINAL_WEAK, OOS  # noqa: E402
-from nolimit.rivals import rival_fields  # noqa: E402
+from nolimit.rivals import llm_fields, rival_fields  # noqa: E402
 
 SCHEDULES = {"normal": 25, "fast": 10}
 ATTACKERS = {"nlhe": {"A": "prep:params/br_vs_ev_t4.json", "B": "prep:params/br_vs_legacy_same.json"}}
@@ -57,6 +57,7 @@ def final_fields(variant, attackers=None):
         "oos": {k: 1 for k in OOS},                  # out-of-sample: only with --fields oos, after choosing
     }
     f.update(rival_fields())                         # rival teams; rival-oos is sealed like oos
+    f.update(llm_fields())                           # LLM-bug designs: evaluation only, opt-in
     for who, spec in (ATTACKERS.get(variant, {}) if attackers is None else attackers).items():
         f[f"attack-on-{who}"] = {spec: 1}
     return f
@@ -210,7 +211,7 @@ def main():
     kit_paths = build_kit_files(args)
     fields = final_fields(args.variant, attackers)
     names = args.fields.split(",") if args.fields else [f for f in fields
-                                                          if f != "oos" and not f.startswith("rival")]
+                                                          if f != "oos" and not f.startswith(("rival", "llm"))]
     payouts = [float(x) for x in args.payouts.split(",")] if args.payouts else list(DEFAULT_PAYOUTS)
     fair = sum(payouts) / 8
     kit = {who: {"label": who, "kind": "kit"} for who in ("A", "B")}

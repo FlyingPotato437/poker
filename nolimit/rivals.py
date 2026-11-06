@@ -21,7 +21,7 @@ one-shot final test, after everything is frozen.
 import math
 
 from .runtime import CALL, FOLD, POST, RAISE, SeatStats, ingest_history
-from .zoo import _Base
+from .zoo import ManiacBot, NitBot, _Base
 
 
 def _clamp(x, lo, hi):
@@ -575,11 +575,263 @@ class HoldoutJam(_Rival):
         return (CALL, 0) if eq >= self._need(obs) + 0.02 else (FOLD, 0)
 
 
+# ---------------------------------------------------------------------------
+# LLM-bug designs (Nov 6): typical bugs and styles of a 60-minute LLM-written bot. Evaluation
+# only (fields llm-bugs, llm-bugs+prep), never in a tuning default. Every instance draws its
+# thresholds from SPEC like the rivals above; equity is MC-noisy vs random hands.
+# ---------------------------------------------------------------------------
+
+class _LlmTag(_Rival):
+    """Shared 'ask the LLM for a solid TAG' core: open/3-bet/flat by percentile, value-bet,
+    pot odds plus a margin. No position, no reads, no push/fold."""
+    rollouts = 100
+    TAG = {"open": (0.18, 0.26), "three": (0.04, 0.07), "flat": (0.10, 0.16), "vbet": (0.58, 0.66),
+           "vsize": (0.55, 0.75), "margin": (0.0, 0.06), "nut": (0.78, 0.86)}
+
+    def __init__(self, tables=None, seed=None):
+        self.SPEC = {**self.TAG, **type(self).SPEC}
+        super().__init__(tables, seed)
+
+    def _pct(self, obs):
+        return self.T.pct(self.T.hole_class(obs.hole))
+
+    def _send(self, obs, target):
+        """Raise to `target`; designs with a sizing bug override this."""
+        return self._raise(obs, target)
+
+    def tag_pre(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        if not self._raises(obs, 0):
+            if pct <= k["open"]:
+                return self._send(obs, 3 * obs.bb)
+            return (CALL, 0) if obs.to_call <= obs.bb // 2 + 1 and pct <= 0.35 else self._cf(obs)
+        if pct <= k["three"]:
+            return self._send(obs, max(obs.bets) * 3)
+        return (CALL, 0) if pct <= k["flat"] and self._po(obs) <= 0.4 else self._cf(obs)
+
+    def tag_post(self, obs):
+        k = self.k
+        eq = self._post_eq(obs)
+        if obs.to_call == 0:
+            return self._send(obs, k["vsize"] * obs.pot) if eq >= k["vbet"] else (CALL, 0)
+        if eq >= k["nut"]:
+            return self._send(obs, max(obs.bets) + obs.pot)
+        return (CALL, 0) if eq >= self._po(obs) + k["margin"] else (FOLD, 0)
+
+    def decide(self, obs):
+        return self.tag_pre(obs) if obs.street == 0 else self.tag_post(obs)
+
+
+class LlmPhase(_Rival):
+    """'Tight early, aggressive late' written as a hard switch: the nit until hand ~60 (or,
+    in half the instances, until its stack drops under ~15 bb), then the maniac."""
+    SPEC = {"switch_hand": (50, 70), "switch_bb": (12, 18)}
+
+    def __init__(self, tables=None, seed=None):
+        super().__init__(tables, seed)
+        self.by_stack = self.rng.random() < 0.5
+        self.nit = NitBot(tables, seed)
+        self.maniac = ManiacBot(tables, None if seed is None else seed + 1)
+        self.wild = False
+
+    def new_table(self, seat, n_seats):
+        super().new_table(seat, n_seats)
+        self.wild = False
+
+    def decide(self, obs):
+        if not self.wild:
+            if self.by_stack:
+                self.wild = obs.stacks[obs.seat] + obs.bets[obs.seat] < self.k["switch_bb"] * obs.bb
+            else:
+                self.wild = obs.hand_no >= self.k["switch_hand"]
+        return self.maniac.act(obs) if self.wild else self.nit.act(obs)
+
+
+class LlmRaiseBy(_LlmTag):
+    """TAG with the raise-by/raise-to mix-up: every raise is sent as max(bets) + 0.75 pot +
+    to_call (~1.5-2x the size meant). ~10% of the time the amount comes out under the
+    min-raise, which the host legalizes to a min-raise (done here, so the action is legal)."""
+    SPEC = {"frac": (0.65, 0.85), "short": (0.07, 0.13)}
+
+    def _send(self, obs, target):
+        if obs.min_raise_to <= 0:
+            return (CALL, 0)
+        if self.rng.random() < self.k["short"]:
+            return (RAISE, obs.min_raise_to)
+        return self._raise(obs, max(obs.bets) + self.k["frac"] * obs.pot + obs.to_call)
+
+
+class LlmHuEquity(_Rival):
+    """Monte Carlo vs exactly ONE random hand whatever the number of opponents, against pot
+    odds: overrates every hand multiway and calls far too wide."""
+    rollouts = 100
+    SPEC = {"raise": (0.62, 0.72), "bet": (0.55, 0.62), "size": (0.5, 0.9), "open": (0.55, 0.62)}
+
+    def decide(self, obs):
+        k = self.k
+        if obs.street == 0:
+            eq = self._noise(self.T.eq(self.T.hole_class(obs.hole), 1))
+            raised = bool(self._raises(obs, 0))
+            if eq >= k["raise"]:
+                return self._raise(obs, max(obs.bets) * 3 if raised else 3 * obs.bb)
+            if obs.to_call == 0:
+                return (CALL, 0)
+            if not raised:
+                return (CALL, 0) if eq >= k["open"] else (FOLD, 0)
+            return (CALL, 0) if eq >= self._po(obs) else (FOLD, 0)
+        eq = self._noise(self.T.post_equity(obs.hole, obs.board)[0])
+        if eq >= k["raise"] + 0.1:
+            return self._raise(obs, max(obs.bets) + k["size"] * obs.pot)
+        if obs.to_call == 0:
+            return self._raise(obs, k["size"] * obs.pot) if eq >= k["bet"] else (CALL, 0)
+        return (CALL, 0) if eq >= self._po(obs) else (FOLD, 0)
+
+
+class LlmRevSizer(_LlmTag):
+    """Sizing written backwards: bets 1.2x pot with weak hands (equity < ~0.35), a third of
+    pot with strong ones (> ~0.7), checks the middle. Calls by pot odds."""
+    SPEC = {"lo": (0.30, 0.40), "hi": (0.66, 0.74)}
+
+    def decide(self, obs):
+        if obs.street == 0:
+            return self.tag_pre(obs)
+        k = self.k
+        eq = self._post_eq(obs)
+        if obs.to_call == 0:
+            if eq < k["lo"]:
+                return self._raise(obs, 1.2 * obs.pot)
+            if eq > k["hi"]:
+                return self._raise(obs, 0.33 * obs.pot)
+            return (CALL, 0)
+        return (CALL, 0) if eq >= self._po(obs) + k["margin"] else (FOLD, 0)
+
+
+class LlmLimpJam(_LlmTag):
+    """Open-limps the top ~40%; when raised, jams the top ~15% at <= ~30 bb, else calls the
+    top ~25%. TAG postflop."""
+    SPEC = {"limp": (0.35, 0.45), "jam": (0.12, 0.18), "call": (0.22, 0.28), "jam_bb": (27, 33)}
+
+    def decide(self, obs):
+        if obs.street != 0:
+            return self.tag_post(obs)
+        k = self.k
+        pct = self._pct(obs)
+        if not self._raises(obs, 0):
+            return (CALL, 0) if pct <= k["limp"] else self._cf(obs)
+        if self._eff_bb(obs) <= k["jam_bb"]:
+            return self._shove(obs) if pct <= k["jam"] else self._cf(obs)
+        return (CALL, 0) if pct <= k["call"] else self._cf(obs)
+
+
+class LlmResteal(_LlmTag):
+    """Tracks every opener's PFR; vs an open from a seat raising > ~30%, jams the top ~25%
+    from the blinds or button at <= ~25 bb, else folds to the open (3-bets only the top
+    ~4%). TAG otherwise."""
+    SPEC = {"pfr_thr": (0.27, 0.33), "range": (0.22, 0.28), "max_bb": (22, 28), "premium": (0.03, 0.05)}
+
+    def decide(self, obs):
+        if obs.street != 0:
+            return self.tag_post(obs)
+        k = self.k
+        raises = self._raises(obs, 0)
+        if len(raises) != 1:
+            return self.tag_pre(obs)
+        pct = self._pct(obs)
+        if pct <= k["premium"]:
+            return self._raise(obs, max(obs.bets) * 3)
+        posts = [h[0] for h in obs.history if h[2] == POST]
+        steal_seat = obs.seat == obs.button or obs.seat in posts
+        if steal_seat and pct <= k["range"] and self._eff_bb(obs) <= k["max_bb"] \
+                and self._rate(raises[0][0], "pfr") > k["pfr_thr"]:
+            return self._shove(obs)
+        return self._cf(obs)
+
+
+class LlmCapClock(_LlmTag):
+    """Plays for the 200-hand cap: TAG until hand ~170, then folds all but the top ~3% when
+    above the table's average stack, and shoves the top ~35% when below it."""
+    SPEC = {"clock": (160, 180), "tight": (0.02, 0.04), "loose": (0.30, 0.40)}
+
+    def decide(self, obs):
+        k = self.k
+        if obs.hand_no < k["clock"]:
+            return self.tag_pre(obs) if obs.street == 0 else self.tag_post(obs)
+        alive = [obs.stacks[s] + obs.bets[s] for s in range(len(obs.stacks))
+                 if obs.stacks[s] + obs.bets[s] > 0 or obs.in_hand[s]]
+        above = obs.stacks[obs.seat] + obs.bets[obs.seat] > sum(alive) / max(len(alive), 1)
+        if obs.street == 0:
+            return self._shove(obs) if self._pct(obs) <= (k["tight"] if above else k["loose"]) else self._cf(obs)
+        if above:
+            return self._shove(obs) if self._post_eq(obs) >= 0.8 else self._cf(obs)
+        return self.tag_post(obs)
+
+
+def _pair_or_draw(v, hole, board):
+    """Any pair (pocket or with the board), or a 4-flush / 4-straight that uses a hole card."""
+    S = v.suits
+    hr = {c // S for c in hole}
+    br = {c // S for c in board}
+    if len(hr) < len(hole) or hr & br:
+        return True
+    cards = list(hole) + list(board)
+    for su in {c % S for c in hole}:
+        if sum(1 for c in cards if c % S == su) >= 4:
+            return True
+    ace = v.R - 1
+    ranks = hr | br | ({-1} if ace in hr | br else set())
+    mine = hr | ({-1} if ace in hr else set())
+    for lo in range(-1, v.R - 4):
+        win = set(range(lo, lo + 5))
+        if len(win & ranks) >= 4 and win & mine:
+            return True
+    return False
+
+
+class LlmFtsBluff(_LlmTag):
+    """Fit-or-fold flop, give-up later: c-bets 100% of flops as the preflop raiser, calls any
+    flop bet with any pair or draw, then gives up on the turn and river unless equity > ~0.6."""
+    SPEC = {"cb": (0.5, 0.75), "give": (0.57, 0.63)}
+
+    def decide(self, obs):
+        if obs.street == 0:
+            return self.tag_pre(obs)
+        k = self.k
+        eq = self._post_eq(obs)
+        if obs.street == 1:
+            if obs.to_call == 0:
+                if self._pfr_seat(obs) == obs.seat or eq >= k["vbet"]:
+                    return self._raise(obs, k["cb"] * obs.pot)
+                return (CALL, 0)
+            if eq >= k["nut"]:
+                return self._raise(obs, max(obs.bets) * 3)
+            return (CALL, 0) if _pair_or_draw(self.T.v, obs.hole, obs.board) else (FOLD, 0)
+        if eq <= k["give"]:
+            return self._cf(obs)
+        if obs.to_call == 0:
+            return self._raise(obs, 0.66 * obs.pot)
+        return self._raise(obs, max(obs.bets) * 2.5) if eq >= k["nut"] else (CALL, 0)
+
+
+LLM_BUGS = {
+    "phase": LlmPhase, "raiseby": LlmRaiseBy, "huequity": LlmHuEquity, "revsizer": LlmRevSizer,
+    "limpjam": LlmLimpJam, "resteal": LlmResteal, "capclock": LlmCapClock, "ftsbluff": LlmFtsBluff,
+}
+
+
+def llm_fields(prepped="prep:params/rival_prep.json"):
+    """Evaluation fields of LLM-bug designs: 7 opponents per table drawn by weight, as in
+    rival_fields. Never in a tuning default. +prep adds a prepped copy (~0.9 seats a table)."""
+    base = {k: 1 for k in LLM_BUGS}
+    return {"llm-bugs": base, "llm-bugs+prep": {**base, prepped: 1.2}}
+
+
 RIVALS = {
     "rv_tag": RivalTag, "rv_lag": RivalLag, "rv_gto": RivalGto, "rv_exploit": RivalExploit,
     "rv_icm": RivalIcm, "rv_mc": RivalMc, "rv_aggro": RivalAggro, "rv_math": RivalMath,
     "rv_buggy": RivalBuggy, "rv_frozen": RivalFrozen,
     "rvh_sizer": HoldoutSizer, "rvh_bayes": HoldoutBayes, "rvh_jam": HoldoutJam,
+    **LLM_BUGS,
 }
 RIVAL_STRONG = ("rv_tag", "rv_lag", "rv_gto", "rv_exploit", "rv_icm")
 RIVAL_MID = ("rv_mc", "rv_aggro", "rv_math")
