@@ -1,0 +1,32 @@
+numpy on; 30 table sets; params params/cand_nlhe.json
+  ok   holdem3.nlb                    9,453 decisions  p99.9 12.642 ms  max 21.654 ms
+  ok   holdem3_quick.nlb              9,417 decisions  p99.9 10.911 ms  max 22.306 ms
+  ok   holdem3_rng.nlb                8,774 decisions  p99.9 13.370 ms  max 30.165 ms
+  ok   nlhe.nlb                       9,306 decisions  p99.9 13.765 ms  max 72.638 ms
+  ok   nlhe_cuda_quick.nlb            9,456 decisions  p99.9 11.120 ms  max 23.653 ms
+  ok   nlhe_h128.nlb                  9,936 decisions  p99.9 11.462 ms  max 37.168 ms
+  ok   nlhe_medium.nlb                9,966 decisions  p99.9 10.906 ms  max 19.361 ms
+  ok   nlhe_quick.nlb                 9,443 decisions  p99.9 10.905 ms  max 18.217 ms
+  ok   nlhe_rng.nlb                   8,776 decisions  p99.9 12.774 ms  max 21.085 ms
+  ok   plo4.nlb                       9,879 decisions  p99.9 11.341 ms  max 35.438 ms
+  ok   plo4_quick.nlb                 8,888 decisions  p99.9 10.251 ms  max 13.586 ms
+  ok   plo4_rng.nlb                   8,599 decisions  p99.9 11.160 ms  max 16.003 ms
+  ok   plo5.nlb                       9,936 decisions  p99.9 10.666 ms  max 17.364 ms
+  ok   plo5_rng.nlb                   8,292 decisions  p99.9 13.776 ms  max 51.005 ms
+  ok   royal.nlb                     10,460 decisions  p99.9 10.577 ms  max 62.536 ms
+  ok   royal_quick.nlb               10,165 decisions  p99.9 8.905 ms  max 14.321 ms
+  ok   royal_rng.nlb                  9,033 decisions  p99.9 11.540 ms  max 18.497 ms
+  ok   shortdeck.nlb                 10,472 decisions  p99.9 12.301 ms  max 22.731 ms
+  ok   shortdeck_quick.nlb           10,946 decisions  p99.9 10.166 ms  max 16.640 ms
+  ok   shortdeck_rng.nlb              8,232 decisions  p99.9 13.716 ms  max 68.982 ms
+  ok   shortdeck_triton.nlb          10,440 decisions  p99.9 11.371 ms  max 53.682 ms
+  ok   shortdeck_triton_rng.nlb       9,212 decisions  p99.9 11.278 ms  max 18.410 ms
+  ok   heuristic:nlhe                 9,549 decisions  p99.9 9.770 ms  max 13.742 ms
+  ok   heuristic:shortdeck            9,454 decisions  p99.9 12.940 ms  max 28.798 ms
+  ok   heuristic:shortdeck_triton     9,195 decisions  p99.9 9.218 ms  max 13.361 ms
+  ok   heuristic:plo4                 9,249 decisions  p99.9 10.261 ms  max 16.855 ms
+  ok   heuristic:plo5                 7,486 decisions  p99.9 10.603 ms  max 14.069 ms
+  ok   heuristic:holdem3              8,987 decisions  p99.9 9.973 ms  max 15.617 ms
+  ok   heuristic:royal                7,594 decisions  p99.9 9.038 ms  max 13.420 ms
+  ok   heuristic:pineapple_nodiscard   8,987 decisions  p99.9 10.583 ms  max 18.912 ms
+exit 0

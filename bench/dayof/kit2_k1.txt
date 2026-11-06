@@ -1,0 +1,23 @@
+heuristic tables: no push/fold charts, so --points/--ante-bb do not apply
+$ .venv/bin/python scripts/package_bot.py --params params/cand_nlhe.json --adapter my_adapter.py --out <dry-run copy>/dist/day/k1.py --variant variants/day.json
+wrote <dry-run copy>/dist/day/k1.py (0.1 MB total)
+smoke ok: variant tahoe, tables HeuristicTables, numpy False, import 0.09s, worst decision 29.985 ms
+check numpy   : import 0.58s, peak memory 36.6 MB, 6387 decisions p99 0.232 ms, p99.9 10.337 ms, max 35.13 ms, over 1 ms 33, errors/illegal 0
+check no numpy: import 0.15s, peak memory 27.7 MB, 6239 decisions p99 0.155 ms, p99.9 8.676 ms, max 13.45 ms, over 1 ms 34, errors/illegal 0
+loaded <dry-run copy>/dist/day/k1.py in 0.15s
+game   1: seat p0  points 10.00  hands  88  decisions   88  max  0.244 ms
+game   2: seat p1  points 10.00  hands 100  decisions  101  max  8.274 ms
+game   3: seat p2  points  4.00  hands  72  decisions   84  max  1.810 ms
+game   4: seat p3  points  2.00  hands  86  decisions   70  max 11.633 ms
+game   5: seat p4  points  2.00  hands  90  decisions   32  max  0.469 ms
+game   6: seat p5  points  6.00  hands  92  decisions  116  max  4.770 ms
+game   7: seat p6  points  6.00  hands  88  decisions   89  max  5.438 ms
+game   8: seat p7  points 10.00  hands  77  decisions   74  max  0.223 ms
+game   9: seat p0  points 10.00  hands  95  decisions   87  max  8.759 ms
+game  10: seat p1  points  3.00  hands  61  decisions   46  max 11.192 ms
+10 games: 6.30 points per game (fair share 3.25); 787 decisions, 11 over 1.0 ms, 0 exceptions, 0 illegal
+$ .venv/bin/python scripts/freeze.py --tag k1 --files <dry-run copy>/dist/day/k1.py
+k1.py                                0.1 MB  85fd7d3b41e4  params ['params/cand_nlhe.json']  bundle os.environ.setdefault('NOLIMIT_VARIANT', '{"name":"tahoe","ranks":"23456789TJQKA","suits":4,"n_hole":3,"streets":[3,1,1],"hole_used":2,"category_order":[0,1,2,3,4,5,6,7,8,9],"ace_low_straight":true}')  adapter other
+wrote <dry-run copy>/frozen/k1/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+built and froze k1 in 7s, sha 85fd7d3b41e4. To submit: python scripts/day.py submit k1

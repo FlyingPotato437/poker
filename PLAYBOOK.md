@@ -39,8 +39,11 @@ Only the submitter submits. Pass bundles/params between laptops on a USB stick o
 - [ ] **Set up Revanth's laptop** the same way: copy the repo with `bundles/`, `params/`,
   `dist/` (rsync or a USB stick), `uv sync`, then **with Wi-Fi off** run
   `.venv/bin/python -m pytest -q` and one `gpu.build_tables --quick` to check torch works
-  offline (MPS on Apple silicon; CPU elsewhere is ~5–10x slower, so use `--quick`/preset
-  bundles there).
+  offline. Default device is now CPU (CUDA if present); `--device mps` opts in to MPS and
+  falls back to CPU on out-of-memory. Measured Nov 6 on this laptop under load avg 200–420,
+  CPU, `--threads 4 --workers 3`, variants/example_day.json: `build_tables --laptop` 20.3 min
+  (peak 1.6 GB), `range_eq --laptop` 31.6 min (peak 3.4 GB). On an idle laptop `--device mps`
+  is faster; if time is short use a preset bundle.
 - [ ] On the GPU box, build max-accuracy bundles for every preset (each one is a fallback
   for a "close" variant). Run detached so a dropped SSH session can't kill it:
   ```bash
@@ -154,7 +157,63 @@ hand.
 **T+40–60:** longer tune runs; same A/B gate. Then a crash/latency check with the real
 points table and schedule:
 ```bash
-.venv/bin/python scripts/fuzz.py --bundles bundles/day_rng.nlb --games 60 --cases 5000
+.venv/bin/python scripts/fuzz.py --bundles bundles/day_rng.nlb --params params/day.json --games 60 --cases 5000
+```
+
+## Upgraded bot (bot-upgrades branch)
+
+`params/cand_nlhe.json` on the bot-upgrades runtime: ev_t4 plus short-handed opening
+(`sh_open`), heads-up SB play, per-opponent exploitation (rel 2, degenerate-bot fast path),
+and `gc_settle` (no GC during decisions). `pool_w` is 0 in the base params and in every
+exploit level. It is tuned on **NLHE only**. On any other variant, use the `<P>` above.
+It is not frozen yet. Whoever freezes it decides the tag name.
+
+Day-of commands (NLHE preset; `<points>` is the kit's points for 1st..8th, `<kit>` is the kit
+simulator command with `{bot}`):
+```bash
+# v0: ev_t4 on the new runtime (decision-identical to rc1 on the mock kit, 5717/5717)
+.venv/bin/python scripts/day.py build v0 --points <points> --adapter my_adapter.py --kit-cmd "<kit>"
+.venv/bin/python scripts/day.py submit v0 --as <file name the kit wants>
+# the upgraded bot, once the kit sim shows 0 exceptions / illegal moves and parity is 100%
+.venv/bin/python scripts/day.py build c1 --params params/cand_nlhe.json --points <points> [--ante-bb <a>] --adapter my_adapter.py --kit-cmd "<kit>"
+.venv/bin/python scripts/day.py submit c1
+# same, numpy never used (if the kit shows latency spikes with numpy)
+.venv/bin/python scripts/day.py build c1p --pure-python --params params/cand_nlhe.json --points <points> --adapter my_adapter.py --kit-cmd "<kit>"
+# rc1 exactly as frozen (runtime, params, tables), only the adapter swapped; push/fold stays at the placeholder points
+.venv/bin/python scripts/day.py build rc1k --from-frozen rc1 --adapter my_adapter.py --kit-cmd "<kit>"
+```
+Note that `day.py submit rc1` does not work, because frozen/rc1 holds 14 files and
+none of them has the day's adapter. Use `--from-frozen rc1` instead.
+
+**When to fall back.** Run `day.py rollback` (0.2 s, sha-checked) to go to v0 or rc1k if
+any of these happens:
+- c1 shows exceptions, illegal moves or more timeouts than v0 in the kit sim;
+- c1 misbehaves in a practice round;
+- after T1, our score ÷ fair is far below cand_nlhe's rival-real x-fair (a strong or
+  prepped field; see HANDOFF "Live plan").
+
+Decide once, before T3–T4, and don't switch back and forth.
+
+**Adapter.** Keep the guarded `gc_settle` block from `adapter_template.py`. With it, the
+same adapter works on the new runtime and on rc1. A bare `gc_settle()` raises a NameError
+at import on rc1 bytes. After import, GC is off, and each `PrepBot` built collects once
+(kit2: 20 collections for 20 tables). If the kit reuses one bot object across tables,
+build a new core (`self.core = make_core()`) at its new-game hook.
+
+**Dry run, Nov 6** (`bench/dayof/`; this machine had load average 300–700, so ms figures
+are not meaningful, and ev_t4 under the same load had the same over-1-ms rate):
+- **c1:** 6.1 MB. Import 1.33 s with numpy, 0.62 s without, 0.57 s pure-python. Peak
+  memory 73.7 / 63.8 / 62.7 MB.
+- **Checks:** 0 errors or illegal moves. Mock-kit parity 6246/6246. kit2 parity 100%
+  (heuristic and EV tables).
+- **Fuzz** (`--params params/cand_nlhe.json`, all 30 table sets, numpy and no numpy): ok.
+- **pytest:** 107 passed. 9 skipped, because **this .venv has no torch**.
+  `gpu.pushfold` needs no torch, but `build_tables` / `range_eq` (the new-variant path)
+  do. Check `.venv/bin/python -c "import torch"` on the laptop before the event.
+
+Re-time on the idle laptop:
+```bash
+.venv/bin/python scripts/bench_latency.py --bundle bundles/nlhe_rng.nlb --params params/cand_nlhe.json --no-numpy --gc settle
 ```
 
 ## T1–T6 (20 minutes apart)

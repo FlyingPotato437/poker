@@ -28,7 +28,12 @@ def make_core(seed=None):
 
 
 warmup(_tables())   # fill caches now: cold first decisions measured at 1-6 ms
-gc_settle()         # collect + freeze, then no automatic GC; each new table collects first
+if "gc_settle" in globals():   # collect + freeze, then no automatic GC; each new table collects first
+    gc_settle()
+else:                          # rc1's runtime (frozen/rc1) has no gc_settle: same adapter works there
+    import gc
+    gc.collect()
+    gc.freeze()
 
 _STREET = {"preflop": 0, "flop": 1, "turn": 2, "river": 3}
 _KIND = {"blind": POST, "fold": FOLD, "check": CALL, "call": CALL, "raise": RAISE, "bet": RAISE}

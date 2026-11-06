@@ -20,8 +20,8 @@ one-shot final test, after everything is frozen.
 """
 import math
 
-from .runtime import (CALL, FLUSH, FOLD, FULL_HOUSE, PAIR, POST, QUADS, RAISE, STRAIGHT, TRIPS,
-                      TWO_PAIR, SeatStats, ingest_history)
+from .runtime import (CALL, FLUSH, FOLD, FULL_HOUSE, PAIR, POST, PRIORS, QUADS, RAISE, STRAIGHT,
+                      TRIPS, TWO_PAIR, SeatStats, ingest_history)
 from .zoo import ManiacBot, NitBot, _Base
 
 
@@ -1547,6 +1547,729 @@ def github_fields(prepped="prep:params/rival_prep.json"):
     return {"github": base, "github+prep": {**base, prepped: 1.2}}
 
 
+# ---------------------------------------------------------------------------
+# Event-field designs (Nov 6): the shapes of the public bots written for THIS event (one-shot
+# LLM builds and a few team bots), from the behavioral specs in
+# bench/standard/github_wide.md, not from their code. They fold 73-88% to 3-bets and ~82% to
+# shoves and over-apply ICM to calls. Evaluation fields only (event, event+prep), never in a
+# tuning default. Every instance scales its thresholds by its own noise (+-10-20%).
+# ---------------------------------------------------------------------------
+
+def _ingest_pre(pst, history):
+    """Preflop counters per seat: opens, faced/folded a 3-bet over its open, and faced/folded
+    a raise before putting voluntary chips in (fold to steal / to an open)."""
+    raises = 0
+    opener = None
+    faced, faced3 = set(), set()
+    vol = set()
+    for seat, st, kind, amt, all_in in history:
+        if st != 0:
+            break
+        if kind == POST:
+            continue
+        p = pst[seat]
+        if raises >= 1 and seat not in faced and seat not in vol and seat != opener:
+            faced.add(seat)
+            p["fr_n"] += 1
+            p["fr_f"] += kind == FOLD
+        if raises >= 2 and seat == opener and seat not in faced3:
+            faced3.add(seat)
+            p["f3_n"] += 1
+            p["f3_f"] += kind == FOLD
+        if kind == RAISE:
+            raises += 1
+            if raises == 1:
+                opener = seat
+                p["open"] += 1
+            vol.add(seat)
+        elif kind == CALL:
+            vol.add(seat)
+
+
+def _new_pst():
+    return {"open": 0, "fr_n": 0, "fr_f": 0, "f3_n": 0, "f3_f": 0}
+
+
+class _Ev(_Gh):
+    """Shared helpers: preflop counters, players behind, the '10 as rank 2' card bug, the
+    'any raise over x% of the stack becomes all-in' sizing tell, and a hash coin."""
+    TENBUG = 0.0
+    ALLIN_FRAC = None          # (lo, hi): raises above this share of the stack go all-in
+    F3_PRIOR, F3_W = 0.75, 4.0
+    FR_PRIOR, FR_W = 0.80, 6.0
+
+    def __init__(self, tables=None, seed=None):
+        super().__init__(tables, seed)
+        self.allin_frac = self.rng.uniform(*self.ALLIN_FRAC) if self.ALLIN_FRAC else None
+        self.salt = self.rng.randrange(1 << 30)
+        v = self.T.v
+        S = v.suits
+        self._tmap = None
+        if self.tenbug and "T" in v.ranks and "2" in v.ranks:
+            t, two = v.ranks.index("T"), v.ranks.index("2")
+            self._tmap = {t * S + su: two * S + su for su in range(S)}
+        if self.tenbug and "T" in v.ranks:
+            t = v.ranks.index("T")
+            for c in range(t * S, t * S + S):
+                self._val[c] = 2
+        self.pst = []
+
+    def new_table(self, seat, n_seats):
+        super().new_table(seat, n_seats)
+        self.pst = [_new_pst() for _ in range(n_seats)]
+
+    def observe(self, event):
+        super().observe(event)
+        if event[0] == "hand_end" and self.pst:
+            _ingest_pre(self.pst, event[1]["history"])
+
+    def act(self, obs):
+        if len(self.pst) != len(obs.stacks):
+            self.new_table(obs.seat, len(obs.stacks))
+        return self.decide(obs)
+
+    # -- facts ------------------------------------------------------------
+    def _hole(self, obs):
+        """Hole cards as this instance reads them ('10' parsed as a 2 in bugged instances)."""
+        if not self._tmap:
+            return tuple(obs.hole)
+        used = set(obs.hole) | set(obs.board)
+        out = []
+        for c in obs.hole:
+            d = self._tmap.get(c)
+            if d is not None and d not in used and d not in out:
+                out.append(d)
+            else:
+                out.append(c)
+        return tuple(out)
+
+    def _pct(self, obs):
+        return self.T.pct(self.T.hole_class(self._hole(obs)))
+
+    def _cls(self, obs):
+        return self.T.hole_class(self._hole(obs))
+
+    def _behind(self, obs):
+        order = self._order(obs)
+        if obs.seat not in order:
+            return 0
+        return sum(1 for s in order[order.index(obs.seat) + 1:] if obs.in_hand[s])
+
+    def _behind_seats(self, obs):
+        order = self._order(obs)
+        if obs.seat not in order:
+            return []
+        return [s for s in order[order.index(obs.seat) + 1:] if obs.in_hand[s]]
+
+    def _is_bb(self, obs):
+        posts = self._posts(obs)
+        return len(posts) >= 2 and obs.seat == posts[1]
+
+    def _in_blinds(self, obs):
+        return obs.seat in self._posts(obs)[:2]
+
+    def _limpers(self, obs):
+        return sum(1 for h in obs.history if h[1] == 0 and h[2] == CALL) if not self._raises(obs, 0) else 0
+
+    def _f3(self, s):
+        p = self.pst[s] if self.pst else _new_pst()
+        return (p["f3_f"] + self.F3_PRIOR * self.F3_W) / (p["f3_n"] + self.F3_W)
+
+    def _fr(self, s):
+        p = self.pst[s] if self.pst else _new_pst()
+        return (p["fr_f"] + self.FR_PRIOR * self.FR_W) / (p["fr_n"] + self.FR_W)
+
+    def _open_rate(self, s):
+        """Share of hands this seat opened (prior 0.2 over 8 hands)."""
+        p = self.pst[s] if self.pst else _new_pst()
+        h = self.stats[s].hands if self.stats else 0
+        return (p["open"] + 0.2 * 8) / (h + 8)
+
+    def _coin(self, obs, tag=0):
+        x = hash((self.salt, tag, obs.hand_no, obs.street, len(obs.history), tuple(obs.board), tuple(obs.hole)))
+        return (x & 0xFFFF) / 65536.0
+
+    def _send(self, obs, target):
+        """Raise to `target`; with the sizing tell, any raise over allin_frac of the stack jams."""
+        tot = obs.stacks[obs.seat] + obs.bets[obs.seat]
+        if self.allin_frac is not None and target - obs.bets[obs.seat] >= self.allin_frac * tot:
+            return self._shove(obs)
+        return self._raise(obs, target)
+
+    def _ip(self, obs, vs_seat):
+        """In position vs `vs_seat` postflop (acts later): not in the blinds, or the BB vs the SB."""
+        posts = self._posts(obs)
+        blinds = posts[:2]
+        if obs.seat in blinds:
+            return vs_seat in blinds and blinds.index(obs.seat) > blinds.index(vs_seat)
+        if vs_seat in blinds:
+            return True
+        order = self._order(obs)
+        return obs.seat in order and vs_seat in order and order.index(obs.seat) > order.index(vs_seat)
+
+    def _eq_hu_post(self, obs, rollouts=None):
+        e = self.T.post_equity(self._hole(obs), obs.board)[0]
+        if rollouts:
+            sd = math.sqrt(max(e * (1 - e), 0.01) / rollouts)
+            return _clamp(e + self.rng.gauss(0.0, sd), 0.0, 1.0)
+        return self._noise(e)
+
+
+class EvCodexTag(_Ev):
+    """A1, the modal one-shot LLM build: open table by players behind, 2.2/2.5 bb; push/fold at
+    <= ~12.5 bb with jam % = base[behind]*(10/bb)^0.75; 3-bets the top max(.025, .25 r) at
+    3.0x IP / 3.6x OOP; vs a 3-bet continues with the top ~3%; any raise over 40-75% of the
+    stack goes all-in; no river bluffs; 'ICM' is a flat +0.03. Bugs: the fallback folds
+    facing a bet (~3% of those spots), '10' read as a 2 in ~30% of instances."""
+    TENBUG = 0.3
+    ALLIN_FRAC = (0.40, 0.75)
+    rollouts = 100
+    OPEN = (0.30, 0.45, 0.36, 0.27, 0.21, 0.17, 0.14, 0.12)       # by players behind 0..7
+    PUSH = (0.58, 0.58, 0.39, 0.28, 0.21, 0.17, 0.145, 0.125)
+    NOM = {"open_m": 1.0, "push_m": 1.0, "pf_bb": 12.5, "pf_exp": 0.75, "three": 0.25,
+           "cont3": 0.03, "call_r": 0.65, "call_bb": 0.90, "cost": 0.08, "cost_bb": 0.12,
+           "vbet": 0.67, "vsize": 0.66, "csize": 0.47, "raise": 0.83, "disc0": 0.04, "disc1": 0.075,
+           "icm": 0.03, "fallback": 0.03, "shove_call": 0.40}
+
+    def _jam_pct(self, obs, eff):
+        b = min(self._behind(obs), 7)
+        return _clamp(self.PUSH[b] * self.k["push_m"] * (10.0 / max(eff, 1.0)) ** self.k["pf_exp"], 0.0, 1.0)
+
+    def _hm(self, obs, e1=None):
+        n = len(self._villains(obs)) or 1           # all-in opponents count too (bug)
+        e1 = self._eq_hu_post(obs) if e1 is None else e1
+        return e1 ** (1 + 0.65 * (n - 1))
+
+    def decide(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        stack = obs.stacks[obs.seat]
+        eff = self._eff_bb(obs)
+        if obs.street == 0:
+            raises = self._raises(obs, 0)
+            if not raises:
+                if eff <= k["pf_bb"]:
+                    if pct <= self._jam_pct(obs, eff):
+                        return self._shove(obs)
+                    return self._cf(obs)
+                b = min(self._behind(obs), 7)
+                lim = self._limpers(obs)
+                if pct <= self.OPEN[b] * k["open_m"] * 0.58 ** lim:
+                    size = 3.0 if b == 1 else 2.2 if eff < 25 else 2.5
+                    return self._send(obs, (size + lim) * obs.bb)
+                return self._cf(obs)
+            if obs.to_call >= 0.35 * stack or eff <= k["pf_bb"] or raises[-1][4]:
+                # committed / short: jam or fold; vs a shove, call the top slice of its own jam range
+                thr = max(0.03, k["shove_call"] * self._jam_pct(obs, eff))
+                if len(raises) >= 2:
+                    thr = min(thr, k["cont3"])
+                if obs.to_call >= 0.5 * stack:
+                    thr *= 1.0 - k["icm"] * 3          # flat 'ICM' margin
+                return (self._shove(obs) if pct <= thr else self._cf(obs))
+            if len(raises) >= 2:
+                if pct <= k["cont3"] * 0.5:
+                    return self._send(obs, max(obs.bets) * 2.3)
+                return (CALL, 0) if pct <= k["cont3"] else self._cf(obs)
+            rs = raises[-1][0]
+            st = self.stats[rs] if self.stats else None
+            r = ((st.pfr if st else 0) + 0.15 * 8) / ((st.hands if st else 0) + 8)
+            ip = self._ip(obs, rs)
+            if pct <= max(0.025, k["three"] * r):
+                return self._send(obs, max(obs.bets) * (3.0 if ip else 3.6))
+            bb = self._is_bb(obs)
+            if pct <= (k["call_bb"] if bb else k["call_r"]) * r and \
+                    obs.to_call <= (k["cost_bb"] if bb else k["cost"]) * stack:
+                return (CALL, 0)
+            return self._cf(obs)
+        hm = self._hm(obs)
+        vs = self._villains(obs)
+        if obs.to_call == 0:
+            if hm >= k["vbet"]:
+                return self._send(obs, k["vsize"] * obs.pot)
+            if obs.street == 1 and len(vs) == 1 and self._pfr_seat(obs) == obs.seat:
+                p = _clamp(1.6 * self._rate(vs[0], "fold_to_bet") - 0.1, 0.1, 0.85)
+                if self.rng.random() < p:
+                    return self._send(obs, k["csize"] * obs.pot)
+            return (CALL, 0)                     # no river bluffs
+        if self.rng.random() < k["fallback"]:
+            return (FOLD, 0)                     # exception path: the fallback folds
+        if hm >= k["raise"] and len(self._raises(obs)) < 3:
+            return self._send(obs, max(obs.bets) + obs.pot)
+        agg_s = max(vs, key=lambda s: obs.bets[s]) if vs else obs.seat
+        size = obs.to_call / max(obs.pot - obs.to_call, 1)
+        disc = (k["disc0"] + k["disc1"] * size) * (1.35 - self._rate(agg_s, "agg"))
+        need = self._po(obs) + disc + (k["icm"] if obs.to_call >= 0.5 * stack else 0.0)
+        return (CALL, 0) if hm >= need else (FOLD, 0)
+
+
+class EvGhcpFastrange(_Ev):
+    """A2, the best of 11 one-shot bots in a mirror test: open width by players behind,
+    value 3-bets min(.065, max(.028, .19 w)), light A2s-A5s 3-bets 13% vs wide openers that
+    fold; push <= 11 bb; postflop noisy MC (96 samples) value bets at eq >= .59+.045(n-1),
+    hash-coin bluffs on flop/turn (mostly dry boards); 0.03% of decisions time out (fold)."""
+    ALLIN_FRAC = (0.40, 0.55)
+    OPEN = (0.65, 0.49, 0.45, 0.34, 0.27, 0.23, 0.20, 0.17)
+    NOM = {"open_m": 1.0, "v3_hi": 0.065, "v3_lo": 0.028, "v3_k": 0.19, "light": 0.13,
+           "call_ip": 0.78, "call_oop": 0.60, "call_bb": 0.13, "push_bb": 11.0, "push_k": 0.84,
+           "vbet": 0.59, "vstep": 0.045, "bluff": 1.0, "raise": 0.80, "timeout": 0.0003}
+
+    def _w(self, s):
+        return _clamp(self._open_rate(s) * 1.1, 0.05, 0.9)
+
+    def decide(self, obs):
+        k = self.k
+        if self.rng.random() < k["timeout"]:
+            return self._cf(obs)
+        pct = self._pct(obs)
+        stack = obs.stacks[obs.seat]
+        eff = self._eff_bb(obs)
+        if obs.street == 0:
+            raises = self._raises(obs, 0)
+            b = min(self._behind(obs), 7)
+            alive = self._alive(obs)
+            width = (0.80 if alive == 2 else self.OPEN[b]) * k["open_m"]
+            if not raises:
+                if eff <= k["push_bb"]:
+                    thr = k["push_k"] * width + 0.015 + (0.12 if eff <= 3 else 0.10 if eff <= 5 else 0.0)
+                    return self._shove(obs) if pct <= thr else self._cf(obs)
+                width -= 1.1 * (2.3 * obs.bb / max(stack, 1))
+                if pct <= width:
+                    size = (2.15 if eff < 30 else 2.35) + (0.35 if b == 1 else 0.0)
+                    return self._send(obs, (size + self._limpers(obs)) * obs.bb)
+                return self._cf(obs)
+            rs = raises[-1][0]
+            w = self._w(rs)
+            lvl = len(raises)
+            ip = self._ip(obs, rs)
+            if raises[-1][4] or obs.to_call >= 0.4 * stack:     # facing a shove / committed
+                thr = _clamp(0.45 * w, 0.03, 0.25) if lvl == 1 else 0.03
+                return (CALL, 0) if pct <= thr else self._cf(obs)
+            v3 = min(k["v3_hi"], max(k["v3_lo"], k["v3_k"] * w)) if lvl == 1 else 0.018 if lvl == 2 else 0.009
+            if pct <= v3:
+                return self._send(obs, max(obs.bets) * (3.0 if ip else 3.6))
+            hi, lo, su, pair = self._hole2(obs)
+            if lvl == 1 and su and hi == 14 and 2 <= lo <= 5 and w > 0.30 and self._fr(rs) > 0.5 \
+                    and self._coin(obs, 1) < k["light"]:
+                return self._send(obs, max(obs.bets) * (3.0 if ip else 3.6))
+            if lvl == 1:
+                thr = w * (k["call_ip"] if ip else k["call_oop"]) + (k["call_bb"] if self._is_bb(obs) else 0.0)
+            else:
+                thr = 0.045 if lvl == 2 else 0.012
+            return (CALL, 0) if pct <= thr else self._cf(obs)
+        vs = self._villains(obs)
+        n = max(len(vs), 1)
+        roll = 256 if (n == 1 and obs.street == 3) else 96
+        e = self.T.post_equity(self._hole(obs), obs.board)
+        e = e[n - 1] if n <= 3 else e[2] ** (n / 3.0)
+        e = _clamp(e + self.rng.gauss(0.0, math.sqrt(max(e * (1 - e), 0.01) / roll)), 0.0, 1.0)
+        need_v = k["vbet"] + k["vstep"] * (n - 1) + (0.025 if obs.street == 3 else 0.0)
+        if obs.to_call == 0:
+            if e >= need_v:
+                return self._send(obs, 0.66 * obs.pot)
+            if obs.street < 3:
+                aggr = self._pfr_seat(obs) == obs.seat
+                ip = all(self._ip(obs, s) for s in vs)
+                draw = _draw_eq(self._val, self._suit, obs.hole, obs.board) > 0
+                fold = sum(self._rate(s, "fold_to_bet") for s in vs) / n
+                p = 0.10 + 0.13 * aggr + 0.09 * ip + 0.16 * draw + 0.5 * (fold - 0.43)
+                vals = [self._val[c] for c in obs.board]
+                suits = [self._suit[c] for c in obs.board]
+                dry = len(set(vals)) == len(vals) and len(set(suits)) >= len(suits) - 1 and \
+                    max(vals) - min(vals) >= 5
+                p *= k["bluff"] * (1.0 if dry else 0.5) / n
+                if self._coin(obs, 2) < p:
+                    return self._send(obs, 0.5 * obs.pot)
+            return (CALL, 0)
+        if e >= k["raise"] and len(self._raises(obs)) < 3:
+            return self._send(obs, max(obs.bets) + 0.9 * obs.pot)
+        need = self._need(obs, icm=self._alive(obs) == 2 and obs.to_call >= 0.3 * stack) + 0.02
+        return (CALL, 0) if e >= need else (FOLD, 0)
+
+
+class EvPushfold4(_Ev):
+    """A3: push/fold <= 15 bb with jam % clamp(5.8/bb/n^0.75) where n counts ALL live
+    opponents (bug: not players behind); re-jams the top ~half of its jam range over a shove
+    (it can't flat in the shove branch); deep opens min(.55, .9/(behind+1.2)) to 2.3 bb,
+    3-bets the top 3%, flats the top 8% cheap; postflop made-hand tiers (two pair on a
+    paired board read as two pair: bug)."""
+    NOM = {"pf_bb": 15.0, "jam_k": 5.8, "recall": 0.5, "open_k": 0.9, "three": 0.03, "flat": 0.08,
+           "flat_cost": 0.12, "bb_def": 0.35, "jam4": 0.02, "tptk": 0.42, "tptk_r": 0.34, "weak": 0.25,
+           "draw": 0.30, "vsize": 0.66}
+
+    def _jam(self, obs, eff):
+        n = max(self._alive(obs) - 1, 1)
+        return _clamp(self.k["jam_k"] / max(eff, 1.0) / n ** 0.75, 0.025, 1.0)
+
+    def decide(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        stack = obs.stacks[obs.seat]
+        eff = self._eff_bb(obs)
+        if obs.street == 0:
+            raises = self._raises(obs, 0)
+            if eff <= k["pf_bb"] or obs.to_call >= 0.35 * stack:
+                jam = self._jam(obs, eff)
+                if not raises:
+                    return self._shove(obs) if pct <= jam else self._cf(obs)
+                return self._shove(obs) if pct <= k["recall"] * jam else self._cf(obs)
+            if not raises:
+                if pct <= min(0.55, k["open_k"] / (self._behind(obs) + 1.2)):
+                    return self._raise(obs, (2.3 + self._limpers(obs)) * obs.bb)
+                return self._cf(obs)
+            if len(raises) >= 2:
+                return self._shove(obs) if pct <= k["jam4"] else self._cf(obs)
+            if pct <= k["three"]:
+                return self._raise(obs, max(obs.bets) * 3)
+            if pct <= k["flat"] and obs.to_call <= k["flat_cost"] * stack:
+                return (CALL, 0)
+            if self._is_bb(obs) and pct <= k["bb_def"] and obs.to_call <= 1.5 * obs.bb:
+                return (CALL, 0)
+            return self._cf(obs)
+        c = self._cat(obs)
+        bvals = [self._val[x] for x in obs.board]
+        hvals = [self._val[x] for x in obs.hole]
+        po = self._po(obs)
+        if c >= TWO_PAIR:
+            if obs.to_call == 0:
+                return self._raise(obs, k["vsize"] * obs.pot)
+            return self._raise(obs, 3 * max(obs.bets)) if len(self._raises(obs)) < 3 else (CALL, 0)
+        top = max(bvals)
+        tp = c == PAIR and top in hvals
+        pocket = len(set(hvals)) < len(hvals) and min(hvals) > top
+        if tp or pocket:
+            if obs.to_call == 0:
+                return self._raise(obs, 0.5 * obs.pot)
+            return (CALL, 0) if po <= (k["tptk_r"] if obs.street == 3 else k["tptk"]) else (FOLD, 0)
+        if c == PAIR and any(v in bvals for v in hvals) or (len(set(hvals)) < len(hvals)):
+            return (CALL, 0) if po <= k["weak"] else self._cf(obs)
+        if obs.street < 3 and _draw_eq(self._val, self._suit, obs.hole, obs.board) > 0:
+            return (CALL, 0) if po <= k["draw"] else self._cf(obs)    # gutshots count as strong
+        return self._cf(obs)
+
+
+class EvMcMwbug(_Ev):
+    """A4: MC equity vs the live opponents with bet/raise thresholds scaled h^(n^0.75) (the
+    0.62 bet line falls to ~0.13 at 7 opponents, so it bets and raises average hands
+    multiway) while calls stay at pot odds; at <= 15 bb every call is a re-shove, at <= 25 bb
+    every raise is all-in; risk premium 0.05*share when calling >= 25% of the stack."""
+    rollouts = 60
+    NOM = {"bet": 0.62, "raise": 0.75, "open": 0.56, "size": 0.66, "prem": 0.05, "jam_bb": 15.0,
+           "allin_bb": 25.0}
+
+    def decide(self, obs):
+        k = self.k
+        n = max(len(self._villains(obs)), 1)
+        if obs.street == 0:
+            e = self._noise(self.T.eq(self._cls(obs), n))
+        else:
+            e = self._eq_n(obs, n)
+        sc = n ** 0.75
+        t_bet, t_raise = k["bet"] ** sc, k["raise"] ** sc
+        stack = obs.stacks[obs.seat]
+        eff = self._eff_bb(obs)
+
+        def up(target):
+            return self._shove(obs) if eff <= k["allin_bb"] else self._raise(obs, target)
+
+        if obs.street == 0:
+            raised = bool(self._raises(obs, 0))
+            if not raised:
+                if e >= k["open"] ** sc:
+                    return up(3 * obs.bb)
+                return self._cf(obs)
+            if e >= t_raise:
+                return up(max(obs.bets) * 3)
+        else:
+            if obs.to_call == 0:
+                return up(k["size"] * obs.pot) if e >= t_bet else (CALL, 0)
+            if e >= t_raise:
+                return up(max(obs.bets) + obs.pot)
+        if obs.to_call == 0:
+            return (CALL, 0)
+        need = self._po(obs) + (k["prem"] * obs.to_call / max(stack, 1) if obs.to_call >= 0.25 * stack else 0.0)
+        if e >= need:
+            return self._shove(obs) if eff <= k["jam_bb"] else (CALL, 0)
+        return (FOLD, 0)
+
+
+class EvStrong1(_Ev):
+    """A5: opens 0.52/n^0.78 scaled by the fold-to-raise of the players behind; 3-bets on
+    range equity >= .555, calls when realized equity beats the price plus a survival premium
+    (.05-.06 x risk fraction); push/fold charts when short; postflop range-weighted equity,
+    shoves instead of calling when < 30% of the pot would be left behind."""
+    ranged = True
+    rollouts = 150
+    PRI = {**PRIORS, "vpip": 0.28, "pfr": 0.14, "fold_to_bet": 0.40}
+    NOM = {"open_k": 0.52, "three": 0.555, "real_ip": 0.90, "real_bb": 0.84, "real": 0.78,
+           "surv": 0.055, "pf_bb": 12.0, "vbet": 0.62, "vsize": 0.66, "raise": 0.82, "bluff": 0.20}
+    FR_PRIOR, FR_W = 0.60, 6.0
+
+    def new_table(self, seat, n_seats):
+        super().new_table(seat, n_seats)
+        for st in self.stats:
+            st.prior = self.PRI
+
+    def _need_s(self, obs):
+        stack = obs.stacks[obs.seat]
+        risk = min(obs.to_call / max(stack + obs.bets[obs.seat], 1), 1.0)
+        prem = self.k["surv"] * risk
+        alive = [obs.stacks[s] + obs.bets[s] for s in range(len(obs.stacks)) if obs.stacks[s] + obs.bets[s] > 0]
+        if obs.hand_no > 180 and alive and stack + obs.bets[obs.seat] >= max(alive):
+            prem += 0.04
+        return self._po(obs) + prem
+
+    def decide(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        stack = obs.stacks[obs.seat]
+        if obs.street == 0:
+            if self._eff_bb(obs) <= k["pf_bb"]:
+                return self._pushfold(obs)
+            raises = self._raises(obs, 0)
+            if not raises:
+                bs = self._behind_seats(obs)
+                n = max(len(bs), 1)
+                f = sum(self._fr(s) for s in bs) / n if bs else 0.6
+                width = k["open_k"] / n ** 0.78 * _clamp((f / 0.6) ** 1.2, 0.65, 1.5)
+                if pct <= width:
+                    return self._raise(obs, (2.5 + self._limpers(obs)) * obs.bb)
+                return self._cf(obs)
+            rs = raises[-1][0]
+            y = self._rate(rs, "pfr") * (0.35 if len(raises) >= 2 else 1.0)
+            eq = self._pre_eq(obs, y)
+            if eq >= k["three"] + 0.08 * (len(raises) - 1) and len(raises) < 4:
+                return self._raise(obs, max(obs.bets) * (3.0 if self._ip(obs, rs) else 3.6))
+            real = k["real_ip"] if self._ip(obs, rs) else k["real_bb"] if self._is_bb(obs) else k["real"]
+            return (CALL, 0) if eq * real >= self._need_s(obs) else self._cf(obs)
+        eq = self._post_eq(obs)
+        vs = self._villains(obs)
+        if obs.to_call == 0:
+            if eq >= k["vbet"]:
+                return self._raise(obs, k["vsize"] * obs.pot)
+            if len(vs) == 1 and obs.street < 3:
+                bf = _clamp(self._rate(vs[0], "fold_to_bet") / 0.4, 0.2, 1.5)
+                if self.rng.random() < k["bluff"] * bf * 0.5:
+                    return self._raise(obs, 0.5 * obs.pot)
+            return (CALL, 0)
+        if eq >= k["raise"] and len(self._raises(obs)) < 3:
+            return self._raise(obs, max(obs.bets) + obs.pot)
+        if eq >= self._need_s(obs):
+            left = stack - obs.to_call
+            if left < 0.3 * (obs.pot + obs.to_call):
+                return self._shove(obs)
+            return (CALL, 0)
+        return (FOLD, 0)
+
+
+class EvReshover(_Ev):
+    """A6, the winner archetype: TAG, plus at 8-30 bb it re-shoves over a single open from
+    any position when chip EV > 0.1 pot, assuming the opener calls with the top 45% of its
+    open range and folds at its fold-to-3-bet rate (prior .75, weight 4)."""
+    rollouts = 150
+    OPEN = (0.30, 0.42, 0.34, 0.26, 0.20, 0.17, 0.15, 0.14)
+    NOM = {"open_m": 1.0, "three": 0.035, "cont3": 0.035, "flat": 0.10, "lo_bb": 8.0, "hi_bb": 30.0,
+           "ev_k": 0.10, "call_frac": 0.45, "gate": 0.30, "vbet": 0.63, "vsize": 0.66, "raise": 0.82,
+           "margin": 0.02, "pf_bb": 8.0}
+
+    def _table_vpip(self, obs):
+        seats = [s for s in range(len(obs.stacks)) if s != obs.seat and obs.stacks[s] + obs.bets[s] > 0]
+        if not seats or not self.stats:
+            return 0.25
+        return sum(self._rate(s, "vpip") for s in seats) / len(seats)
+
+    def _jam_ev(self, obs, rs):
+        cls = self._cls(obs)
+        w = _clamp(self._open_rate(rs), 0.04, 0.8)
+        eq = self._noise(self.T.eq_vs_range(cls, _clamp(self.k["call_frac"] * w, 0.02, 1.0)))
+        f = self._f3(rs)
+        me = obs.stacks[obs.seat] + obs.bets[obs.seat]
+        them = obs.stacks[rs] + obs.bets[rs]
+        E = min(me, them)
+        dead = obs.pot - obs.bets[obs.seat] - obs.bets[rs]
+        win_called = eq * (dead + 2 * E) - (E - obs.bets[obs.seat])
+        return f * obs.pot + (1 - f) * win_called - self.k["ev_k"] * obs.pot
+
+    def decide(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        eff = self._eff_bb(obs)
+        if obs.street == 0:
+            raises = self._raises(obs, 0)
+            if not raises:
+                if eff <= k["pf_bb"]:
+                    return self._pushfold(obs)
+                b = min(self._behind(obs), 7)
+                if pct <= self.OPEN[b] * k["open_m"]:
+                    return self._raise(obs, (2.3 + self._limpers(obs)) * obs.bb)
+                return self._cf(obs)
+            if len(raises) == 1 and not raises[0][4] and k["lo_bb"] <= eff <= k["hi_bb"] \
+                    and self._table_vpip(obs) <= k["gate"] and self._jam_ev(obs, raises[0][0]) > 0:
+                return self._shove(obs)
+            if eff <= k["pf_bb"] or raises[-1][4]:
+                return self._pushfold(obs)
+            if len(raises) >= 2:
+                if pct <= k["cont3"] * 0.5:
+                    return self._shove(obs)
+                return (CALL, 0) if pct <= k["cont3"] else self._cf(obs)
+            if pct <= k["three"]:
+                return self._raise(obs, max(obs.bets) * 3)
+            if pct <= k["flat"] and self._po(obs) <= 0.35:
+                return (CALL, 0)
+            return self._cf(obs)
+        eq = self._post_eq(obs)
+        if obs.to_call == 0:
+            return self._raise(obs, k["vsize"] * obs.pot) if eq >= k["vbet"] else (CALL, 0)
+        if eq >= k["raise"] and len(self._raises(obs)) < 3:
+            return self._raise(obs, max(obs.bets) + obs.pot)
+        return (CALL, 0) if eq >= self._need(obs) + k["margin"] else (FOLD, 0)
+
+
+class EvPolicybot(_Ev):
+    """A7, a real team's bot: steals any two when the product over players behind of their
+    P(fold to a steal) is >= 0.9; seats with no voluntary chips yet (after 8 hands) drop out
+    of 'behind'; otherwise the open range scales by observed/assumed fold; ICM bubble factor
+    tightens calls and first-in shoves vs the deepest stack behind. C-bets air only heads-up
+    vs folders, 3/4 pot value vs stations."""
+    ranged = True
+    rollouts = 200
+    OPEN = (0.30, 0.45, 0.36, 0.27, 0.21, 0.17, 0.14, 0.12)
+    NOM = {"steal": 0.90, "assume": 0.80, "pf_bb": 13.0, "three": 0.04, "flat": 0.10, "vbet": 0.62,
+           "vsize": 0.6, "raise": 0.82, "margin": 0.02, "cb_ftb": 0.35}
+    FR_PRIOR, FR_W = 0.80, 6.0
+
+    def _broken(self, s):
+        st = self.stats[s] if self.stats else None
+        return st is not None and st.hands >= 8 and st.vpip == 0
+
+    def decide(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        eff = self._eff_bb(obs)
+        if obs.street == 0:
+            raises = self._raises(obs, 0)
+            behind = [s for s in self._behind_seats(obs) if not self._broken(s)]
+            if not raises:
+                if eff <= k["pf_bb"]:
+                    widen = 1.0
+                    if behind:
+                        deep = max(behind, key=lambda s: obs.stacks[s] + obs.bets[s])
+                        total = sum(obs.stacks) + obs.pot
+                        mine = obs.stacks[obs.seat] + obs.bets[obs.seat]
+                        bf = self.T.bubble_factor(self._alive(obs), mine / max(total, 1),
+                                                  (obs.stacks[deep] + obs.bets[deep]) / max(total, 1), 1.0)
+                        if bf:
+                            widen = _clamp(1.0 / bf, 0.6, 1.0)
+                    return self._pushfold(obs, widen=widen)
+                pf = 1.0
+                for s in behind:
+                    pf *= self._fr(s)
+                if pf >= k["steal"] and self._limpers(obs) == 0:
+                    return self._raise(obs, 2.2 * obs.bb)
+                b = min(len(behind), 7)
+                avg = sum(self._fr(s) for s in behind) / len(behind) if behind else 1.0
+                width = self.OPEN[b] * _clamp(avg / k["assume"], 0.5, 3.0) ** 2
+                if pct <= width:
+                    return self._raise(obs, (2.5 + self._limpers(obs)) * obs.bb)
+                return self._cf(obs)
+            if eff <= k["pf_bb"] or raises[-1][4]:
+                return self._pushfold(obs)
+            rs = raises[-1][0]
+            if len(raises) == 1 and pct <= k["three"]:
+                return self._raise(obs, max(obs.bets) * 3)
+            if len(raises) >= 2:
+                return (CALL, 0) if pct <= 0.03 else self._cf(obs)
+            if pct <= k["flat"] * 1.5:
+                y = self._rate(rs, "pfr")
+                if self._pre_eq(obs, y) >= self._need(obs) + 0.03:
+                    return (CALL, 0)
+            return self._cf(obs)
+        eq = self._post_eq(obs)
+        vs = self._villains(obs)
+        if obs.to_call == 0:
+            if eq >= k["vbet"]:
+                station = len(vs) == 1 and self._rate(vs[0], "fold_to_bet") < 0.25
+                return self._raise(obs, (0.75 if station else k["vsize"]) * obs.pot)
+            if obs.street == 1 and len(vs) == 1 and self._pfr_seat(obs) == obs.seat \
+                    and self._rate(vs[0], "fold_to_bet") >= k["cb_ftb"]:
+                return self._raise(obs, 0.4 * obs.pot)
+            return (CALL, 0)
+        if eq >= k["raise"] and len(self._raises(obs)) < 3:
+            return self._raise(obs, max(obs.bets) + obs.pot)
+        return (CALL, 0) if eq >= self._need(obs) + k["margin"] else (FOLD, 0)
+
+
+class EvCfrPushfold(RivalTag):
+    """A8: near-Nash push/fold from published charts (our bundle's) at <= 15 bb (HU SB jams
+    ~58% at 10 bb), range-weighted MC postflop with many samples, tight-solid deep."""
+    rollouts = 800
+    SPEC = {"open_early": (0.10, 0.13), "open_late": (0.30, 0.40), "three": (0.03, 0.05),
+            "flat": (0.07, 0.11), "pf_bb": (14.5, 15.5), "vbet": (0.60, 0.68), "cbet": (0.40, 0.60),
+            "size": (0.55, 0.70), "margin": (0.01, 0.04), "big_margin": (0.06, 0.12)}
+
+
+class EvGunslinger(_Ev):
+    """A9, Fullhouse 4th place: 3-bets ~33% of hands vs opens, 4-bets its own opens when
+    3-bet, never 5-bet bluffs; multiway equity eq^(1+.35(n-1))."""
+    rollouts = 120
+    OPEN = (0.35, 0.50, 0.42, 0.33, 0.27, 0.22, 0.19, 0.17)
+    NOM = {"open_m": 1.0, "three": 0.33, "four_ok": 1.0, "five": 0.04, "pf_bb": 10.0, "vbet": 0.60,
+           "vsize": 0.7, "cbet": 0.6, "raise": 0.80, "margin": 0.03}
+
+    def decide(self, obs):
+        k = self.k
+        pct = self._pct(obs)
+        eff = self._eff_bb(obs)
+        if obs.street == 0:
+            raises = self._raises(obs, 0)
+            if eff <= k["pf_bb"]:
+                return self._pushfold(obs, widen=1.2)
+            b = min(self._behind(obs), 7)
+            open_w = self.OPEN[b] * k["open_m"]
+            if not raises:
+                if pct <= open_w:
+                    return self._raise(obs, (2.5 + self._limpers(obs)) * obs.bb)
+                return self._cf(obs)
+            if raises[-1][4] or obs.to_call >= 0.4 * obs.stacks[obs.seat]:
+                return (CALL, 0) if pct <= k["five"] else self._cf(obs)       # never 5-bet bluffs
+            if len(raises) == 1:
+                if pct <= k["three"]:
+                    return self._raise(obs, max(obs.bets) * (3.0 if self._ip(obs, raises[0][0]) else 3.6))
+                return (CALL, 0) if pct <= 0.40 and self._po(obs) <= 0.3 else self._cf(obs)
+            if len(raises) == 2 and raises[0][0] == obs.seat:
+                return self._raise(obs, max(obs.bets) * 2.3)            # 4-bets its own open
+            return (CALL, 0) if pct <= k["five"] else self._cf(obs)
+        vs = self._villains(obs)
+        n = max(len(vs), 1)
+        e = self._eq_hu_post(obs) ** (1 + 0.35 * (n - 1))
+        if obs.to_call == 0:
+            if e >= k["vbet"]:
+                return self._raise(obs, k["vsize"] * obs.pot)
+            if obs.street == 1 and self._pfr_seat(obs) == obs.seat and self.rng.random() < k["cbet"]:
+                return self._raise(obs, 0.5 * obs.pot)
+            return (CALL, 0)
+        if e >= k["raise"] and len(self._raises(obs)) < 3:
+            return self._raise(obs, max(obs.bets) + obs.pot)
+        return (CALL, 0) if e >= self._po(obs) + k["margin"] else (FOLD, 0)
+
+
+EVENT_BOTS = {
+    "ev_codex_tag": EvCodexTag, "ev_ghcp_fastrange": EvGhcpFastrange, "ev_pushfold4": EvPushfold4,
+    "ev_mc_mwbug": EvMcMwbug, "ev_strong1": EvStrong1, "ev_reshover": EvReshover,
+    "ev_policybot": EvPolicybot, "ev_cfr_pushfold": EvCfrPushfold, "ev_gunslinger": EvGunslinger,
+}
+EVENT_WEIGHTS = {
+    "ev_codex_tag": 3, "ev_ghcp_fastrange": 2, "ev_pushfold4": 1.5, "ev_mc_mwbug": 1, "ev_strong1": 1.5,
+    "ev_reshover": 1.5, "ev_policybot": 1, "ev_cfr_pushfold": 1, "ev_gunslinger": 0.5,
+}
+
+
+def event_fields(prepped="prep:params/rival_prep.json"):
+    """The field of bots written for this event (EVENT_BOTS), 7 opponents a table drawn by
+    EVENT_WEIGHTS. Never in a tuning default; +prep adds a prepped copy, as in llm_fields."""
+    base = dict(EVENT_WEIGHTS)
+    return {"event": base, "event+prep": {**base, prepped: 1.2}}
+
+
 RIVALS = {
     "rv_tag": RivalTag, "rv_lag": RivalLag, "rv_gto": RivalGto, "rv_exploit": RivalExploit,
     "rv_icm": RivalIcm, "rv_mc": RivalMc, "rv_aggro": RivalAggro, "rv_math": RivalMath,
@@ -1554,6 +2277,7 @@ RIVALS = {
     "rvh_sizer": HoldoutSizer, "rvh_bayes": HoldoutBayes, "rvh_jam": HoldoutJam,
     **LLM_BUGS,
     **GITHUB_BOTS,
+    **EVENT_BOTS,
     "strong_eq": StrongEq,
 }
 RIVAL_STRONG = ("rv_tag", "rv_lag", "rv_gto", "rv_exploit", "rv_icm")
@@ -1593,4 +2317,8 @@ def whale_fields(prepped="prep:params/rival_prep.json"):
         "whale-mirror": (mix, [WHALE_MIRROR]),
         "whale2": (mix, [WHALE_STRONG, WHALE_MIRROR]),
         "whale-br": (mix, [WHALE_BR]),
+        # added after the main runs: the event-repo archetypes as the drawn seats
+        "whale-event": (dict(EVENT_WEIGHTS), [WHALE_STRONG]),
+        "whale-event-cfr": (dict(EVENT_WEIGHTS), ["ev_cfr_pushfold"]),
+        "whale-event-br": (dict(EVENT_WEIGHTS), [WHALE_BR]),
     }

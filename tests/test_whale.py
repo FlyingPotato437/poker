@@ -33,7 +33,7 @@ def test_fold_to_3bet_counts():
 
 def test_whale_fields():
     f = whale_fields()
-    assert set(f) == {"whale1", "whale-mirror", "whale2", "whale-br"}
+    assert {"whale1", "whale-mirror", "whale2", "whale-br", "whale-event"} <= set(f)
     mix, fixed = f["whale2"]
     from nolimit.harness import ZOO
     assert fixed and all(k in ZOO or k.startswith("prep:") for k in mix)

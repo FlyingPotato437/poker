@@ -1,0 +1,11 @@
+current: rc1k sha fe6141db210c at 03:06:07 -> dist/SUBMIT/bot.py (matches)
+history: base@02:57:39(submit), cand1@02:57:40(submit), base@02:57:40(rollback), cand1pp@02:57:40(submit), cand1@02:57:41(rollback), k0@03:02:12(submit), k2@03:04:43(submit), k0@03:04:43(rollback), rc1k@03:06:07(submit)
+
+built tags:
+  cand1    acbcb7459057  params/cand_nlhe.json  points 100,65,45,30,20,12,6,0  peak 73.7 MB  p99.9 14.438 ms  kit ok  warnings: 1
+  cand1pp  81c33c1d264f  params/cand_nlhe.json  points 100,65,45,30,20,12,6,0  peak 62.7 MB  p99.9 13.019 ms  kit ok  warnings: 1
+  base     875a0940df9e  params/ev_t4.json  points 100,65,45,30,20,12,6,0  peak 74.1 MB  p99.9 18.185 ms  kit ok  warnings: 1
+  k0       bfbdf5a8d3d6  params/nlhe_final_legacy.json  points None  peak 35.7 MB  p99.9 5.471 ms  kit ok  warnings: 1
+  k1       85fd7d3b41e4  params/cand_nlhe.json  points None  peak 36.6 MB  p99.9 10.337 ms  kit ok  warnings: 1
+  k2       87e7e759366f  params/cand_nlhe.json  points 12,8,5,3,2,1,0,0  peak 80.4 MB  p99.9 6.564 ms  kit ok  warnings: 1
+  rc1k     fe6141db210c  frozen/rc1/nlhe_bot.py  points None  peak 75.4 MB  p99.9 8.415 ms  kit ok  warnings: 1

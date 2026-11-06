@@ -1,0 +1,86 @@
+[+00:00] go.py variants/examples/plo4.json --adapter examples/adapter_mock_solution.py --tag t2plo4   (2026-11-06 03:45:55)
+[+00:00] Game: plo4 (high, no-limit)
+[+00:00]   deck 13 ranks 23456789TJQKA x 4 suits = 52 cards; 4 hole cards; board 3+1+1; exactly 2 hole + 3 board; ace low yes
+[+00:00]   ranking (weakest first): high < pair < two_pair < trips < straight < flush < full_house < quads < straight_flush < five_kind
+[+00:00]   -> preset plo4 (identical hand evaluation)
+[+00:00] Table: 8 players, stack 2000, 9 blind levels every 25 hands (10/20, 15/30, 25/50, 50/100, 75/150, 100/200, ...), hand cap 200
+[+00:00]   ante: none -> push/fold solved at ante 0 bb (no ante)
+[+00:00]   points 1st..last: 100,65,45,30,20,12,6,0
+[+00:00]   time limit 1 ms per decision
+[+00:00] Kit: raise-by, cards 'As' strings, class Bot.get_action, submit as bot.py
+[+00:00] Params for v1: params/ev_t3.json (PARAMS_MAP preset.plo4)
+[+00:00] PLAN: Kit uses raise-BY: to_obs must give min_raise_to/max_raise_to as raise-TO totals (add the current bet) and to_kit_action must subtract it again.
+[+00:00] variant: preset plo4
+[+00:00] --- t2plo4_v0: heuristic tables, exact rules (submittable while tables build) ---
+[+00:00] $ /Users/revanthguda/poker/.venv/bin/python scripts/day.py build t2plo4_v0 --adapter examples/adapter_mock_solution.py --sngs 20 --workers 3 --heuristic plo4 --params params/nlhe_final_legacy.json --kit-cmd '/Users/revanthguda/poker/.venv/bin/python examples/mock_kit.py {bot} 5'
+[+00:00]     heuristic tables: no push/fold charts, so --points/--ante-bb do not apply
+[+00:00]     $ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/nlhe_final_legacy.json --adapter examples/adapter_mock_solution.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t2plo4_v0.py --variant plo4
+[+00:00]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t2plo4_v0.py (0.1 MB total)
+[+00:02]     smoke ok: variant plo4, tables HeuristicTables, numpy False, import 0.75s, worst decision 31.654 ms
+[+00:08]     check numpy   : import 2.08s, peak memory 35.3 MB, 3431 decisions p99 0.181 ms, p99.9 36.533 ms, max 149.41 ms, over 1 ms 15, errors/illegal 0
+[+00:12]     check no numpy: import 0.49s, peak memory 24.9 MB, 3436 decisions p99 0.206 ms, p99.9 39.331 ms, max 70.11 ms, over 1 ms 14, errors/illegal 0
+[+00:18]     10 SNGs: via mock kit 56.0 pts/table, direct 54.0 (similar numbers = adapter maps state correctly)
+[+00:18]     decision parity: 1402/1402 identical to the bot fed our Obs directly
+[+00:18]     
+[+00:18]     $ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t2plo4_v0 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t2plo4_v0.py
+[+00:18]     t2plo4_v0.py                         0.1 MB  9685ad473c51  params ['params/nlhe_final_legacy.json']  bundle os.environ.setdefault('NOLIMIT_VARIANT', 'plo4')  adapter other
+[+00:18]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t2plo4_v0/MANIFEST.json
+[+00:18]     WARNING: more than 2 decisions per 1000 over 1 ms
+[+00:18]     
+[+00:18]     built and froze t2plo4_v0 in 18s, sha 9685ad473c51. To submit: python scripts/day.py submit t2plo4_v0
+[+00:18]     -> exit 0 after 19s
+[+00:18] *** t2plo4_v0 READY: python scripts/day.py submit t2plo4_v0 --as bot.py
+[+00:18] --- t2plo4_v1: preset bundle plo4, params params/ev_t3.json, points/ante re-solved ---
+[+00:18] $ /Users/revanthguda/poker/.venv/bin/python scripts/day.py build t2plo4_v1 --adapter examples/adapter_mock_solution.py --sngs 20 --workers 3 --preset plo4 --params params/ev_t3.json --points 100,65,45,30,20,12,6,0 --ante-bb 0.0 --kit-cmd '/Users/revanthguda/poker/.venv/bin/python examples/mock_kit.py {bot} 5'
+[+00:19]     $ /Users/revanthguda/poker/.venv/bin/python -m gpu.pushfold --bundle /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/plo4_rng.nlb --payouts 100,65,45,30,20,12,6,0 --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t2plo4_v1.nlb --workers 3
+[+03:00]     push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[+03:14]     bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.76
+[+03:17]     
+[+03:17]     8 players left: open-shove top % by position (rows) x stack bb (cols)
+[+03:17]     pos       2     4     6     8    10    15    20
+[+03:17]       0    11.8  48.5  43.4  39.2  25.2  14.2   9.1
+[+03:17]       1    12.2  54.3  55.0  47.4  39.7  19.8  15.1
+[+03:17]       2    12.9  61.0  69.1  63.5  57.1  30.0  17.2
+[+03:17]       3    14.0  66.1  80.7  78.9  70.7  52.3  25.7
+[+03:17]       4    14.5  72.8  92.1  95.2  92.5  80.2  62.2
+[+03:17]       5    15.2  78.5  99.0  99.2  99.1  98.9  95.8
+[+03:17]       6    46.5  99.9  99.9  99.9  99.9  99.7  99.7
+[+03:17]     BB call vs first-position shove: 2bb=67.2% 4bb=15.5% 6bb=7.2% 8bb=5.2% 10bb=4.0% 15bb=2.5% 20bb=1.8%
+[+03:17]     
+[+03:17]     4 players left: open-shove top % by position (rows) x stack bb (cols)
+[+03:17]     pos       2     4     6     8    10    15    20
+[+03:17]       0    12.2  65.1  78.0  78.2  75.1  52.8  34.0
+[+03:17]       1    12.6  68.7  86.6  91.7  88.8  81.0  67.9
+[+03:17]       2    54.7  94.4  99.9  99.9  99.9  99.8  99.3
+[+03:17]     BB call vs first-position shove: 2bb=89.3% 4bb=34.8% 6bb=20.6% 8bb=14.0% 10bb=10.4% 15bb=6.5% 20bb=4.5%
+[+03:17]     
+[+03:17]     2 players left: open-shove top % by position (rows) x stack bb (cols)
+[+03:17]     pos       2     4     6     8    10    15    20
+[+03:17]       0    98.9  85.7  77.8  74.2  70.7  62.9  57.2
+[+03:17]     BB call vs first-position shove: 2bb=99.9% 4bb=97.9% 6bb=84.9% 8bb=70.5% 10bb=59.4% 15bb=43.5% 20bb=33.2%
+[+03:17]     
+[+03:17]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t2plo4_v1.nlb (7.5 MB)
+[+03:17]     $ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/ev_t3.json --adapter examples/adapter_mock_solution.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t2plo4_v1.py --bundle /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t2plo4_v1.nlb
+[+03:18]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t2plo4_v1.py (10.1 MB total)
+[+03:23]     smoke ok: variant plo4, tables Tables, numpy False, import 1.94s, worst decision 65.631 ms
+[+03:30]     check numpy   : import 3.05s, peak memory 89.1 MB, 4359 decisions p99 1.033 ms, p99.9 59.72 ms, max 84.63 ms, over 1 ms 44, errors/illegal 0
+[+03:38]     check no numpy: import 1.63s, peak memory 83.8 MB, 4138 decisions p99 17.901 ms, p99.9 70.037 ms, max 93.76 ms, over 1 ms 72, errors/illegal 0
+[+03:45]     10 SNGs: via mock kit 59.5 pts/table, direct 62.2 (similar numbers = adapter maps state correctly)
+[+03:45]     decision parity: 1506/1506 identical to the bot fed our Obs directly
+[+03:45]     
+[+03:45]     $ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t2plo4_v1 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t2plo4_v1.py
+[+03:46]     t2plo4_v1.py                        10.1 MB  78c3a6dcf6d0  params ['params/ev_t3.json', 'params/rc1_plo4.json']  bundle ['bundles/plo4_rng.nlb']  adapter other
+[+03:46]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t2plo4_v1/MANIFEST.json
+[+03:46]     WARNING: more than 2 decisions per 1000 over 1 ms
+[+03:46]     
+[+03:46]     built and froze t2plo4_v1 in 207s, sha 78c3a6dcf6d0. To submit: python scripts/day.py submit t2plo4_v1
+[+03:46]     -> exit 0 after 208s
+[+03:46] *** t2plo4_v1 READY: python scripts/day.py submit t2plo4_v1 --as bot.py
+[+03:46] 
+[+03:46] === COPY THESE ===
+[+03:46] python scripts/day.py submit t2plo4_v1 --as bot.py     # then upload dist/SUBMIT/bot.py
+[+03:46] python scripts/day.py rollback                          # back to the previous submission (sha-checked)
+[+03:46] python scripts/day.py status                            # what is live
+[+03:46] # A/B gate v1 vs v0 under the kit's rules (~400 paired SNGs):
+[+03:46]   .venv/bin/python scripts/ab_test.py --bundle bundles/day/t2plo4_v1.nlb --keep-bundle --a prep:params/ev_t3.json --b heur:params/nlhe_final_legacy.json --sngs 400 --workers 3 --points 100,65,45,30,20,12,6,0 --fields zoo,passive,aggressive --schedule 10/20,15/30,25/50,50/100,75/150,100/200,150/300,200/400,300/600 --hands-per-level 25 --stack 2000 --max-hands 200
+[+03:46] log: bench/dayof/go_t2plo4.log

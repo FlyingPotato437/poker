@@ -1,0 +1,29 @@
+[go +0m0s] build_tables start
+[03:45:38] variant tahoe: deck 52, hole 3, streets (3, 1, 1), device mps
+[03:45:38] classes: 1,755 classes over 22,100 combos (0.1s)
+[03:45:38] preflop pass 1 (strength order): 113 rollouts/class
+[03:45:55]   198,315 rollouts x 1 opp in 17.6s
+[03:45:55] preflop pass 2 (equities + ranges): 1139 rollouts/class, 7 opponents
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/gpu/build_tables.py", line 330, in <module>
+    main()
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/gpu/build_tables.py", line 249, in main
+    class_eq, eq_range = class_equities(te, reps, k_max, r_eq, cfg["chunk"],
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/gpu/build_tables.py", line 101, in class_equities
+    sh = te.shares(hero, board, opps)
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/gpu/tensor_eval.py", line 159, in shares
+    ov = self.best(opp_holes[k], board)
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/gpu/tensor_eval.py", line 98, in best
+    return self.eval5(cards[:, idx]).max(dim=1).values
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/gpu/tensor_eval.py", line 71, in eval5
+    five = distinct == 5
+RuntimeError: MPS backend out of memory (MPS allocated: 3.32 GiB, other allocations: 26.92 GiB, max allowed: 30.19 GiB). Tried to allocate 5.69 MiB on private pool. Use PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 to disable upper limit for memory allocations (may cause system failure).
+[go +10m31s] build_tables failed: retry with --chunk 50000 --reuse
+[03:56:10] variant tahoe: deck 52, hole 3, streets (3, 1, 1), device mps
+[03:56:10] preflop pass 1 (strength order): 113 rollouts/class
+[03:57:06]   198,315 rollouts x 1 opp in 56.6s
+[03:57:06] preflop pass 2 (equities + ranges): 1139 rollouts/class, 7 opponents

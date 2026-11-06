@@ -1,0 +1,25 @@
+[go +0m0s] build_tables start
+[04:03:32] variant sevenplus: deck 32, hole 2, streets (3, 1, 1), device cpu
+[04:03:32] classes: 64 classes over 496 combos (0.0s)
+[04:03:32] preflop pass 1 (strength order): 3125 rollouts/class
+[04:03:37]   200,000 rollouts x 1 opp in 4.7s
+[04:03:37] preflop pass 2 (equities + ranges): 20000 rollouts/class, 7 opponents
+[04:05:32]   1,280,000 rollouts x 7 opp in 115.2s
+[04:05:32]   strongest: AcAd (0.690), KcKd (0.654), QcQd (0.627), TcTd (0.586), JcJd (0.607)
+[04:07:11] postflop data, board 3: 60,000 samples (98.9s)
+[04:08:44] postflop data, board 4: 60,000 samples (92.7s)
+[04:10:24] postflop data, board 5: 60,000 samples (100.0s)
+[04:10:58]   epoch 1/10 train mse 0.02771
+[04:12:45]   epoch 5/10 train mse 0.00765
+[04:15:09]   epoch 9/10 train mse 0.00641
+[04:16:00]   epoch 10/10 train mse 0.00628
+[04:16:02]   epoch 1/10 train mse 0.05413
+[04:16:10]   epoch 5/10 train mse 0.01170
+[04:16:16]   epoch 9/10 train mse 0.01025
+[04:16:17]   epoch 10/10 train mse 0.01017
+[04:16:17] small MLP 64,32 validation MAE: 0.0517, 0.0510, 0.0475
+[04:16:17] postflop MLP validation MAE vs 1/2/3 opp: 0.0302, 0.0281, 0.0255
+[04:16:18] wrote bundles/day/t4custom_base.nlb (2.1 MB)
+[go +12m56s] build_tables done
+[04:16:33] range equity for sevenplus: grid 5x9, device cpu, cfg {'samples': 20000, 'k': 24, 'rollouts': 3, 'val_samples': 300, 'val_k': 64, 'val_rollouts': 8, 'chunk': 200000, 'epochs': 10, 'hidden': '1024,512', 'small_hidden': '64,32'}
+[04:24:54] board 3: 20,000 samples (501.2s), mean label 0.303, top-5% of top-8% 0.185

@@ -55,7 +55,12 @@ def make_core(seed=None):
 # Pay load cost at import, then move everything into the permanent GC generation and turn
 # automatic collection off, so no collector pause lands inside a decision.
 warmup(_tables())   # fill caches now: cold first decisions measured at 1-6 ms
-gc_settle()         # collect + freeze, then no automatic GC; each new table collects first
+if "gc_settle" in globals():   # collect + freeze, then no automatic GC; each new table collects first
+    gc_settle()
+else:                          # rc1's runtime (frozen/rc1) has no gc_settle: same adapter works there
+    import gc
+    gc.collect()
+    gc.freeze()
 
 _RANK_ALIASES = {"10": "T", "1": "A"}
 _SUIT_ALIASES = {"c": 0, "d": 1, "h": 2, "s": 3, "♣": 0, "♦": 1, "♥": 2, "♠": 3}

@@ -1,0 +1,55 @@
+A = prep:params/cand_nlhe.json
+B = prep:params/ev_t4.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+top-heavy normal  gate-mixed                +6.38   1.35         +29.2%   0/0
+top-heavy normal  rival-real                +5.91   1.45         +27.0%   0/0
+top-heavy normal  llm-bugs                  +7.49   1.39         +34.3%   0/0
+top-heavy normal  github                    +6.64   1.46         +30.3%   0/0
+top-heavy normal  h2h 4v4           A 0.923x fair
+top-heavy fast    gate-mixed                +4.18   1.36         +19.1%   0/0
+top-heavy fast    rival-real                +2.67   1.17         +12.2%   0/0
+top-heavy fast    llm-bugs                  +4.30   1.40         +19.7%   0/0
+top-heavy fast    github                    +4.22   1.54         +19.3%   0/0
+top-heavy fast    h2h 4v4           A 0.915x fair
+linear    normal  gate-mixed                +0.23   0.06          +6.6%   0/0
+linear    normal  rival-real                +0.29   0.07          +8.2%   0/0
+linear    normal  llm-bugs                  +0.21   0.05          +5.9%   0/0
+linear    normal  github                    +0.29   0.07          +8.4%   0/0
+linear    normal  h2h 4v4           A 0.979x fair
+linear    fast    gate-mixed                +0.20   0.06          +5.7%   0/0
+linear    fast    rival-real                +0.23   0.07          +6.6%   0/0
+linear    fast    llm-bugs                  +0.10   0.06          +2.7%   0/0
+linear    fast    github                    +0.30   0.08          +8.6%   0/0
+linear    fast    h2h 4v4           A 0.985x fair
+top-3     normal  gate-mixed                +3.80   0.66         +30.4%   0/0
+top-3     normal  rival-real                +2.13   0.75         +17.1%   0/0
+top-3     normal  llm-bugs                  +2.70   0.64         +21.6%   0/0
+top-3     normal  github                    +3.25   0.71         +26.0%   0/0
+top-3     normal  h2h 4v4           A 0.916x fair
+top-3     fast    gate-mixed                +2.71   0.69         +21.6%   0/0
+top-3     fast    rival-real                +0.57   0.67          +4.6%   0/0
+top-3     fast    llm-bugs                  +2.49   0.69         +19.9%   0/0
+top-3     fast    github                    +2.23   0.76         +17.8%   0/0
+top-3     fast    h2h 4v4           A 0.947x fair
+wta       normal  gate-mixed                +0.08   0.02         +63.9%   0/0
+wta       normal  rival-real                +0.06   0.02         +45.1%   0/0
+wta       normal  llm-bugs                  +0.07   0.02         +52.8%   0/0
+wta       normal  github                    +0.05   0.02         +41.2%   0/0
+wta       normal  h2h 4v4           A 0.915x fair
+wta       fast    gate-mixed                +0.04   0.02         +32.5%   0/0
+wta       fast    rival-real                +0.01   0.01          +9.6%   0/0
+wta       fast    llm-bugs                  +0.03   0.02         +24.0%   0/0
+wta       fast    github                    +0.00   0.02          +1.6%   0/0
+wta       fast    h2h 4v4           A 0.916x fair
+slope     normal  gate-mixed                +0.45   0.08          +9.2%   0/0
+slope     normal  rival-real                +0.49   0.10         +10.1%   0/0
+slope     normal  llm-bugs                  +0.27   0.08          +5.6%   0/0
+slope     normal  github                    +0.48   0.09          +9.9%   0/0
+slope     normal  h2h 4v4           A 0.975x fair
+slope     fast    gate-mixed                +0.27   0.08          +5.4%   0/0
+slope     fast    rival-real                +0.27   0.09          +5.5%   0/0
+slope     fast    llm-bugs                  +0.13   0.08          +2.7%   0/0
+slope     fast    github                    +0.36   0.11          +7.3%   0/0
+slope     fast    h2h 4v4           A 0.978x fair
+
+mean over 40 cells: A-B +18.23% of fair (±1.12)  [5533s]
