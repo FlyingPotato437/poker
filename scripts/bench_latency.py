@@ -2,6 +2,7 @@
 
     python scripts/bench_latency.py --bundle bundles/nlhe.nlb
     python scripts/bench_latency.py --bundle bundles/nlhe.nlb --no-numpy --gc freeze
+    python scripts/bench_latency.py --bundle bundles/nlhe.nlb --gc settle   # as the packaged bot
 
 Aim for p99.9 well under 1 ms on this machine: the host sandbox may be slower.
 """
@@ -24,13 +25,13 @@ def main():
     ap.add_argument("--params")
     ap.add_argument("--sngs", type=int, default=60)
     ap.add_argument("--no-numpy", action="store_true")
-    ap.add_argument("--gc", choices=("default", "freeze", "off"), default="default")
+    ap.add_argument("--gc", choices=("default", "freeze", "off", "settle", "settle-threshold"), default="default")
     args = ap.parse_args()
     if args.no_numpy:
         os.environ["NOLIMIT_NO_NUMPY"] = "1"
 
     from nolimit.engine import SNG
-    from nolimit.runtime import HeuristicTables, PrepBot, Tables, load_tables, np, warmup
+    from nolimit.runtime import HeuristicTables, PrepBot, Tables, gc_settle, load_tables, np, warmup
     from nolimit.zoo import ZOO
 
     T = load_tables(path=args.bundle) if args.bundle else load_tables(variant=args.variant)
@@ -55,6 +56,10 @@ def main():
         gc.freeze()
     elif args.gc == "off":
         gc.disable()
+    elif args.gc == "settle":           # what the packaged bot does (adapter: gc_settle())
+        gc_settle("off")
+    elif args.gc == "settle-threshold":
+        gc_settle("threshold")
     bots = []
     for g in range(args.sngs):
         agents = [Timed(T, params, seed=g * 8 + i) for i in range(4)]

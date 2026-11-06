@@ -1,6 +1,5 @@
 # Answer key for the mock-kit rehearsal (examples/mock_kit.py). Same shape as
 # adapter_template.py with to_obs / to_kit_action filled in for the mock format.
-import gc  # noqa: E402
 import os  # noqa: E402
 
 from nolimit.runtime import *  # noqa: F401,F403  # PACKAGE: strip
@@ -29,8 +28,7 @@ def make_core(seed=None):
 
 
 warmup(_tables())   # fill caches now: cold first decisions measured at 1-6 ms
-gc.collect()
-gc.freeze()
+gc_settle()         # collect + freeze, then no automatic GC; each new table collects first
 
 _STREET = {"preflop": 0, "flop": 1, "turn": 2, "river": 3}
 _KIND = {"blind": POST, "fold": FOLD, "check": CALL, "call": CALL, "raise": RAISE, "bet": RAISE}

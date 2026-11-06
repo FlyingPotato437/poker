@@ -21,7 +21,6 @@
 #   [ ] return value: map (FOLD|CALL|RAISE, raise_to) to the kit's action format
 # Then run: python scripts/package_bot.py ... and test dist/bot.py in the kit simulator.
 # ===========================================================================
-import gc  # noqa: E402
 import os  # noqa: E402
 
 from nolimit.runtime import *  # noqa: F401,F403  # PACKAGE: strip
@@ -53,11 +52,10 @@ def make_core(seed=None):
     return PrepBot(_tables(), globals().get("_PARAMS"), seed=seed)
 
 
-# Pay load cost at import, then move everything into the permanent GC generation so
-# collector pauses during play stay small.
+# Pay load cost at import, then move everything into the permanent GC generation and turn
+# automatic collection off, so no collector pause lands inside a decision.
 warmup(_tables())   # fill caches now: cold first decisions measured at 1-6 ms
-gc.collect()
-gc.freeze()
+gc_settle()         # collect + freeze, then no automatic GC; each new table collects first
 
 _RANK_ALIASES = {"10": "T", "1": "A"}
 _SUIT_ALIASES = {"c": 0, "d": 1, "h": 2, "s": 3, "♣": 0, "♦": 1, "♥": 2, "♠": 3}

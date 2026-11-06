@@ -7,6 +7,7 @@ postflop equity MLP, and everything falls back to pure Python without it.
 from __future__ import annotations
 
 import base64
+import gc
 import itertools
 import json
 import math
@@ -1086,7 +1087,12 @@ class PrepBot(BotBase):
         self.deadline_hits = 0
         self.new_table(0, 8)
 
-    def new_table(self, seat, n_seats):
+    def new_table(self, seat, n_seats, _collect=True):
+        if _collect and _GC_CONTROL:
+            # Table start is outside any decision: clear the last table's garbage here, so
+            # the collector (disabled or rarely triggered, see gc_settle) never runs mid-act.
+            gc.collect()
+            gc.freeze()
         self.seat = seat
         self.p = self._p_base
         self.view, self.arm = None, -1       # table features at the switch point, arm played
@@ -1119,7 +1125,7 @@ class PrepBot(BotBase):
     # -----------------------------------------------------------------------
     def _act(self, obs):
         if len(self.stats) != len(obs.stacks):
-            self.new_table(obs.seat, len(obs.stacks))
+            self.new_table(obs.seat, len(obs.stacks), _collect=False)   # timed path: no gc
         key = (obs.hand_no, tuple(obs.hole))
         if key != self._hand_key:
             # Fall back to our own partial view if the host never sent hand_end.
@@ -1613,6 +1619,28 @@ class PrepBot(BotBase):
                           "pfold": dbg[0] if dbg else None, "qcall": dbg[1] if dbg else None,
                           "rngs": rngs, "real": real}
         return best
+
+
+_GC_CONTROL = False
+
+
+def gc_settle(mode="off"):
+    """Keep the cyclic garbage collector out of decisions. Call once after warmup().
+
+    Collects and freezes everything allocated so far (the tables, caches and module state
+    move to the permanent generation, so they are never scanned again), then either
+    disables automatic collection ("off") or makes it rare ("threshold"). From then on every
+    PrepBot built or reset by the host (new_table) runs gc.collect() + gc.freeze() first,
+    which is outside the timed act() path; that bounds what one table can leave behind.
+    """
+    global _GC_CONTROL
+    gc.collect()
+    gc.freeze()
+    if mode == "off":
+        gc.disable()
+    elif mode == "threshold":
+        gc.set_threshold(50000, 50, 50)
+    _GC_CONTROL = True
 
 
 def embedded_bundle_bytes(b64):
