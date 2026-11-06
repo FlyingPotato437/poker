@@ -923,7 +923,8 @@ class SeatStats:
     __slots__ = ("hands", "vpip", "pfr", "shove", "faced", "folded", "aggr", "passive",
                  "bet_opp", "bets", "raised", "faced_ab", "folded_ab", "prior",
                  "acts", "allin", "minr",
-                 "fi_opp", "fi_raise", "fi_jam", "o3_n", "o3_f", "o3_c", "oj_n", "oj_f", "ai_n", "ai_c")
+                 "fi_opp", "fi_raise", "fi_jam", "o3_n", "o3_f", "o3_c", "oj_n", "oj_f", "ai_n", "ai_c",
+                 "fs_n", "fs_f")
 
     def __init__(self):
         self.hands = self.vpip = self.pfr = self.shove = 0
@@ -934,8 +935,9 @@ class SeatStats:
         # fi_*  acted in an unopened pot (no raise yet): opportunities, non-all-in opens, jams;
         # o3_*  after opening (non-all-in), faced a re-raise: times, folds, calls (rest re-raised);
         # oj_*  ... of those, the re-raise faced included an all-in: times, folds;
-        # ai_*  faced an all-in raise preflop: times, continued (call or re-raise).
-        self.fi_opp = self.fi_raise = self.fi_jam = 0
+        # ai_*  faced an all-in raise preflop: times, continued (call or re-raise);
+        # fs_*  first action facing one non-all-in open: times, folds (fold to a steal).
+        self.fi_opp = self.fi_raise = self.fi_jam = self.fs_n = self.fs_f = 0
         self.o3_n = self.o3_f = self.o3_c = self.oj_n = self.oj_f = self.ai_n = self.ai_c = 0
         self.prior = PRIORS
 
@@ -1000,6 +1002,7 @@ def ingest_history(stats, history):
     aggr = set()
     bb = inc = 1
     opener, o_pend, o_jam, ai_top, n_r = -1, False, False, False, 0
+    acted0 = set()
     for seat, st, kind, amt, all_in in history:
         seen.add(seat)
         if st != street:
@@ -1041,6 +1044,10 @@ def ingest_history(stats, history):
                 elif kind == CALL:
                     s.o3_c += 1
                 opener = -1
+            if n_r == 1 and opener >= 0 and seat != opener and seat not in acted0:
+                s.fs_n += 1
+                s.fs_f += kind == FOLD
+            acted0.add(seat)
             if ai_top and cur > prev:
                 s.ai_n += 1
                 s.ai_c += kind != FOLD
@@ -1172,6 +1179,14 @@ DEFAULT_PARAMS = {
     "mw_bh": 0.0,             # >= 0.5: also the case with no caller yet, players behind (else the old rule)
     "mw_ys": 1.0,             # scales the shover's range
     "mw_yc": 1.0,             # scales callers' ranges
+    # resteal v2 gates and call model
+    "rs2_vp_open": 1.0,       # only vs openers whose VPIP (shrunk) is at most this
+    "rs2_vp_tab": 1.0,        # ... and when the other live seats' mean VPIP is at most this
+    "rs2_cfix": 0.0,          # > 0: the opener calls with the top rs2_cfix of its open range (else (1 - f) * rs2_cw)
+    # steal from the product of fold-to-open rates of the players behind (deep opens)
+    "st_prod": 0.0,           # >= 0.5: on
+    "st_any": 0.9,            # open any two when that product is at least this
+    "st_prior": 0.8,          # prior fold-to-open rate (rs2_w pseudo-observations)
 }
 
 PARAM_SPACE = {
@@ -1199,6 +1214,8 @@ PARAM_SPACE = {
     "rs2_fj": (0.2, 0.9), "rs2_f3": (0.2, 0.9), "rs2_w": (1.0, 20.0), "rs2_min_n": (0.0, 10.0),
     "rs2_cw": (0.5, 2.0), "rs2_px": (-5.0, 5.0),
     "mw_rng": (0.0, 1.0), "mw_margin": (-0.1, 0.1), "mw_bh": (0.0, 1.0), "mw_ys": (0.5, 2.0), "mw_yc": (0.5, 2.0),
+    "rs2_vp_open": (0.1, 1.0), "rs2_vp_tab": (0.1, 1.0), "rs2_cfix": (0.0, 1.0),
+    "st_prod": (0.0, 1.0), "st_any": (0.6, 1.0), "st_prior": (0.5, 0.95),
 }
 # The EV engine is a mode switch, not something to search over; nor are the preflop feature
 # switches or the tournament's hand cap.
@@ -1632,6 +1649,15 @@ class PrepBot(BotBase):
                 # Steal wider when the players left to act rarely play (crashed bots fold).
                 vp = sum(self.stats[s].rate("vpip") for s in behind) / len(behind)
                 thr = min(1.0, thr * (PRIORS["vpip"] / max(vp, 0.05)) ** (0.5 * p["steal_exploit"]))
+                if p["st_prod"] >= 0.5 and not limpers:
+                    # Seats that never put a voluntary chip in are left out (they fold anyway).
+                    prod, w = 1.0, p["rs2_w"]
+                    for s in behind:
+                        o = self.stats[s]
+                        if o.vpip > 0:
+                            prod *= (o.fs_f + w * p["st_prior"]) / (o.fs_n + w)
+                    if prod >= p["st_any"]:
+                        thr = 1.0
             if pct <= thr:
                 return self._raise(obs, p["open_bb"] * obs.bb + limpers * obs.bb)
             comp = p["sb_complete_pct"]
@@ -1791,6 +1817,12 @@ class PrepBot(BotBase):
         st = self.stats[opener]
         if st.o3_n < p["rs2_min_n"]:
             return None
+        if p["rs2_vp_open"] < 1.0 and st.rate("vpip") > p["rs2_vp_open"]:
+            return None
+        if p["rs2_vp_tab"] < 1.0:
+            vs = [self.stats[s].rate("vpip") for s in range(len(stacks)) if s != me and stacks[s] + bets[s] > 0]
+            if vs and sum(vs) / len(vs) > p["rs2_vp_tab"]:
+                return None
         w = p["rs2_w"]
         f3 = (st.o3_f + w * p["rs2_f3"]) / (st.o3_n + w)
         f = (st.oj_f + w * f3 * p["rs2_fj"] / max(p["rs2_f3"], 0.01)) / (st.oj_n + w)
@@ -1816,7 +1848,8 @@ class PrepBot(BotBase):
             return eq * gain - (1.0 - eq) * risk * bf
 
         y_open = _clamp((st.fi_raise + w * RS_PRIORS["open"]) / (st.fi_opp + w), 0.02, 1.0)
-        ev = c * ev_called(opener, _clamp(y_open * c * p["rs2_cw"], 0.01, 1.0))
+        y_call = y_open * p["rs2_cfix"] if p["rs2_cfix"] > 0 else y_open * c * p["rs2_cw"]
+        ev = c * ev_called(opener, _clamp(y_call, 0.01, 1.0))
         fold_all = f
         for s in range(len(stacks)):
             if s == me or s == opener or not obs.in_hand[s] or stacks[s] <= 0:
