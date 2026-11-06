@@ -54,8 +54,9 @@ identical. Otherwise the heuristic v0 with the exact rules is safer than a wrong
 | Wild cards or jokers | Evaluator | Same as above. As an interim, treat a wild card as the card that best improves the hand: add it in `Evaluator.best`. |
 | Discards (pineapple, crazy pineapple) or draws | Engine and state have no discard step | Adapter-level: keep the 2 cards whose `T.hole_class` scores best, or the best made hand with the board after the flop. Play with the 2-card (nlhe) tables. About 15 min. |
 | Stud (up cards, bring-in) | Engine, state and tables | Rules engine on heuristic tables with the up cards treated as board cards seen by all. Low quality; mostly the adapter. |
-| Two boards, run it twice | Settlement | Run it twice doesn't change decisions, so ignore it. For two boards, evaluate against board 1 only and fix if there's time. |
-| Straddles, bomb pots | Forced bets | Adapter: add forced bets as `POST` in history and include them in `bets`. A bomb pot skips preflop, which the bot handles because street is taken from the state. |
+| Two boards, run it twice | Settlement | Run it twice doesn't change decisions, so ignore it (simulate with `--run-twice`). For two boards, evaluate against board 1 only and fix if there's time. |
+| Straddles, bomb pots | Forced bets | Adapter: add forced bets as `POST` in history and include them in `bets`. A bomb pot skips preflop, which the bot handles because street is taken from the state. Simulate with `--straddle`, `--bomb-every N --bomb-bb K`. |
+| BB ante, 7-2 bounty, knockout points, bet or raise caps, dead button | Forced bets, payouts or betting limits | Engine flags `--bb-ante`, `--bounty-72`, `--ko-points`, `--max-bet-bb`, `--max-raises`, `--dead-button` (scripts/rules_cli.py) in run_tournament, ab_test, tune and the sweep. The bot knows none of the bounty rules; `scripts/stipulation_sweep.py` measures what each costs. |
 
 ## 4. Always, whatever the variant
 

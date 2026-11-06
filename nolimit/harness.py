@@ -44,6 +44,9 @@ def parse_entry(spec, weight=1.0):
     prep:p.json@b.nlb) to A/B bundles; everyone else uses the run's --bundle.
     A '#small' or '#big' suffix picks that entry's model size (prep:p.json#small).
     """
+    if spec.endswith("+aware72"):        # bounty-aware wrapper (nolimit/aware.py), for the 7-2 rule
+        e = parse_entry(spec[:-len("+aware72")], weight)
+        return dict(e, label=e["label"] + "+aware72", aware72=True)
     spec, _, nets = spec.partition("#")
     spec, _, bundle = spec.partition("@")
     tag = "@" + os.path.splitext(os.path.basename(bundle))[0] if bundle else ""
@@ -69,6 +72,9 @@ def parse_entry(spec, weight=1.0):
 
 
 def make_agent(entry, seed):
+    if entry.get("aware72"):
+        from .aware import Aware72
+        return Aware72(make_agent(dict(entry, aware72=False), seed), _W["variant"])
     kind = entry["kind"]
     if kind == "prep":
         tables = _nets(load_tables(path=entry["bundle"])) if entry.get("bundle") else _W["tables"]
