@@ -1095,7 +1095,8 @@ class PrepBot(BotBase):
                                for t in (i / (EXPLOIT_LEVELS - 1) for i in range(EXPLOIT_LEVELS))]
             # Optional refinements of the rule (all off when absent, which is the fitted rule as is):
             # rel     1: preflop, only raisers and seats still to act count (not limpers/callers);
-            #         2: as 1, and a seat still to act counts in proportion to its VPIP.
+            #         2: as 1, and a seat still to act counts in proportion to its VPIP
+            #         (lam' = 1 - (1 - lam) * min(1, rel_k * VPIP), rel_k default 1).
             # degen_n after this many actions, a seat that jams (>= 90%) or min-raises (>= 75%)
             #         nearly every action gets lam 1 (exploit gain vs these is about 0, so it
             #         should not block exploiting the others).
@@ -1105,6 +1106,7 @@ class PrepBot(BotBase):
             #         rec_z standard errors (VPIP or aggression), its hands count in the
             #         hands / (hands + h0) factor shrinks by this share toward the recent count.
             self._ex_rel = int(ex.get("rel", 0))
+            self._ex_rel_k = float(ex.get("rel_k", 1.0))    # rel 2: weight = min(1, rel_k * VPIP)
             self._ex_dn = int(ex.get("degen_n", 0))
             self._ex_dfn = int(ex.get("degen_fold_n", 0))
             self._ex_rec = float(ex.get("rec", 0.0))
@@ -1275,7 +1277,7 @@ class PrepBot(BotBase):
             kind = 2
         elif self._ex_dfn and st.hands >= self._ex_dfn and not (st.vpip or st.aggr or st.passive):
             kind = 1
-        self._ex_cache[s] = (st.hands, lam, kind, 1.0 - (1.0 - lam) * rates[0] if self._ex_rel == 2 else lam)
+        self._ex_cache[s] = (st.hands, lam, kind, 1.0 - (1.0 - lam) * min(1.0, self._ex_rel_k * rates[0]) if self._ex_rel == 2 else lam)
         return lam
 
     def table_view(self):
