@@ -918,13 +918,17 @@ def _ex_rates(st):
 
 
 class SeatStats:
+    # acts / allin / minr: every non-blind action, how many went all-in, and how many were
+    # min-raises (min-bets) short of all-in; they flag degenerate bots (exploit "degen_n").
     __slots__ = ("hands", "vpip", "pfr", "shove", "faced", "folded", "aggr", "passive",
-                 "bet_opp", "bets", "raised", "faced_ab", "folded_ab", "prior")
+                 "bet_opp", "bets", "raised", "faced_ab", "folded_ab", "prior",
+                 "acts", "allin", "minr")
 
     def __init__(self):
         self.hands = self.vpip = self.pfr = self.shove = 0
         self.faced = self.folded = self.aggr = self.passive = 0
         self.bet_opp = self.bets = self.raised = self.faced_ab = self.folded_ab = 0
+        self.acts = self.allin = self.minr = 0
         self.prior = PRIORS
 
     def rate(self, name):
@@ -986,18 +990,30 @@ def ingest_history(stats, history):
     street = -1
     bets = {}
     aggr = set()
+    bb = inc = 1
     for seat, st, kind, amt, all_in in history:
         seen.add(seat)
         if st != street:
             street = st
             bets = {}
             aggr = set()
+            inc = bb
         cur = max(bets.values()) if bets else 0
         prev = bets.get(seat, 0)
         if kind == POST:
             bets[seat] = amt
+            if amt > bb:
+                bb = inc = amt
             continue
         s = stats[seat]
+        s.acts += 1
+        if all_in:
+            s.allin += 1
+        if kind == RAISE:
+            if amt - cur > inc:
+                inc = amt - cur
+            elif not all_in:
+                s.minr += 1
         if st == 0:
             if kind == RAISE:
                 vp.add(seat)
@@ -1192,6 +1208,25 @@ class PrepBot(BotBase):
             self._ex_levels = [{k: (1 - t) * v + t * tgt[k] if isinstance(v, float) else (tgt[k] if t >= 0.5 else v)
                                 for k, v in self.p.items()}
                                for t in (i / (EXPLOIT_LEVELS - 1) for i in range(EXPLOIT_LEVELS))]
+            # Optional refinements of the rule (all off when absent, which is the fitted rule as is):
+            # rel     1: preflop, only raisers and seats still to act count (not limpers/callers);
+            #         2: as 1, and a seat still to act counts in proportion to its VPIP
+            #         (lam' = 1 - (1 - lam) * min(1, rel_k * VPIP), rel_k default 1).
+            # degen_n after this many actions, a seat that jams (>= 90%) or min-raises (>= 75%)
+            #         nearly every action gets lam 1 (exploit gain vs these is about 0, so it
+            #         should not block exploiting the others).
+            # degen_fold_n  after this many hands without a voluntary chip, the same for a
+            #         check/fold (timeout) seat, preflop and only while it has not acted this hand.
+            # rec     > 0: when a seat's last rec_w hands differ from its earlier ones by more than
+            #         rec_z standard errors (VPIP or aggression), its hands count in the
+            #         hands / (hands + h0) factor shrinks by this share toward the recent count.
+            self._ex_rel = int(ex.get("rel", 0))
+            self._ex_rel_k = float(ex.get("rel_k", 1.0))    # rel 2: weight = min(1, rel_k * VPIP)
+            self._ex_dn = int(ex.get("degen_n", 0))
+            self._ex_dfn = int(ex.get("degen_fold_n", 0))
+            self._ex_rec = float(ex.get("rec", 0.0))
+            self._ex_rec_w = int(ex.get("rec_w", 30))
+            self._ex_rec_z = float(ex.get("rec_z", 2.5))
         self._p_base = self.p
         self._rule = alt
         self._arms = [dict(self.p, **a["params"]) for a in alt["arms"]] if alt else []
@@ -1216,7 +1251,8 @@ class PrepBot(BotBase):
         self._ingested = set()   # hand_no values the host already reported via hand_end
         self._ingested_keys = set()
         self._cls = None
-        self._ex_cache = {}      # seat -> (hands seen, lam) for the exploitation rule
+        self._ex_cache = {}      # seat -> (hands seen, lam, degenerate kind, lam if still to act)
+        self._ex_snap = [[] for _ in range(n_seats)]   # per seat: recent (hands, vpip, aggr, passive)
         self._nh = 0             # hands seen at this table (own count: hand ids may be anything)
         self._hn_seen = set()
         self._unfaded = None     # the params under the cap fade, while it is active
@@ -1260,6 +1296,8 @@ class PrepBot(BotBase):
             self._ingested.add(info["hand_no"])
             ingest_history(self.stats, info["history"])
             pool_priors(self.stats, self.seat, self.p["pool_w"])
+            if self._ex and self._ex_rec:
+                self._ex_snapshot()
             if self._rule:
                 self._choose_params()
 
@@ -1286,6 +1324,8 @@ class PrepBot(BotBase):
                 self._ingested_keys.add(prev)
                 ingest_history(self.stats, self._hist)
                 pool_priors(self.stats, self.seat, self.p["pool_w"])
+                if self._ex and self._ex_rec:
+                    self._ex_snapshot()
                 if self._rule:
                     self._choose_params()
             self._hand_key = key
@@ -1301,13 +1341,84 @@ class PrepBot(BotBase):
         return self._postflop(obs)
 
     def _ex_level(self, obs):
-        lam = 1.0
-        for s, live in enumerate(obs.in_hand):
-            if live and s != obs.seat:
-                lam = min(lam, self._ex_lam(s))
-                if lam <= 0.0:
-                    break
+        me, lam = obs.seat, 1.0
+        if obs.street == 0 and (self._ex_rel or self._ex_dfn):
+            acted, raisers = set(), set()
+            for h in obs.history:
+                if h[2] != POST:
+                    acted.add(h[0])
+                    if h[2] == RAISE:
+                        raisers.add(h[0])
+            rel = self._ex_rel
+            for s, live in enumerate(obs.in_hand):
+                if live and s != me:
+                    if s in acted:
+                        if rel and s not in raisers:
+                            continue                  # limped / called: not who we play against
+                        x = self._ex_lam(s)
+                        if self._ex_cache[s][2] == 2:
+                            x = 1.0
+                    else:
+                        if rel and obs.stacks[s] <= 0:
+                            continue                  # all-in on the blind: cannot act
+                        x = self._ex_lam(s)
+                        c = self._ex_cache[s]
+                        if c[2]:
+                            x = 1.0
+                        elif rel == 2:
+                            x = c[3]
+                    if x < lam:
+                        lam = x
+                        if lam <= 0.0:
+                            break
+        else:
+            for s, live in enumerate(obs.in_hand):
+                if live and s != me:
+                    x = self._ex_lam(s)
+                    if self._ex_dn and self._ex_cache[s][2] == 2:
+                        x = 1.0
+                    if x < lam:
+                        lam = x
+                        if lam <= 0.0:
+                            break
         return int(lam * (EXPLOIT_LEVELS - 1) + 0.5)
+
+    def _ex_snapshot(self):
+        w = self._ex_rec_w
+        for s, st in enumerate(self.stats):
+            q = self._ex_snap[s]
+            if not q or q[-1][0] != st.hands:
+                q.append((st.hands, st.vpip, st.aggr, st.passive))
+                if len(q) > w + 1:
+                    del q[0]
+
+    def _ex_hands(self, s, st):
+        """Hands count for the lam factor: shrunk toward the recent window after a change."""
+        h = st.hands
+        q = self._ex_snap[s]
+        if len(q) <= self._ex_rec_w:
+            return h
+        h0, v0, a0, p0 = q[0]
+        if h0 < 15:
+            return h
+        zz = self._ex_rec_z ** 2
+        n1, n2 = h - h0, h0
+        x1, x2 = st.vpip - v0, v0
+        pp = (x1 + x2) / h
+        var = pp * (1.0 - pp) * (1.0 / n1 + 1.0 / n2)
+        d = x1 / n1 - x2 / n2
+        hit = var > 0 and d * d > zz * var
+        if not hit:
+            n1, n2 = st.aggr - a0 + st.passive - p0, a0 + p0
+            if n1 >= 5 and n2 >= 5:
+                x1, x2 = st.aggr - a0, a0
+                pp = (x1 + x2) / (n1 + n2)
+                var = pp * (1.0 - pp) * (1.0 / n1 + 1.0 / n2)
+                d = x1 / n1 - x2 / n2
+                hit = var > 0 and d * d > zz * var
+        if hit:
+            return h - self._ex_rec * (h - (st.hands - h0))
+        return h
 
     def _ex_lam(self, s):
         st = self.stats[s]
@@ -1316,10 +1427,17 @@ class PrepBot(BotBase):
             return got[1]
         c = self._ex_coef
         z = c[0]
-        for (a, b), r in zip(c[1], _ex_rates(st)):
+        rates = _ex_rates(st)
+        for (a, b), r in zip(c[1], rates):
             z += r * (a + b * r)
-        lam = 0.0 if z < -30 or not st.hands else st.hands / (st.hands + self._ex["h0"]) / (1.0 + math.exp(-z))
-        self._ex_cache[s] = (st.hands, lam)
+        h = self._ex_hands(s, st) if self._ex_rec else st.hands
+        lam = 0.0 if z < -30 or not st.hands else h / (h + self._ex["h0"]) / (1.0 + math.exp(-z))
+        kind = 0
+        if self._ex_dn and st.acts >= self._ex_dn and (st.allin >= 0.9 * st.acts or st.minr >= 0.75 * st.acts):
+            kind = 2
+        elif self._ex_dfn and st.hands >= self._ex_dfn and not (st.vpip or st.aggr or st.passive):
+            kind = 1
+        self._ex_cache[s] = (st.hands, lam, kind, 1.0 - (1.0 - lam) * min(1.0, self._ex_rel_k * rates[0]) if self._ex_rel == 2 else lam)
         return lam
 
     def table_view(self):
