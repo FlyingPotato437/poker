@@ -23,6 +23,7 @@ from benchmark import FIELDS, PAYOUTS, SCHEDULES, rebundle  # noqa: E402
 from final_check import final_fields  # noqa: E402
 from nolimit.harness import build_seatings, make_pool, parse_entry, run_games  # noqa: E402
 from nolimit.zoo import DEFAULT_FIELD_MIX, FRESH, HELD_OUT  # noqa: E402
+from rules_cli import add_rule_args, rule_kwargs  # noqa: E402
 
 AB_FIELDS = dict(FIELDS)
 AB_FIELDS["held-out*"] = {k: 1 for k in HELD_OUT}
@@ -75,6 +76,7 @@ def main():
     ap.add_argument("--ante", type=int, default=0, help="ante in chips, every hand")
     ap.add_argument("--max-hands", type=int, help="hand cap")
     ap.add_argument("--reopen-short", action="store_true", help="a short all-in reopens the betting")
+    add_rule_args(ap)
     args = ap.parse_args()
     if args.points:
         PAYOUTS["kit"] = tuple(float(x) for x in args.points.split(","))
@@ -89,6 +91,7 @@ def main():
                  ("reopen_short", args.reopen_short)):
         if v:
             rules[k] = v
+    rules.update(rule_kwargs(args))
 
     t_start = time.time()
     total = {"d": 0.0, "v": 0.0, "n": 0}
