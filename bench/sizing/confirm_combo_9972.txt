@@ -1,0 +1,25 @@
+A = prep:/private/tmp/claude-501/-Users-revanthguda-poker/371ca9dd-4f71-4abe-ab6c-e11ca2647ea2/scratchpad/szagent/p/f_combo.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  github                    -1.20   0.56          -3.5%   0/0
+default   normal  llm-bugs                  -1.29   0.56          -3.7%   0/0
+default   normal  rival-real                +1.31   0.54          +3.8%   0/0
+default   normal  gate-weak                 -0.02   0.42          -0.1%   0/0
+default   normal  gate-strong               +0.99   0.54          +2.9%   0/0
+default   normal  gate-mixed                -0.22   0.56          -0.6%   0/0
+default   normal  rival-strong+prep          +1.79   0.56          +5.2%   0/0
+default   normal  event                     -1.11   0.61          -3.2%   0/0
+default   normal  event+prep                -0.81   0.66          -2.3%   0/0
+default   normal  h2h 4v4           A 1.025x fair
+default   fast    github                    -0.07   0.41          -0.2%   0/0
+default   fast    llm-bugs                  -0.32   0.44          -0.9%   0/0
+default   fast    rival-real                -0.74   0.31          -2.1%   0/0
+default   fast    gate-weak                 -0.17   0.38          -0.5%   0/0
+default   fast    gate-strong               -0.65   0.30          -1.9%   0/0
+default   fast    gate-mixed                -1.00   0.39          -2.9%   0/0
+default   fast    rival-strong+prep          +0.65   0.34          +1.9%   0/0
+default   fast    event                     -0.00   0.34          -0.0%   0/0
+default   fast    event+prep                -0.52   0.38          -1.5%   0/0
+default   fast    h2h 4v4           A 1.000x fair
+
+mean over 18 cells: A-B -0.54% of fair (±0.32)  [2202s]
