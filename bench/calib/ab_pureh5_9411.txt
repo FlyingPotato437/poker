@@ -1,0 +1,23 @@
+A = prep:params/calib_pureh5_nlhe.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  event                     -1.81   1.12          -5.2%   0/0
+default   normal  event+prep                +0.68   1.05          +2.0%   0/0
+default   normal  github                    -0.21   0.93          -0.6%   0/0
+default   normal  llm-bugs                  +1.82   0.78          +5.2%   0/0
+default   normal  rival-real                +0.55   0.93          +1.6%   0/0
+default   normal  rival-strong+prep          +0.81   0.75          +2.3%   0/0
+default   normal  gate-strong               +0.97   0.86          +2.8%   0/0
+default   normal  gate-mixed                +0.71   0.90          +2.1%   0/0
+default   normal  h2h 4v4           A 0.986x fair
+default   fast    event                     +0.78   0.86          +2.2%   0/0
+default   fast    event+prep                +0.58   0.73          +1.7%   0/0
+default   fast    github                    +0.54   1.01          +1.5%   0/0
+default   fast    llm-bugs                  -0.28   0.82          -0.8%   0/0
+default   fast    rival-real                +0.78   0.71          +2.2%   0/0
+default   fast    rival-strong+prep          +0.66   0.49          +1.9%   0/0
+default   fast    gate-strong               +0.68   0.63          +2.0%   0/0
+default   fast    gate-mixed                -0.11   0.90          -0.3%   0/0
+default   fast    h2h 4v4           A 0.989x fair
+
+mean over 16 cells: A-B +1.29% of fair (±0.62)  [653s]
