@@ -105,7 +105,7 @@ no `pip install`.
 
 | Variant | v1 params | Notes |
 |---|---|---|
-| NLHE preset | `params/cand3_nlhe.json` (upgraded bot) | fallbacks: `params/ev_t4.json`; rc1 bytes via `day.py build rc1k --from-frozen rc1 --adapter my_adapter.py --kit-cmd ...` |
+| NLHE preset | `params/cand3_nlhe.json` (upgraded bot; frozen as `frozen/rc2/nlhe_bot.py`) | fallbacks: rc2 bytes via `day.py build rc2k --from-frozen rc2 --adapter my_adapter.py --kit-cmd ...`; then `params/ev_t4.json`; rc1 bytes via `day.py build rc1k --from-frozen rc1 ...` |
 | Other presets (plo4, plo5, shortdeck, shortdeck_triton, royal, holdem3) | `params/cand_<preset>.json` (see variants/PARAMS_MAP.json) | fallback `params/ev_t3.json` |
 | New variant, hold'em-like (2 hole cards, any 5 of 7) | `params/ev_t4.json` | bundle built on the day |
 | New variant, anything else | `params/ev_t3.json` | bundle built on the day |
@@ -135,11 +135,14 @@ rule). Otherwise HANDOFF.md "Live plan for T1-T6" and PLAYBOOK.md "When to fall 
 - Absolute x-fair calibration: the "A x fair" column of `bench/final_rc1_nlhe.txt` (rc1,
   NLHE: weak fields 1.7-2.1, mixed 1.6-1.9, strong 1.29-1.49, 7 attackers 0.74-0.90;
   `bench/final_rc1_<variant>.txt` for others) and `bench/github_bots/style_xfair_9922.txt`
-  (cand_nlhe vs 7 copies of each style: 1.0-2.9).
-- Rule: x-fair at or above the strong-field level (~1.3): stay. Far below it (~1.0 or
-  less) means a strong or prepped field: switch to rc1k (or ev_t4) only if the data says
-  that bot does better there; a bot with errors/timeouts: roll back now. Decide once, before
-  T3-T4 (T4-T6 are 71% of the score); never switch back and forth. Quote the rule and numbers.
+  (cand_nlhe vs 7 copies of each style: 1.0-2.9). rc2 (cand3) timing check vs rc1:
+  `bench/final3/final_check_cand3_vs_rc1_9105.txt` ("A x fair" column: strong 1.3-1.5,
+  rival-real 1.2-1.5, weak 1.8-2.3).
+- Rule (bench/adapt/README.md, 3,000 simulated events): keep the upgraded bot for all of
+  T1-T6. Do NOT switch strategy on our score alone and never switch to rc1/ev_t4 for
+  strategic reasons (that cost ~15%). Only reasons to resubmit: errors, timeouts, or a rules
+  fix. Optional: if hand logs show opponents' VPIP > 0.35 and PFR < 0.12 (loose-passive
+  field), `params/r2p0_nlhe.json` may be used; it almost never applies. Quote the rule.
 
 ## When something fails
 

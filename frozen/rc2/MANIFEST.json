@@ -1,0 +1,268 @@
+{
+ "files": {
+  "fallback/holdem3_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/holdem3_rng.nlb"
+   ],
+   "bundle_sha256": "c5dd5d2c4579175908c0bee028768a7cc12879c0e5e804badb230b7a75e92c04",
+   "bytes": 6454128,
+   "params_from": [
+    "params/ev_t3.json",
+    "params/rc1_plo4.json"
+   ],
+   "params_sha256": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "fd54e1a9cfd7ef2edc0230d076034f62caf30ca393fb5235f18845729af501a6"
+  },
+  "fallback/nlhe_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/nlhe_rng.nlb"
+   ],
+   "bundle_sha256": "ca3d17408f5eea199c16738cd541c6b39bf92587b3357c89649167a8597b1fcf",
+   "bytes": 6077158,
+   "params_from": [
+    "params/ev_t3_hpre.json",
+    "params/ev_t4.json",
+    "params/rival_prep.json"
+   ],
+   "params_sha256": "46b9161aaab5df173994919262465c8e47552742dea902e2547d6fed9da560c2",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "8a3af61dca4684fdb4a58377472315f3c56ca41b6bbc146a354221831b808764"
+  },
+  "fallback/plo4_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/plo4_rng.nlb"
+   ],
+   "bundle_sha256": "b4544dd8b84baea91c9e61ef16d63c58a23c63b17f9e32935c9a0a26de5f95f0",
+   "bytes": 10077436,
+   "params_from": [
+    "params/ev_t3.json",
+    "params/rc1_plo4.json"
+   ],
+   "params_sha256": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "7f53d3d0300e487d13ef44872ca8196eff90f0bddeb21f103259e59b0bb04f12"
+  },
+  "fallback/plo5_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/plo5_rng.nlb"
+   ],
+   "bundle_sha256": "c3da21636c0786d1b745b4942de0a9cc371858c1a2a9cdb95532ff37c5d84523",
+   "bytes": 40434900,
+   "params_from": [
+    "params/ev_t3.json",
+    "params/rc1_plo4.json"
+   ],
+   "params_sha256": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "9e514e15068b816c21be8acebc6b0deed99e2ffb50c5deecb46e56379a9f9c2b"
+  },
+  "fallback/royal_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/royal_rng.nlb"
+   ],
+   "bundle_sha256": "81b4bc7cd0023c9fb2c36ddbb13ddf3274eb645e1a199f9ba812735989b2fc37",
+   "bytes": 5857780,
+   "params_from": [
+    "params/ev_t3.json",
+    "params/rc1_plo4.json"
+   ],
+   "params_sha256": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "61d25a64617ae3222cd9073853c1f5b34a24cf7638afb7adc15a060a8631cef3"
+  },
+  "fallback/shortdeck_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/shortdeck_rng.nlb"
+   ],
+   "bundle_sha256": "80a65aeee782b8f19ea1c1eb1b878966c573694d8bbad55ce749665512d03d78",
+   "bytes": 5972792,
+   "params_from": [
+    "params/ev_t3.json",
+    "params/rc1_plo4.json"
+   ],
+   "params_sha256": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "861963e124817a989868ec17f69e2a8df402776271f00d43d0d949db5e8d1b9b"
+  },
+  "fallback/shortdeck_triton_bot.py": {
+   "adapter": "other",
+   "adapter_sha256": "ffb97be2453b83f66de60630448fa901f74163126239e26e8bd6cacf4f7eb248",
+   "bundle_from": [
+    "bundles/shortdeck_triton_rng.nlb"
+   ],
+   "bundle_sha256": "b5c6e7dc047d8eb6c2ef8e90b10346a657dbaa8509fa6d998d32aaab7c6ba6a4",
+   "bytes": 5972036,
+   "params_from": [
+    "params/ev_t3.json",
+    "params/rc1_plo4.json"
+   ],
+   "params_sha256": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+   "pure_python": false,
+   "runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+   "sha256": "404596708883bc3726c914c8e7ee57fc10dd7d800962bb0f03c48185d1713057"
+  },
+  "holdem3_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/holdem3_rng.nlb"
+   ],
+   "bundle_sha256": "c5dd5d2c4579175908c0bee028768a7cc12879c0e5e804badb230b7a75e92c04",
+   "bytes": 6498015,
+   "params_from": [
+    "params/cand_holdem3.json",
+    "params/cand_plo4.json",
+    "params/cand_plo5.json",
+    "params/cand_royal.json",
+    "params/cand_shortdeck.json",
+    "params/cand_shortdeck_triton.json"
+   ],
+   "params_sha256": "f4e3bffbe9df3c8f9a6bf5d9c825e5b9c8a12de6c79a6de58de931a9b30a6dd0",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "a34db9818d9a7d92ff1bd4695e0d443e806c578afe6fda8f69dd71c33180cc56"
+  },
+  "nlhe_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/nlhe_rng.nlb"
+   ],
+   "bundle_sha256": "ca3d17408f5eea199c16738cd541c6b39bf92587b3357c89649167a8597b1fcf",
+   "bytes": 6121118,
+   "params_from": [
+    "params/cand3_nlhe.json"
+   ],
+   "params_sha256": "260124a36f89d258e31f0f59d570c6cd44bd2dbe34dacd4327bb150dcbe56d61",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "665a1536f0502ca15b58519ac6a00d5e5ba024d4217c958e5c65d4261c3448b5"
+  },
+  "plo4_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/plo4_rng.nlb"
+   ],
+   "bundle_sha256": "b4544dd8b84baea91c9e61ef16d63c58a23c63b17f9e32935c9a0a26de5f95f0",
+   "bytes": 10121323,
+   "params_from": [
+    "params/cand_holdem3.json",
+    "params/cand_plo4.json",
+    "params/cand_plo5.json",
+    "params/cand_royal.json",
+    "params/cand_shortdeck.json",
+    "params/cand_shortdeck_triton.json"
+   ],
+   "params_sha256": "f4e3bffbe9df3c8f9a6bf5d9c825e5b9c8a12de6c79a6de58de931a9b30a6dd0",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "68f0f899171e115f992d105309519a1daaf4f705fc7e353ac20f1bb5381fad56"
+  },
+  "plo5_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/plo5_rng.nlb"
+   ],
+   "bundle_sha256": "c3da21636c0786d1b745b4942de0a9cc371858c1a2a9cdb95532ff37c5d84523",
+   "bytes": 40478787,
+   "params_from": [
+    "params/cand_holdem3.json",
+    "params/cand_plo4.json",
+    "params/cand_plo5.json",
+    "params/cand_royal.json",
+    "params/cand_shortdeck.json",
+    "params/cand_shortdeck_triton.json"
+   ],
+   "params_sha256": "f4e3bffbe9df3c8f9a6bf5d9c825e5b9c8a12de6c79a6de58de931a9b30a6dd0",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "e04975fc5d61db73a3e4809cd3cd0169ec618ece92c88aab216d1cad80de3ce7"
+  },
+  "royal_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/royal_rng.nlb"
+   ],
+   "bundle_sha256": "81b4bc7cd0023c9fb2c36ddbb13ddf3274eb645e1a199f9ba812735989b2fc37",
+   "bytes": 5901667,
+   "params_from": [
+    "params/cand_holdem3.json",
+    "params/cand_plo4.json",
+    "params/cand_plo5.json",
+    "params/cand_royal.json",
+    "params/cand_shortdeck.json",
+    "params/cand_shortdeck_triton.json"
+   ],
+   "params_sha256": "f4e3bffbe9df3c8f9a6bf5d9c825e5b9c8a12de6c79a6de58de931a9b30a6dd0",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "717dbb69c1dc7a852adaa966bc98237759796baa9d9189102953262bd88eb517"
+  },
+  "shortdeck_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/shortdeck_rng.nlb"
+   ],
+   "bundle_sha256": "80a65aeee782b8f19ea1c1eb1b878966c573694d8bbad55ce749665512d03d78",
+   "bytes": 6016679,
+   "params_from": [
+    "params/cand_holdem3.json",
+    "params/cand_plo4.json",
+    "params/cand_plo5.json",
+    "params/cand_royal.json",
+    "params/cand_shortdeck.json",
+    "params/cand_shortdeck_triton.json"
+   ],
+   "params_sha256": "f4e3bffbe9df3c8f9a6bf5d9c825e5b9c8a12de6c79a6de58de931a9b30a6dd0",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "692536e231aac8d6615705ebf90a9359b8adf7ab184f88c0c0e3f182e3c6aab6"
+  },
+  "shortdeck_triton_bot.py": {
+   "adapter": "adapter_template.py",
+   "adapter_sha256": "d3021e62fd5500eb2ce76059de6f3225311c3ee5791c1c2b2a2ecda8ed745656",
+   "bundle_from": [
+    "bundles/shortdeck_triton_rng.nlb"
+   ],
+   "bundle_sha256": "b5c6e7dc047d8eb6c2ef8e90b10346a657dbaa8509fa6d998d32aaab7c6ba6a4",
+   "bytes": 6015923,
+   "params_from": [
+    "params/cand_holdem3.json",
+    "params/cand_plo4.json",
+    "params/cand_plo5.json",
+    "params/cand_royal.json",
+    "params/cand_shortdeck.json",
+    "params/cand_shortdeck_triton.json"
+   ],
+   "params_sha256": "f4e3bffbe9df3c8f9a6bf5d9c825e5b9c8a12de6c79a6de58de931a9b30a6dd0",
+   "pure_python": false,
+   "runtime_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+   "sha256": "87f52321b1a109e3fb7d2b9cf3951b1f26bbd50cef004d860fbce97fef4c115b"
+  }
+ },
+ "runtime_py_sha256": "e9fc9b2238c7f5131055a31e4c36aa9f44f7bd8288c3472d0e31b9ff644f53d4",
+ "tag": "rc2"
+}
