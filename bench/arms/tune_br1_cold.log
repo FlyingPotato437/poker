@@ -1,0 +1,6 @@
+gen  1/5: mean-params  35.82 (±3.19)  best  41.09  elite avg  40.36  sigma 0.185  (469s)
+gen  2/5: mean-params  41.14 (±3.40)  best  47.72  elite avg  43.36  sigma 0.123  (1047s)
+gen  3/5: mean-params  42.44 (±3.48)  best  42.44  elite avg  41.66  sigma 0.085  (430s)
+gen  4/5: mean-params  40.70 (±3.55)  best  45.70  elite avg  42.56  sigma 0.066  (318s)
+gen  5/5: mean-params  38.19 (±3.29)  best  42.69  elite avg  40.72  sigma 0.052  (226s)
+saved params/arms_br1.json

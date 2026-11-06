@@ -1,0 +1,8 @@
+field: prep:params/arms_br1.json=1.2,prep:params/br_vs_ev_t4.json=0.4,prep:params/cand_nlhe.json=0.8,prep:params/ev_t4.json=0.8,rv_tag=0.4,rv_lag=0.4,rv_gto=0.4,rv_exploit=0.4,rv_icm=0.4,gh_catscore=0.12,gh_opus=0.12,gh_tiers=0.12,gh_flash=0.12,gh_minnit=0.12,gh_invstation=0.12,gh_potodds=0.12,gh_mc1jam=0.12,gh_ladder=0.12,gh_shark=0.12,gh_classifier=0.12,gh_hobbyraise=0.12,phase=0.12,raiseby=0.12,huequity=0.12,revsizer=0.12,limpjam=0.12,resteal=0.12,capclock=0.12,ftsbluff=0.12
+gen  1/6: mean-params  39.51 (±1.89)  best  39.70  elite avg  39.43  ex_b0 shift -0.04  (260s)
+gen  2/6: mean-params  37.80 (±1.87)  best  42.08  elite avg  40.09  ex_b0 shift -0.04  (257s)
+gen  3/6: mean-params  39.35 (±1.84)  best  41.85  elite avg  40.85  ex_b0 shift -0.13  (257s)
+gen  4/6: mean-params  41.51 (±1.89)  best  42.48  elite avg  41.37  ex_b0 shift -0.06  (274s)
+gen  5/6: mean-params  39.73 (±1.83)  best  44.21  elite avg  43.33  ex_b0 shift -0.04  (263s)
+gen  6/6: mean-params  38.55 (±1.95)  best  41.07  elite avg  40.05  ex_b0 shift +0.03  (238s)
+saved params/arms_h1.json

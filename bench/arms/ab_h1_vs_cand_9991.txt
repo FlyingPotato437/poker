@@ -1,0 +1,22 @@
+A = prep:params/arms_h1.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  gate-weak                 -0.22   0.64          -0.6%   0/0
+default   normal  gate-strong               +1.26   0.71          +3.6%   0/0
+default   normal  gate-mixed                -0.82   0.68          -2.3%   0/0
+default   normal  rival-strong              -2.14   0.83          -6.2%   0/0
+default   normal  rival-strong+prep          -2.23   0.88          -6.4%   0/0
+default   normal  rival-real                -0.68   0.86          -2.0%   0/0
+default   normal  llm-bugs                  -0.31   0.62          -0.9%   0/0
+default   normal  github                    -0.72   0.74          -2.1%   0/0
+default   normal  sharks                    -0.70   0.67          -2.0%   0/0
+default   normal  competent                 -0.58   0.73          -1.7%   0/0
+default   normal  att-mix                   +0.94   0.81          +2.7%   0/0
+default   normal  att-br1                   +0.82   0.69          +2.4%   0/0
+default   normal  att-br2                   +0.56   0.60          +1.6%   0/0
+default   normal  h2h 4v4           A 1.018x fair
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/resource_tracker.py:216: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+
+[stopped after the normal schedule: h1 already loses significantly on rival-strong (-2.6 se) and rival-strong+prep (-2.5 se); fast schedule not run]
+mean over the 10 standard normal cells: A-B -2.06% of fair; attacker cells (att-*) mean +2.2%

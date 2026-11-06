@@ -1,0 +1,5 @@
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:whale_br             1000      49.46    1.18    0.080   122.21       0
+prep:cand_nlhe            7000      32.65    0.36    0.126   158.05       0
+
+1000 SNGs in 57.1s; total points per table 278.0

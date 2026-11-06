@@ -1,0 +1,5 @@
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:arms_br1             1000      54.18    1.14    0.094    85.50       0
+prep:arms_relk2           7000      31.97    0.35    0.161   157.08       0
+
+1000 SNGs in 79.5s; total points per table 278.0

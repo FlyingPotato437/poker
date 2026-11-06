@@ -1,0 +1,5 @@
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:br_vs_ev_t4          1000      44.08    1.08    0.164   218.07       0
+prep:ev_t4                7000      33.42    0.37    0.189   244.04       0
+
+1000 SNGs in 214.6s; total points per table 278.0

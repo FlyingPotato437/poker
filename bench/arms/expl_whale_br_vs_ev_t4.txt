@@ -1,0 +1,5 @@
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:whale_br             1000      40.48    1.09    0.070    85.26       0
+prep:ev_t4                7000      33.93    0.37    0.078   118.35       0
+
+1000 SNGs in 41.2s; total points per table 278.0

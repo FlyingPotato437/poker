@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-adf0a7f41083b9db6/scripts/run_tournament.py", line 77, in <module>
+    main()
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-adf0a7f41083b9db6/scripts/run_tournament.py", line 66, in main
+    field = parse_field(args.field) if args.field else [parse_entry(k, w) for k, w in DEFAULT_FIELD_MIX.items()]
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-adf0a7f41083b9db6/scripts/run_tournament.py", line 26, in parse_field
+    out.append(parse_entry(name, float(w) if w else 1.0))
+  File "/Users/revanthguda/poker/.claude/worktrees/agent-adf0a7f41083b9db6/nolimit/harness.py", line 57, in parse_entry
+    with open(path) as fh:
+FileNotFoundError: [Errno 2] No such file or directory: 'params/.json'

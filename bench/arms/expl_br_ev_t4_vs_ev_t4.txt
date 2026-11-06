@@ -1,0 +1,20 @@
+### pure: 1x params/arms_br_ev_t4.json vs 7x params/ev_t4.json, 1000 SNGs, seed 8801
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:arms_br_ev_t4        1000      45.90    1.06    0.091    92.07       0
+prep:ev_t4                7000      33.16    0.37    0.115   275.95       0
+
+1000 SNGs in 132.6s; total points per table 278.0
+### mix: 1x params/arms_br_ev_t4.json + table drawn from prep:params/ev_t4.json=5,rv_tag=0.3,rv_lag=0.3,rv_gto=0.3,rv_exploit=0.3,rv_icm=0.3,rv_mc=0.15,rv_math=0.15,tag=0.2, 1000 SNGs, seed 8802
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:arms_br_ev_t4        1000      43.17    1.03    0.101   187.98       0
+prep:ev_t4                4940      35.40    0.45    0.125   280.32       0
+rv_icm                     301      34.88    1.72    0.057   115.05       0
+rv_exploit                 307      33.55    1.56    0.070   124.55       0
+rv_tag                     295      32.94    1.64    0.058    83.68       0
+rv_math                    153      30.85    2.19    0.039    90.40       0
+rv_lag                     313      29.70    1.73    0.097    69.60       0
+rv_gto                     316      29.62    1.75    0.068    62.85       0
+tag                        217      17.90    1.83    0.056    93.61       0
+rv_mc                      158      13.66    1.76    0.110    69.66       0
+
+1000 SNGs in 120.9s; total points per table 278.0

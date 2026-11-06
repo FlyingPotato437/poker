@@ -1,0 +1,20 @@
+### pure: 1x params/arms_br1.json vs 7x params/cand_nlhe.json, 1000 SNGs, seed 8801
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:arms_br1             1000      53.18    1.16    0.112    68.30       0
+prep:cand_nlhe            7000      32.12    0.35    0.184   216.88       0
+
+1000 SNGs in 179.5s; total points per table 278.0
+### mix: 1x params/arms_br1.json + table drawn from prep:params/cand_nlhe.json=5,rv_tag=0.3,rv_lag=0.3,rv_gto=0.3,rv_exploit=0.3,rv_icm=0.3,rv_mc=0.15,rv_math=0.15,tag=0.2, 1000 SNGs, seed 8802
+bot                     tables  pts/table     ±se   ms avg   ms max  errors
+prep:arms_br1             1000      49.71    1.13    0.111   159.28       0
+rv_exploit                 307      35.81    1.64    0.069    67.29       0
+rv_tag                     295      35.49    1.61    0.062   105.95       0
+rv_icm                     301      34.66    1.70    0.071    67.63       0
+prep:cand_nlhe            4940      34.03    0.44    0.187   168.78       0
+rv_gto                     316      30.98    1.72    0.074    65.85       0
+rv_lag                     313      30.14    1.75    0.094    48.75       0
+rv_math                    153      25.65    2.09    0.057    45.85       0
+tag                        217      16.56    1.57    0.058    50.81       0
+rv_mc                      158       9.70    1.07    0.114    61.54       0
+
+1000 SNGs in 155.2s; total points per table 278.0
