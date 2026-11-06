@@ -51,7 +51,12 @@ BASE_ARCHETYPES = ARCHETYPES          # the "uniform" proposal covers these (fix
 # GitHub-modeled LLM-written bots (nolimit/rivals.py GITHUB_BOTS)
 GITHUB = ("gh_catscore", "gh_opus", "gh_tiers", "gh_flash", "gh_minnit", "gh_invstation", "gh_potodds",
           "gh_mc1jam", "gh_ladder", "gh_shark", "gh_classifier", "gh_hobbyraise")
-ARCHETYPES = ARCHETYPES + GITHUB
+# Bots modeled on public repos written for this exact event (nolimit/rivals.py EVENT_BOTS)
+EVENT = ("ev_codex_tag", "ev_ghcp_fastrange", "ev_pushfold4", "ev_mc_mwbug", "ev_strong1", "ev_reshover",
+         "ev_policybot", "ev_cfr_pushfold", "ev_gunslinger")
+EVENT_WEIGHTS = {"ev_codex_tag": 3, "ev_ghcp_fastrange": 2, "ev_pushfold4": 1.5, "ev_mc_mwbug": 1, "ev_strong1": 1.5,
+                 "ev_reshover": 1.5, "ev_policybot": 1, "ev_cfr_pushfold": 1, "ev_gunslinger": 0.5}
+ARCHETYPES = ARCHETYPES + GITHUB + EVENT
 
 # Style groups: the unit random mixtures and drift work on.
 GROUPS = {
@@ -65,6 +70,7 @@ GROUPS = {
     "broken": ("timeout", "flaky", "rv_buggy", "rv_frozen"),
     "mid": ("rv_mc", "rv_aggro", "rv_math", "mc"),
     "github": GITHUB,
+    "event": EVENT,
 }
 
 
@@ -110,6 +116,9 @@ SCENARIOS = {
                                             "gh_mc1jam") else 1) for k in GITHUB}),
     "github_tough": _norm({"gh_ladder": 2, "gh_flash": 2, "gh_hobbyraise": 2, "gh_potodds": 2, "gh_shark": 1,
                            "rv_tag": 1}),
+    # the most realistic field: bots modeled on public repos built for this event (rivals `event`, `event+prep`)
+    "event_like": _norm(dict(EVENT_WEIGHTS)),
+    "event_like_prep": _norm({**EVENT_WEIGHTS, "prep_ev_t4": 1.2}),
     # broad proposal over the base styles: makes MIS reweighting to random mixtures possible
     "uniform": _norm({k: 1 for k in BASE_ARCHETYPES}),
 }

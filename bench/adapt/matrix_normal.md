@@ -1,4 +1,4 @@
-# Payoff matrix, normal blinds (x-fair; MIS over 19600 paired SNGs)
+# Payoff matrix, normal blinds (x-fair; MIS over 21600 paired SNGs)
 
 Cells: x-fair of the strategy. `best` = argmax; `gain` = best − cand in % of fair ± paired se. ESS = effective SNGs behind each row after reweighting.
 
@@ -16,6 +16,8 @@ Cells: x-fair of the strategy. `best` = argmax; `gain` = best − cand in % of f
 | strong_mixed | 1.394 | 1.318 | 1.327 | 1.356 | 1.356 | 1.423 | 1.382 | 1.382 | 1.366 | r2p0 | +2.9 ±4.2 | 622 |
 | github_heavy | 2.239 | 2.065 | 2.217 | 2.194 | 2.205 | 2.217 | 2.251 | 2.268 | 2.236 | c_value | +2.9 ±3.3 | 601 |
 | github_tough | 2.298 | 2.221 | 2.241 | 2.227 | 2.208 | 2.301 | 2.261 | 2.284 | 2.289 | r2p0 | +0.3 ±3.5 | 600 |
+| event_like | 1.502 | 1.378 | 1.464 | 1.493 | 1.429 | 1.465 | 1.488 | 1.475 | 1.459 | cand | +0.0 ±0.0 | 1547 |
+| event_like_prep | 1.462 | 1.338 | 1.396 | 1.440 | 1.371 | 1.357 | 1.385 | 1.394 | 1.341 | cand | +0.0 ±0.0 | 1540 |
 | uniform | 1.893 | 1.742 | 1.825 | 1.825 | 1.833 | 1.850 | 1.880 | 1.901 | 1.942 | c_steal | +4.8 ±3.7 | 603 |
 
 Paired difference vs cand, % of fair (± se):
@@ -34,6 +36,8 @@ Paired difference vs cand, % of fair (± se):
 | strong_mixed | -7.6 ±4.1 | -6.7 ±3.9 | -3.8 ±3.1 | -3.9 ±3.9 | +2.9 ±4.2 | -1.2 ±4.0 | -1.2 ±3.6 | -2.8 ±4.5 |
 | github_heavy | -17.4 ±4.4 | -2.2 ±3.8 | -4.5 ±3.1 | -3.4 ±3.9 | -2.3 ±3.9 | +1.2 ±3.8 | +2.9 ±3.3 | -0.3 ±4.1 |
 | github_tough | -7.7 ±3.9 | -5.7 ±3.4 | -7.1 ±2.5 | -9.0 ±3.5 | +0.3 ±3.5 | -3.7 ±3.2 | -1.4 ±3.3 | -0.9 ±3.7 |
+| event_like | -12.4 ±3.1 | -3.8 ±2.8 | -0.9 ±2.3 | -7.4 ±2.9 | -3.7 ±3.0 | -1.5 ±2.9 | -2.7 ±2.7 | -4.4 ±3.2 |
+| event_like_prep | -12.5 ±3.1 | -6.6 ±2.8 | -2.3 ±2.1 | -9.2 ±2.9 | -10.5 ±3.1 | -7.7 ±2.8 | -6.9 ±2.7 | -12.2 ±3.2 |
 | uniform | -15.1 ±3.9 | -6.8 ±3.6 | -6.9 ±3.0 | -6.0 ±3.7 | -4.3 ±3.7 | -1.3 ±3.6 | +0.8 ±2.9 | +4.8 ±3.7 |
 
 Aggregate opponent stats (what a hand log gives):
@@ -52,4 +56,6 @@ Aggregate opponent stats (what a hand log gives):
 | strong_mixed | 0.206 | 0.174 | 0.363 | 0.058 | 0.477 | 0.472 | 0.040 |
 | github_heavy | 0.225 | 0.058 | 0.163 | 0.033 | 0.425 | 0.565 | 0.119 |
 | github_tough | 0.268 | 0.071 | 0.119 | 0.023 | 0.464 | 0.614 | 0.142 |
+| event_like | 0.206 | 0.167 | 0.288 | 0.049 | 0.315 | 0.564 | 0.048 |
+| event_like_prep | 0.213 | 0.172 | 0.310 | 0.053 | 0.341 | 0.532 | 0.048 |
 | uniform | 0.240 | 0.156 | 0.254 | 0.054 | 0.294 | 0.595 | 0.090 |
