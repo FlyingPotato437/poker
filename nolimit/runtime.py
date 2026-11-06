@@ -1201,6 +1201,7 @@ DEFAULT_PARAMS = {
     "st_drop_n": 0.0,         # a seat with no voluntary chip drops out of the product only after this many hands
     "st_max_r": 1.0,          # no any-two open when a seat behind re-raises opens more often than this (shrunk)
     "st_prior_r": 0.08,       # prior re-raise rate facing one open
+    "pre_mw_behind": 1.0,     # facing a raise: weight of opponents yet to act in the multiway equity tax (1 = old)
 }
 
 PARAM_SPACE = {
@@ -1231,6 +1232,7 @@ PARAM_SPACE = {
     "rs2_vp_open": (0.1, 1.0), "rs2_vp_tab": (0.1, 1.0), "rs2_cfix": (0.0, 1.0),
     "st_prod": (0.0, 1.0), "st_any": (0.6, 1.0), "st_prior": (0.5, 0.95), "st_drop_n": (0.0, 30.0),
     "st_max_r": (0.02, 1.0), "st_prior_r": (0.0, 0.3),
+    "pre_mw_behind": (0.0, 1.0),
 }
 # The EV engine is a mode switch, not something to search over; nor are the preflop feature
 # switches or the tournament's hand cap.
@@ -1761,6 +1763,11 @@ class PrepBot(BotBase):
         y = _clamp(y, 0.01, 1.0)
         eq = T.eq_vs_range(cls, y)
         n_live = len(opps)
+        if p["pre_mw_behind"] != 1.0:
+            # Seats still to act have not entered the pot yet; weight them, not count them in.
+            acted = {h[0] for h in obs.history if h[1] == 0 and h[2] in (CALL, RAISE)}
+            n_in = sum(1 for s in opps if s in acted)
+            n_live = n_in + p["pre_mw_behind"] * (len(opps) - n_in)
         if n_live > 1:
             eq = eq ** (1 + 0.6 * (n_live - 1))
         pot_odds = obs.to_call / max(obs.pot + obs.to_call, 1)
