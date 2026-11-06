@@ -10,3 +10,4 @@ params/test_*.json
 bundles/bench/
 build/
 .DS_Store
+.venv312/
