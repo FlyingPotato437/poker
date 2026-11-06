@@ -20,7 +20,8 @@ one-shot final test, after everything is frozen.
 """
 import math
 
-from .runtime import CALL, FOLD, POST, RAISE, SeatStats, ingest_history
+from .runtime import (CALL, FLUSH, FOLD, FULL_HOUSE, PAIR, POST, QUADS, RAISE, STRAIGHT, TRIPS,
+                      TWO_PAIR, SeatStats, ingest_history)
 from .zoo import ManiacBot, NitBot, _Base
 
 
@@ -826,12 +827,633 @@ def llm_fields(prepped="prep:params/rival_prep.json"):
     return {"llm-bugs": base, "llm-bugs+prep": {**base, prepped: 1.2}}
 
 
+# ---------------------------------------------------------------------------
+# GitHub-bot designs: modeled on the shapes of public poker bots (LLM-written and hobby
+# repos), each with the bugs those bots ship. Written from short behavioral specs, not
+# from their code. Evaluation fields only (github, github+prep), never in a tuning default.
+# Every instance scales its thresholds by its own noise (+-10-20%); some carry the common
+# "'T' parsed as rank 0" bug (Ten treated as the lowest card).
+# ---------------------------------------------------------------------------
+
+_RVAL = {ch: i + 2 for i, ch in enumerate("23456789TJQKA")}
+
+
+class _Gh(_Rival):
+    NOM = {}           # name -> nominal value; each instance scales it by its own noise
+    TENBUG = 0.0       # share of instances that read 'T' as rank 0
+    rollouts = 60
+
+    def __init__(self, tables=None, seed=None):
+        super().__init__(tables, seed)
+        j = self.rng.uniform(0.10, 0.20)
+        self.k = {name: v * self.rng.uniform(1 - j, 1 + j) for name, v in sorted(self.NOM.items())}
+        self.tenbug = self.rng.random() < self.TENBUG
+        v = self.T.v
+        vals = [_RVAL.get(ch, i + 2) for i, ch in enumerate(v.ranks)]
+        if self.tenbug and "T" in v.ranks:
+            vals[v.ranks.index("T")] = 0
+        S = v.suits
+        self._val = [vals[c // S] for c in range(v.D)]
+        self._suit = [c % S for c in range(v.D)]
+
+    # -- card facts (with this instance's rank parsing) ---------------------
+    def _hole2(self, obs):
+        """(hi, lo, suited, pair) of the two highest hole cards."""
+        cs = sorted(obs.hole, key=self._val.__getitem__, reverse=True)[:2]
+        a, b = self._val[cs[0]], self._val[cs[1]]
+        return a, b, self._suit[cs[0]] == self._suit[cs[1]], a == b
+
+    def _cat(self, obs):
+        ev = self.T.ev
+        return ev.category(ev.best(obs.hole, obs.board))
+
+    def _raised_pre(self, obs):
+        return bool(self._raises(obs, 0))
+
+    def _street_acts(self, obs):
+        return [h for h in obs.history if h[1] == obs.street and h[2] != POST]
+
+    def _facing_allin(self, obs):
+        if not obs.to_call:
+            return False
+        top = max(obs.bets)
+        return any(h[4] and h[3] == top and h[0] != obs.seat for h in self._street_acts(obs))
+
+    def _stack(self, obs):
+        return obs.stacks[obs.seat]
+
+    def _start(self, obs):
+        return (sum(obs.stacks) + obs.pot) / max(len(obs.stacks), 1)
+
+    def _posts(self, obs):
+        return [h[0] for h in obs.history if h[2] == POST]
+
+    def _rto(self, obs, target):
+        """Raise to `target` (clamped to legal); call when raising is closed."""
+        return self._raise(obs, target)
+
+    def _eq_n(self, obs, n=None):
+        """Noisy MC-style equity vs n random hands (n = live opponents by default)."""
+        n = n or self._n_opp(obs)
+        if obs.street == 0:
+            return self._noise(self.T.eq(self.T.hole_class(obs.hole), n))
+        e = self.T.post_equity(obs.hole, obs.board)
+        return self._noise(e[n - 1] if n <= 3 else e[2] ** (n / 3.0))
+
+
+def _cat_score(bot, obs):
+    """Score of the made category on all cards (board pairs and flushes count as ours), no draws."""
+    c = bot._cat(obs)
+    if c >= QUADS:
+        return 0.95
+    if c == FULL_HOUSE:
+        return 0.90
+    if c == FLUSH:
+        return 0.85
+    if c == STRAIGHT:
+        return 0.80
+    if c == TRIPS:
+        return 0.75
+    if c == TWO_PAIR:
+        return 0.65
+    vals = [bot._val[x] for x in tuple(obs.hole) + tuple(obs.board)]
+    if c == PAIR:
+        pr = max(v for v in vals if vals.count(v) > 1)
+        return 0.60 if pr >= 11 else 0.45
+    return 0.40 if max(vals) >= 13 else 0.25
+
+
+def _pre_score(bot, obs):
+    hi, lo, s, pair = bot._hole2(obs)
+    if pair:
+        return 0.95 if hi >= 13 else 0.85 if hi >= 11 else 0.75 if hi >= 9 else 0.65 if hi >= 7 else 0.55
+    if hi == 14:
+        if lo >= 12:
+            return 0.80 if s else 0.75
+        if lo >= 10:
+            return 0.70 if s else 0.60
+        if lo >= 8:
+            return 0.60 if s else 0.45
+        return 0.50 if s else 0.35
+    if hi == 13:
+        if lo >= 11:
+            return 0.70 if s else 0.60
+        if lo >= 9:
+            return 0.55 if s else 0.45
+        return 0.40 if s else 0.30
+    if lo >= 10 and hi - lo == 1:
+        return 0.60 if s else 0.50
+    if s and hi - lo == 1 and lo >= 6:
+        return 0.40
+    return 0.25
+
+
+class GhCatScore(_Gh):
+    """Score table preflop, made-category score postflop (on all 7 cards, no draws), then a
+    win-probability EV formula. Never bluffs; raises only with a score >= ~0.8."""
+    TENBUG = 0.3
+    NOM = {"bet": 0.70, "raise": 0.80, "allin": 0.60, "allin_po": 0.25, "margin": 0.10,
+           "s_hi": 0.80, "s_mid": 0.60, "s_lo": 0.40, "rsize": 0.80}
+
+    def _agg(self, obs):
+        st = self._start(obs)
+        me = self._stack(obs) + obs.bets[obs.seat]
+        return 1.4 if me > 1.5 * st else 0.9 if me < 0.7 * st else 1.2
+
+    def decide(self, obs):
+        k = self.k
+        hs = _pre_score(self, obs) if obs.street == 0 else _cat_score(self, obs)
+        agg = self._agg(obs)
+        if obs.to_call == 0:
+            if hs >= k["bet"]:
+                f = k["s_hi"] if hs >= 0.85 else k["s_mid"] if hs >= 0.65 else k["s_lo"]
+                return self._rto(obs, max(obs.bets) + f * agg * obs.pot)
+            return (CALL, 0)
+        if self._facing_allin(obs):
+            return (CALL, 0) if hs >= k["allin"] or self._po(obs) > k["allin_po"] else (FOLD, 0)
+        if hs >= k["raise"] and len(self._raises(obs)) < 4:
+            return self._rto(obs, max(obs.bets) + k["rsize"] * (obs.pot + obs.to_call) * agg)
+        call = obs.to_call
+        wp = hs * 0.9 ** self._n_opp(obs) * (1 - min(0.3, 0.5 * call / max(obs.pot, 1)))
+        ev = wp * (obs.pot + call) - (1 - wp) * call
+        opp = [h for h in self._street_acts(obs) if h[0] != obs.seat]
+        a = sum(1 for h in opp if h[2] == RAISE) / len(opp) if opp else 0.5
+        posf = 0.9 + 0.2 * self._late(obs)
+        return (CALL, 0) if ev * posf * (2 - a) > k["margin"] * call else (FOLD, 0)
+
+
+class GhOpus(_Gh):
+    """Score table x1.3 (uncapped) in the last two seat numbers (seat index taken as position).
+    Premiums open 3 bb / 3-bet 3x, good hands raise 2x+bb 60%, BB defends any 1 bb.
+    Postflop on the made category only; won't call an all-in it can't fully cover."""
+    TENBUG = 0.3
+    NOM = {"prem": 0.85, "good": 0.65, "ok": 0.45, "mix": 0.60, "v": 0.80, "m": 0.60, "w": 0.40,
+           "cb": 0.70, "stab": 0.15, "po_m": 0.30, "po_w": 0.25}
+
+    def decide(self, obs):
+        k = self.k
+        fake = 1.3 if obs.seat >= len(obs.stacks) - 2 else 1.0
+        if obs.to_call > self._stack(obs):
+            return (FOLD, 0)                      # would be all-in for less: folds instead
+        bb = obs.bb
+        if obs.street == 0:
+            sc = _pre_score(self, obs) * fake
+            raised = self._raised_pre(obs)
+            if sc > k["prem"]:
+                return self._rto(obs, 3 * max(obs.bets) if raised else 3 * bb)
+            if sc > k["good"]:
+                if self.rng.random() < k["mix"]:
+                    return self._rto(obs, 2 * max(obs.bets) + bb)
+                return (CALL, 0)
+            if sc > k["ok"] and obs.to_call <= 2 * bb:
+                return (CALL, 0)
+            posts = self._posts(obs)
+            if len(posts) >= 2 and obs.seat == posts[1] and obs.to_call <= bb:
+                return (CALL, 0)
+            return self._cf(obs)
+        sc = _cat_score(self, obs) * fake
+        po = self._po(obs)
+        if sc > k["v"]:
+            return self._rto(obs, max(obs.bets) + 0.67 * (obs.pot + obs.to_call))
+        if sc > k["m"]:
+            if obs.to_call == 0:
+                return self._rto(obs, 0.5 * obs.pot) if self.rng.random() < k["cb"] else (CALL, 0)
+            return (CALL, 0) if po < k["po_m"] else (FOLD, 0)
+        if sc > k["w"]:
+            if obs.to_call == 0:
+                return self._rto(obs, 0.33 * obs.pot) if self.rng.random() < k["stab"] else (CALL, 0)
+            return (CALL, 0) if po < k["po_w"] else (FOLD, 0)
+        return self._cf(obs)
+
+
+class GhTiers(_Gh):
+    """Three preflop tiers (T1 never folds and raises to 2 pots, T2 opens/calls one raise,
+    T3 limps); postflop by made hand: boats+ raise, two pair..flush bet/call, pair calls cheap."""
+    TENBUG = 0.3
+    NOM = {"t2_stack": 0.15, "pair_po": 0.30, "big": 1.2, "mid": 0.7}
+    _T2S = ((13, 12), (13, 11), (13, 10), (12, 11), (12, 10), (11, 10))
+    _T2O = ((14, 13), (14, 12), (13, 12))
+    _T3O = ((14, 11), (13, 11), (12, 11))
+
+    def _tier(self, obs):
+        hi, lo, s, pair = self._hole2(obs)
+        if pair:
+            return 1 if hi >= 11 else 2 if 7 <= hi <= 10 else 3
+        if hi == 14 and s and lo >= 10:
+            return 1
+        if (hi, lo) in (self._T2S if s else self._T2O):
+            return 2
+        if s and (hi == 14 or hi - lo <= 2):
+            return 3
+        if not s and (hi, lo) in self._T3O:
+            return 3
+        return 4
+
+    def decide(self, obs):
+        k = self.k
+        bb = obs.bb
+        if obs.street == 0:
+            t = self._tier(obs)
+            nr = len(self._raises(obs, 0))
+            if t == 1:
+                return self._rto(obs, 2 * obs.pot + max(obs.bets) if nr else 4 * bb)
+            if t == 2:
+                if nr == 0:
+                    return self._rto(obs, 3 * bb)
+                if nr == 1 and obs.to_call < k["t2_stack"] * self._stack(obs):
+                    return (CALL, 0)
+                return self._cf(obs)
+            if t == 3:
+                return (CALL, 0) if obs.to_call <= 2 * bb else (FOLD, 0)
+            return self._cf(obs)
+        c = self._cat(obs)
+        if c >= FULL_HOUSE:
+            return self._rto(obs, max(obs.bets) + k["big"] * obs.pot)
+        if c >= TWO_PAIR:
+            return self._rto(obs, k["mid"] * obs.pot) if obs.to_call == 0 else (CALL, 0)
+        if c == PAIR:
+            return (CALL, 0) if self._po(obs) < k["pair_po"] else (FOLD, 0)
+        return self._cf(obs)
+
+
+class GhFlash(_Gh):
+    """One preflop value (+-0.05 jitter) reused on every street, board ignored; a key bug
+    sends most hands to the 0.2 default. Raises/jams 'strong' hands against stack fractions."""
+    NOM = {"open_hi": 0.80, "open_mid": 0.50, "p_hi": 0.70, "p_mid": 0.40, "stk_r": 0.20,
+           "stk_big": 0.30, "stk_mid": 0.15, "stk_lo": 0.05, "r_mix": 0.70, "jam_mix": 0.50}
+
+    def _value(self, obs):
+        hi, lo, s, pair = self._hole2(obs)
+        if pair:
+            return 0.9 if hi >= 10 else 0.5
+        if s and ((hi == 14 and lo >= 10) or (hi, lo) in ((13, 12), (13, 11), (12, 10))):
+            return 0.7
+        if not s and ((hi == 14 and lo >= 11) or (hi, lo) == (13, 12)):
+            return 0.6
+        return 0.2
+
+    def decide(self, obs):
+        k = self.k
+        v = self._value(obs) + self.rng.uniform(-0.05, 0.05)
+        bb, stk = obs.bb, self._stack(obs)
+        if obs.street == 0:
+            raised = self._raised_pre(obs)
+            if v >= k["open_hi"]:
+                if not raised:
+                    return self._rto(obs, 3 * bb)
+                return self._rto(obs, 2 * max(obs.bets) + bb) if obs.to_call < k["stk_r"] * stk else (CALL, 0)
+            if v >= k["open_mid"]:
+                if not raised:
+                    return self._rto(obs, 2 * bb)
+                return (CALL, 0) if obs.to_call <= 2 * bb else (FOLD, 0)
+            return (CALL, 0) if obs.to_call <= bb else (FOLD, 0)
+        if v >= k["p_hi"]:
+            if obs.to_call == 0:
+                return self._rto(obs, self.rng.uniform(0.5, 0.7) * obs.pot)
+            if obs.to_call < k["stk_big"] * stk:
+                return self._rto(obs, 2 * max(obs.bets)) if self.rng.random() < k["r_mix"] else (CALL, 0)
+            return self._shove(obs) if self.rng.random() < k["jam_mix"] else (FOLD, 0)
+        if v >= k["p_mid"]:
+            if obs.to_call == 0:
+                return self._rto(obs, self.rng.uniform(0.3, 0.5) * obs.pot)
+            return (CALL, 0) if obs.to_call < k["stk_mid"] * stk else (FOLD, 0)
+        if obs.to_call == 0:
+            return (CALL, 0)
+        return (CALL, 0) if obs.to_call < k["stk_lo"] * stk else (FOLD, 0)
+
+
+class GhMinnit(_Gh):
+    """Min-raises its two top groups preflop, limps a third, folds the rest (a lookup-order
+    bug folds ~15% of AK-type hands). Postflop it ignores its cards: 'rank' grows with the
+    number of actions this street and is compared with pot odds."""
+    NOM = {"misread": 0.15, "edge": 0.20, "step": 0.10, "size": 1.5}
+
+    def __init__(self, tables=None, seed=None):
+        super().__init__(tables, seed)
+        self._hand = (-1, False)
+
+    def _group(self, obs):
+        hi, lo, s, pair = self._hole2(obs)
+        if pair:
+            return 1 if hi >= 11 else 2 if hi >= 8 else 3
+        if hi == 14 and lo == 13:
+            if self._hand[0] != obs.hand_no:
+                self._hand = (obs.hand_no, self.rng.random() < self.k["misread"])
+            return 4 if self._hand[1] else 1
+        if s and (hi, lo) in ((14, 12), (14, 11), (13, 12)):
+            return 2
+        if not s and (hi, lo) == (14, 12):
+            return 2
+        if s and lo >= 10:
+            return 3
+        return 4
+
+    def decide(self, obs):
+        k = self.k
+        if obs.street == 0:
+            g = self._group(obs)
+            nr = len(self._raises(obs, 0))
+            if g == 1:
+                return (RAISE, obs.min_raise_to) if obs.min_raise_to > 0 and nr < 4 else (CALL, 0)
+            if g == 2:
+                if nr == 0 and obs.min_raise_to > 0:
+                    return (RAISE, obs.min_raise_to)
+                return (CALL, 0) if obs.to_call <= 3 * obs.bb else self._cf(obs)
+            if g == 3:
+                return (CALL, 0) if obs.to_call <= obs.bb else (FOLD, 0)
+            return self._cf(obs)          # also "folds" when the check is free (host checks)
+        acts = self._street_acts(obs)
+        rank = min(0.9, 0.5 + k["step"] * len(acts))
+        if obs.to_call == 0:
+            if acts and obs.min_raise_to > 0:
+                return self._rto(obs, k["size"] * obs.min_raise_to)
+            return (CALL, 0)
+        po = self._po(obs)
+        if rank > po + k["edge"] and obs.min_raise_to > 0 and len(self._raises(obs)) < 4:
+            return (RAISE, obs.min_raise_to)
+        return (CALL, 0) if rank > po else (FOLD, 0)
+
+
+class GhInvStation(_Gh):
+    """Inverted pot odds: never raises, checks when free, calls only bets bigger than ~40% of
+    the resulting pot (folds the small ones)."""
+    NOM = {"thr": 0.40}
+
+    def decide(self, obs):
+        if obs.to_call == 0:
+            return (CALL, 0)
+        return (CALL, 0) if self._po(obs) > self.k["thr"] else (FOLD, 0)
+
+
+class GhPotOdds(_Gh):
+    """Reference bot: raises to 3 pots with AA/KK preflop, otherwise checks, calls up to a
+    third of the pot, folds the rest. Card-blind postflop."""
+    NOM = {"frac": 1 / 3, "size": 3.0}
+
+    def decide(self, obs):
+        if obs.street == 0:
+            hi, lo, s, pair = self._hole2(obs)
+            if pair and hi >= 13:
+                return self._rto(obs, self.k["size"] * obs.pot)
+        if obs.to_call == 0:
+            return (CALL, 0)
+        return (CALL, 0) if obs.to_call <= self.k["frac"] * obs.pot else (FOLD, 0)
+
+
+class GhMc1Jam(_Gh):
+    """Equity vs ONE random hand (few MC samples) mapped to limp/raise/jam; ignores pot odds."""
+    rollouts = 40
+    NOM = {"sb_r": 0.60, "sb_j": 0.80, "bb_j": 0.60, "jam": 0.63, "p_bet": 0.50, "p_call": 0.59}
+
+    def decide(self, obs):
+        k = self.k
+        eq = self._eq_n(obs, 1)
+        if obs.street == 0:
+            posts = self._posts(obs)
+            if posts and obs.seat == posts[0] and not self._raised_pre(obs):
+                if eq >= k["sb_j"]:
+                    return self._shove(obs)
+                if eq >= k["sb_r"]:
+                    return self._rto(obs, 1.5 * obs.min_raise_to)
+                return (CALL, 0)
+            if len(posts) >= 2 and obs.seat == posts[1] and obs.to_call == 0:
+                return self._shove(obs) if eq > k["bb_j"] else (CALL, 0)
+            return self._shove(obs) if eq > k["jam"] else self._cf(obs)
+        if obs.to_call == 0:
+            return self._shove(obs) if eq > k["p_bet"] else (CALL, 0)
+        return (CALL, 0) if eq > k["p_call"] else (FOLD, 0)
+
+
+class GhLadder(_Gh):
+    """Equity ladder vs the live opponents: the size tells the hand (all-in > 2 pots > pot >
+    half pot > call). Thresholds b (bet) ~0.6-0.7 and c (call) ~0.4-0.5 per instance."""
+    rollouts = 80
+
+    def __init__(self, tables=None, seed=None):
+        super().__init__(tables, seed)
+        self.k = {"b": self.rng.uniform(0.60, 0.70), "c": self.rng.uniform(0.40, 0.50)}
+
+    def decide(self, obs):
+        b, c = self.k["b"], self.k["c"]
+        e = self._eq_n(obs)
+        top = max(obs.bets)
+        if e > b + 0.2:
+            return self._shove(obs)
+        if e > b + 0.1:
+            return self._rto(obs, top + 2 * obs.pot)
+        if e > b:
+            return self._rto(obs, top + obs.pot)
+        if e > b - 0.1:
+            return self._rto(obs, top + 0.5 * obs.pot)
+        if e > c:
+            return (CALL, 0)
+        return self._cf(obs)
+
+
+class GhShark(_Gh):
+    """Card-blind stabber: TT+ raises to 3 min-raises every time (AK/AQ/AJ/KQ lost to a sort
+    bug), medium hands call cheap in late seats; postflop bets 0.6 pot 40% in late seats when
+    checked to and calls small bets by position. Never raises postflop."""
+    NOM = {"late": 0.6, "med_po": 0.20, "stab": 0.40, "size": 0.60, "c_late": 0.25, "c_early": 0.15}
+
+    def decide(self, obs):
+        k = self.k
+        late = self._late(obs) >= k["late"]
+        if obs.street == 0:
+            hi, lo, s, pair = self._hole2(obs)
+            if pair and hi >= 10 and len(self._raises(obs, 0)) < 5:
+                return self._rto(obs, 3 * obs.min_raise_to)
+            if (hi >= 10 or s) and late and obs.to_call < k["med_po"] * obs.pot:
+                return (CALL, 0)
+            return self._cf(obs)
+        if obs.to_call == 0:
+            if late and self.rng.random() < k["stab"]:
+                return self._rto(obs, k["size"] * obs.pot)
+            return (CALL, 0)
+        lim = k["c_late"] if late else k["c_early"]
+        return (CALL, 0) if obs.to_call / max(obs.pot - obs.to_call, 1) <= lim else (FOLD, 0)
+
+
+_MANIAC, _STATION, _NIT, _PASSIVE, _TAG = range(5)
+
+
+_WINDOWS = tuple(0b11111 << lo for lo in range(1, 11))     # rank bitmasks, ace also as 1
+
+
+def _rmask(vals):
+    m = 0
+    for r in vals:
+        m |= 1 << r
+    return m | 2 if m >> 14 & 1 else m
+
+
+def _draw_eq(val, suit, hole, board):
+    """Overlay equity of a flush draw (0.35), open-ender (0.32) or gutshot (0.16) that uses a
+    hole card; 0 with none (or a made straight)."""
+    cards = tuple(hole) + tuple(board)
+    for su in {suit[c] for c in hole}:
+        if sum(1 for c in cards if suit[c] == su) == 4:
+            return 0.35
+    have = _rmask([val[c] for c in cards])
+    mine = _rmask([val[c] for c in hole])
+    outs = 0
+    for w in _WINDOWS:
+        if not w & mine:
+            continue
+        miss = w & ~have
+        if not miss:
+            return 0.0                      # already a straight
+        if not miss & (miss - 1):           # exactly one rank missing: it is an out
+            outs |= miss
+    n = bin(outs & ~2 if outs & 2 and outs >> 14 & 1 else outs).count("1")
+    return 0.32 if n >= 2 else 0.16 if n == 1 else 0.0
+
+
+class GhClassifier(_Gh):
+    """Opponent-classifier mixer: noisy MC equity vs the live opponents with draw overlays,
+    classes each villain after 10 actions (maniac/station/nit/passive/tag), price buckets,
+    SPR rules, stack-state jam weights, and a river one-pair fold."""
+    rollouts = 50
+    NOM = {"open": 1.9, "three": 2.6, "pre_jam": 3.0, "value": 0.60, "strong": 0.72, "raise": 0.78,
+           "m_lo": 0.02, "m_mid": 0.05, "m_hi": 0.08, "nit_adj": 0.08, "man_adj": 0.06,
+           "semi": 0.30, "river_fold": 0.40}
+
+    def new_table(self, seat, n_seats):
+        super().new_table(seat, n_seats)
+        self.classes = [_TAG] * n_seats
+
+    def observe(self, event):
+        super().observe(event)                    # classes change only when a hand ends
+        if event[0] == "hand_end" and self.stats:
+            self.classes = [self._classify(s) for s in range(len(self.stats))]
+
+    def _cls(self, s):
+        c = getattr(self, "classes", None)
+        return c[s] if c and s < len(c) else _TAG
+
+    def _classify(self, s):
+        st = self.stats[s] if self.stats else None
+        if st is None or st.acts < 10:
+            return _TAG
+        acts = st.acts
+        allin = st.allin / acts
+        rr = (st.pfr + st.aggr) / acts
+        cr = max(0, st.vpip - st.pfr + st.passive) / acts
+        vpip = st.vpip / max(st.hands, 1)
+        if allin > 0.07 or rr > 0.35:
+            return _MANIAC
+        if cr > 0.32 and rr < 0.16:
+            return _STATION
+        if vpip < 0.18 and rr < 0.12:
+            return _NIT
+        if rr < 0.10 and cr > 0.18:
+            return _PASSIVE
+        return _TAG
+
+    def decide(self, obs):
+        k = self.k
+        vs = self._villains(obs)
+        st = self._start(obs)
+        me = self._stack(obs) + obs.bets[obs.seat]
+        state = 1 if me >= 2.2 * st else -1 if me <= 0.3 * st else 0
+        jw = 0.4 if state == 1 else 1.0
+        n = max(len(vs), 1)
+        eq = self._eq_n(obs, n)
+        if 0 < obs.street < 3:
+            eq = max(eq, _draw_eq(self._val, self._suit, obs.hole, obs.board))
+        spr = self._stack(obs) / max(obs.pot, 1)
+        top = max(obs.bets)
+        need = 0.0
+        if obs.to_call:
+            po = self._po(obs)
+            agg = max(vs, key=lambda s: obs.bets[s]) if vs else None
+            ac = self._cls(agg) if agg is not None else _TAG
+            need = po + (k["m_lo"] if po <= 0.16 else k["m_mid"] if po <= 0.28 else k["m_hi"])
+            need += k["nit_adj"] if ac == _NIT else -k["man_adj"] if ac == _MANIAC else 0.0
+            if state == -1:
+                need = min(need, 0.30)
+        if obs.street == 0:
+            r = eq * (n + 1)                      # equity over a fair share
+            short = self._eff_bb(obs) <= 10 or spr <= 1.5
+            if r >= k["pre_jam"] * (0.85 if state == -1 else 1.0) and (short or self.rng.random() < 0.15 * jw):
+                return self._shove(obs)
+            if not self._raised_pre(obs):
+                if r >= k["open"]:
+                    limpers = sum(1 for h in obs.history if h[1] == 0 and h[2] == CALL)
+                    return self._rto(obs, (2.5 + limpers) * obs.bb)
+                if obs.to_call == 0:
+                    return (CALL, 0)
+                return (CALL, 0) if eq >= need and obs.to_call <= obs.bb else (FOLD, 0)
+            if r >= k["three"]:
+                return self._rto(obs, 3 * top)
+            return (CALL, 0) if eq >= need + 0.05 else self._cf(obs)
+        vals = [self._val[c] for c in tuple(obs.hole) + tuple(obs.board)]
+        one_pair = len(set(vals)) == len(vals) - 1 and self._cat(obs) == PAIR
+        soft = any(self._cls(s) in (_STATION, _PASSIVE, _MANIAC) for s in vs)
+        mult = 1.3 if soft else 1.0
+        strong = eq >= k["strong"] * (0.9 if state == -1 else 1.0)
+        if strong and spr <= 1.5 and not (one_pair and spr > 6) and (state == -1 or self.rng.random() < jw):
+            return self._shove(obs)
+        if obs.to_call == 0:
+            if eq >= k["value"]:
+                f = _clamp((0.4 + 1.5 * (eq - k["value"])) * mult, 0.25, 1.5)
+                return self._rto(obs, f * obs.pot)
+            if obs.street < 3 and eq >= 0.30 and self.rng.random() < k["semi"]:
+                return self._rto(obs, 0.5 * obs.pot)
+            return (CALL, 0)
+        if obs.street == 3 and one_pair and obs.to_call > k["river_fold"] * (obs.pot - obs.to_call):
+            return (FOLD, 0)
+        if eq >= k["raise"] and len(self._raises(obs)) < 3:
+            f = _clamp(0.8 * mult, 0.25, 1.5)
+            if one_pair and spr > 6:
+                f = min(f, 0.8)                   # SPR > 6: one pair never jams
+            return self._rto(obs, top + f * (obs.pot + obs.to_call))
+        return (CALL, 0) if eq >= need else (FOLD, 0)
+
+
+class GhHobbyRaise(_Gh):
+    """Hobby bot: raises any pair or two cards 8+ preflop, raises postflop when a hole card
+    pairs the board, otherwise calls. Never folds."""
+    NOM = {"pre": 2.0, "post": 0.75}
+
+    def decide(self, obs):
+        if len(self._raises(obs)) >= 3:
+            return (CALL, 0)
+        if obs.street == 0:
+            hi, lo, s, pair = self._hole2(obs)
+            if pair or lo >= 8:
+                return self._rto(obs, self.k["pre"] * max(obs.bets) + obs.bb)
+            return (CALL, 0)
+        bv = {self._val[c] for c in obs.board}
+        if any(self._val[c] in bv for c in obs.hole):
+            return self._rto(obs, max(obs.bets) + self.k["post"] * obs.pot)
+        return (CALL, 0)
+
+
+GITHUB_BOTS = {
+    "gh_catscore": GhCatScore, "gh_opus": GhOpus, "gh_tiers": GhTiers, "gh_flash": GhFlash,
+    "gh_minnit": GhMinnit, "gh_invstation": GhInvStation, "gh_potodds": GhPotOdds,
+    "gh_mc1jam": GhMc1Jam, "gh_ladder": GhLadder, "gh_shark": GhShark,
+    "gh_classifier": GhClassifier, "gh_hobbyraise": GhHobbyRaise,
+}
+GITHUB_COMMON = ("gh_catscore", "gh_opus", "gh_tiers", "gh_flash", "gh_minnit", "gh_mc1jam")
+
+
+def github_fields(prepped="prep:params/rival_prep.json"):
+    """Evaluation fields of GitHub-bot designs, 7 opponents a table drawn by weight (the most
+    common LLM shapes, 1-5 and 8, at 1.5). Never in a tuning default; +prep adds a prepped
+    copy, as in llm_fields."""
+    base = {k: (1.5 if k in GITHUB_COMMON else 1) for k in GITHUB_BOTS}
+    return {"github": base, "github+prep": {**base, prepped: 1.2}}
+
+
 RIVALS = {
     "rv_tag": RivalTag, "rv_lag": RivalLag, "rv_gto": RivalGto, "rv_exploit": RivalExploit,
     "rv_icm": RivalIcm, "rv_mc": RivalMc, "rv_aggro": RivalAggro, "rv_math": RivalMath,
     "rv_buggy": RivalBuggy, "rv_frozen": RivalFrozen,
     "rvh_sizer": HoldoutSizer, "rvh_bayes": HoldoutBayes, "rvh_jam": HoldoutJam,
     **LLM_BUGS,
+    **GITHUB_BOTS,
 }
 RIVAL_STRONG = ("rv_tag", "rv_lag", "rv_gto", "rv_exploit", "rv_icm")
 RIVAL_MID = ("rv_mc", "rv_aggro", "rv_math")
