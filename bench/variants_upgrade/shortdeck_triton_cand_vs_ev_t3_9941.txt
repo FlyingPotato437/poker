@@ -1,0 +1,19 @@
+A = prep:params/cand_shortdeck_triton.json
+B = prep:params/ev_t3.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  gate-weak                 +5.47   1.30         +15.7%   0/0
+default   normal  gate-strong               +0.25   1.32          +0.7%   0/0
+default   normal  gate-mixed                +4.61   1.30         +13.3%   0/0
+default   normal  rival-real                +4.30   1.44         +12.4%   0/0
+default   normal  llm-bugs                  +5.32   1.23         +15.3%   0/0
+default   normal  event                     +1.57   1.51          +4.5%   0/0
+default   normal  h2h 4v4           A 0.945x fair
+default   fast    gate-weak                 +2.19   1.46          +6.3%   0/0
+default   fast    gate-strong               +1.18   1.23          +3.4%   0/0
+default   fast    gate-mixed                +3.61   1.28         +10.4%   0/0
+default   fast    rival-real                +0.36   1.22          +1.0%   0/0
+default   fast    llm-bugs                  +5.89   1.30         +17.0%   0/0
+default   fast    event                     +0.62   1.41          +1.8%   0/0
+default   fast    h2h 4v4           A 0.977x fair
+
+mean over 12 cells: A-B +8.48% of fair (±1.11)  [750s]
