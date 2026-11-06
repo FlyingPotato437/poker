@@ -23,6 +23,7 @@ from benchmark import FIELDS, PAYOUTS, SCHEDULES, rebundle  # noqa: E402
 from final_check import final_fields  # noqa: E402
 from nolimit.harness import build_seatings, make_pool, parse_entry, run_games  # noqa: E402
 from nolimit.zoo import DEFAULT_FIELD_MIX, FRESH, HELD_OUT  # noqa: E402
+from rules_cli import add_rule_args, rule_kwargs  # noqa: E402
 
 AB_FIELDS = dict(FIELDS)
 AB_FIELDS["held-out*"] = {k: 1 for k in HELD_OUT}
@@ -35,13 +36,15 @@ AB_FIELDS["fresh+old-tunes*"] = {**{k: 1 for k in FRESH}, "prep:params/nlhe_quic
 AB_FIELDS["fresh+zoo*"] = {**DEFAULT_FIELD_MIX, **{k: 0.12 for k in FRESH}}
 # final_check's fields, in-process and without the deadline (not in the default list).
 AB_FIELDS.update({f"gate-{k}": v for k, v in final_fields("nlhe", {}).items()
-                  if k != "oos" and not k.startswith(("rival", "llm", "github"))})
+                  if k != "oos" and not k.startswith(("rival", "llm", "github", "event"))})
 # Rival-team fields (nolimit/rivals.py), not in the default list; rival-oos is sealed.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("rival") and k != "rival-oos"})
 # LLM-bug designs (nolimit/rivals.py): evaluation fields, not in the default list.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("llm")})
 # GitHub-bot designs (nolimit/rivals.py GITHUB_BOTS): evaluation fields, not in the default list.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("github")})
+# Event-field designs (nolimit/rivals.py EVENT_BOTS): evaluation fields, not in the default list.
+AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("event")})
 
 
 def paired(rows, a, b):
@@ -61,7 +64,7 @@ def main():
     ap.add_argument("--sngs", type=int, default=800)
     ap.add_argument("--workers", type=int, default=os.cpu_count())
     ap.add_argument("--fields", default=",".join(
-        k for k in AB_FIELDS if not k.startswith(("fresh", "gate-", "rival", "llm", "github"))))
+        k for k in AB_FIELDS if not k.startswith(("fresh", "gate-", "rival", "llm", "github", "event"))))
     ap.add_argument("--payouts", default="default,top-heavy")
     ap.add_argument("--schedules", default="normal,fast")
     ap.add_argument("--seed", type=int, default=21)
@@ -75,6 +78,7 @@ def main():
     ap.add_argument("--ante", type=int, default=0, help="ante in chips, every hand")
     ap.add_argument("--max-hands", type=int, help="hand cap")
     ap.add_argument("--reopen-short", action="store_true", help="a short all-in reopens the betting")
+    add_rule_args(ap)
     args = ap.parse_args()
     if args.points:
         PAYOUTS["kit"] = tuple(float(x) for x in args.points.split(","))
@@ -89,6 +93,7 @@ def main():
                  ("reopen_short", args.reopen_short)):
         if v:
             rules[k] = v
+    rules.update(rule_kwargs(args))
 
     t_start = time.time()
     total = {"d": 0.0, "v": 0.0, "n": 0}

@@ -1,0 +1,9 @@
+pushfold 734s
+A = prep:params/ev_t4.json
+B = heur:params/nlhe_final_legacy.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+kit       kit     zoo                       +8.46   1.86         +24.3%   0/0
+kit       kit     h2h 4v4           A 1.081x fair
+
+mean over 1 cells: A-B +24.35% of fair (±5.34)  [333s]
+total 1071s

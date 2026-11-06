@@ -1,0 +1,60 @@
+{
+ "_comment": "go.py test case: kit2_tahoe",
+ "variant": {
+  "preset": null,
+  "_mechanics": "set any of these to override the preset; preset null = start from standard hold'em",
+  "name": "tahoe",
+  "ranks": null,
+  "suits": null,
+  "n_hole": 3,
+  "streets": null,
+  "hole_used": 2,
+  "category_order": null,
+  "ace_low_straight": null
+ },
+ "game_type": "high",
+ "betting": {
+  "type": "no-limit",
+  "raise_cap": null,
+  "short_allin_reopens": false
+ },
+ "players": 8,
+ "starting_stack": 1500,
+ "blinds": "10/20,15/30,25/50,40/80,60/120,100/200,150/300,250/500,400/800,600/1200",
+ "hands_per_level": 15,
+ "ante": {
+  "type": "every-player",
+  "chips": 5,
+  "ante_bb_override": null
+ },
+ "hand_cap": 200,
+ "points": [
+  10,
+  6,
+  4,
+  3,
+  2,
+  1,
+  0,
+  0
+ ],
+ "time_limit_ms": 1.0,
+ "special_rules": {
+  "seven_deuce": false,
+  "straddle": false,
+  "bomb_pot": false,
+  "bounty": false,
+  "run_it_twice": false,
+  "other": ""
+ },
+ "kit": {
+  "raise_semantics": "raise-to",
+  "card_format": "ints suit*13+rank",
+  "bot_class": "PokerBot",
+  "method": "get_move",
+  "file_name": "bot.py",
+  "sim_cmd": "{py} examples/kit2/simulate.py {bot} --games 10",
+  "numpy_available": null,
+  "reuses_bot_across_tables": false
+ }
+}

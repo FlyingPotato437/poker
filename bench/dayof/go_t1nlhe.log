@@ -1,0 +1,85 @@
+[+00:00] go.py variants/examples/nlhe_points_ante.json --adapter examples/adapter_mock_solution.py --tag t1nlhe   (2026-11-06 03:39:11)
+[+00:00] Game: nlhe (high, no-limit)
+[+00:00]   deck 13 ranks 23456789TJQKA x 4 suits = 52 cards; 2 hole cards; board 3+1+1; any 5 of hole+board; ace low yes
+[+00:00]   ranking (weakest first): high < pair < two_pair < trips < straight < flush < full_house < quads < straight_flush < five_kind
+[+00:00]   -> preset nlhe (identical hand evaluation)
+[+00:00] Table: 8 players, stack 2000, 9 blind levels every 25 hands (10/20, 15/30, 25/50, 50/100, 75/150, 100/200, ...), hand cap 200
+[+00:00]   ante: every-player 5 chips -> push/fold solved at ante 0.05 bb (ante 5 at level 50/100 (first level with stack <= 25 bb))
+[+00:00]   points 1st..last: 12,8,5,3,2,1,0,0
+[+00:00]   time limit 1 ms per decision
+[+00:00] Kit: raise-by, cards 'As' strings, class Bot.get_action, submit as bot.py
+[+00:00] Params for v1: params/cand_nlhe.json (PARAMS_MAP preset.nlhe)
+[+00:00] variant: preset nlhe
+[+00:00] --- t1nlhe_v0: heuristic tables, exact rules (submittable while tables build) ---
+[+00:00] $ /Users/revanthguda/poker/.venv/bin/python scripts/day.py build t1nlhe_v0 --adapter examples/adapter_mock_solution.py --sngs 20 --workers 3 --heuristic nlhe --params params/nlhe_final_legacy.json --kit-cmd '/Users/revanthguda/poker/.venv/bin/python examples/mock_kit.py {bot} 5'
+[+00:00]     heuristic tables: no push/fold charts, so --points/--ante-bb do not apply
+[+00:00]     $ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/nlhe_final_legacy.json --adapter examples/adapter_mock_solution.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t1nlhe_v0.py --variant nlhe
+[+00:02]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t1nlhe_v0.py (0.1 MB total)
+[+00:02]     smoke ok: variant nlhe, tables HeuristicTables, numpy False, import 0.57s, worst decision 24.230 ms
+[+00:39]     check numpy   : import 1.93s, peak memory 34.6 MB, 4657 decisions p99 0.731 ms, p99.9 38.357 ms, max 57.43 ms, over 1 ms 39, errors/illegal 0
+[+00:39]     check no numpy: import 1.67s, peak memory 22.9 MB, 4335 decisions p99 2.062 ms, p99.9 107.837 ms, max 303.62 ms, over 1 ms 70, errors/illegal 0
+[+00:39]     10 SNGs: via mock kit 77.8 pts/table, direct 46.1 (similar numbers = adapter maps state correctly)
+[+00:39]     decision parity: 2158/2158 identical to the bot fed our Obs directly
+[+00:39]     
+[+00:39]     $ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t1nlhe_v0 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t1nlhe_v0.py
+[+00:39]     t1nlhe_v0.py                         0.1 MB  e58e07066207  params ['params/nlhe_final_legacy.json']  bundle os.environ.setdefault('NOLIMIT_VARIANT', 'nlhe')  adapter other
+[+00:39]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t1nlhe_v0/MANIFEST.json
+[+00:39]     WARNING: more than 2 decisions per 1000 over 1 ms
+[+00:39]     
+[+00:39]     built and froze t1nlhe_v0 in 39s, sha e58e07066207. To submit: python scripts/day.py submit t1nlhe_v0
+[+00:39]     -> exit 0 after 40s
+[+00:39] *** t1nlhe_v0 READY: python scripts/day.py submit t1nlhe_v0 --as bot.py
+[+00:39] --- t1nlhe_v1: preset bundle nlhe, params params/cand_nlhe.json, points/ante re-solved ---
+[+00:39] $ /Users/revanthguda/poker/.venv/bin/python scripts/day.py build t1nlhe_v1 --adapter examples/adapter_mock_solution.py --sngs 20 --workers 3 --preset nlhe --params params/cand_nlhe.json --points 12,8,5,3,2,1,0,0 --ante-bb 0.05 --kit-cmd '/Users/revanthguda/poker/.venv/bin/python examples/mock_kit.py {bot} 5'
+[+00:43]     $ /Users/revanthguda/poker/.venv/bin/python -m gpu.pushfold --bundle /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/nlhe_rng.nlb --payouts 12,8,5,3,2,1,0,0 --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t1nlhe_v1.nlb --workers 3 --ante-bb 0.05
+[+04:35]     push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+[+05:01]     bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.58
+[+05:01]     
+[+05:01]     8 players left: open-shove top % by position (rows) x stack bb (cols)
+[+05:01]     pos       2     4     6     8    10    15    20
+[+05:01]       0    17.9  23.4  18.7  19.1  15.4  12.1  10.6
+[+05:01]       1    19.4  27.9  25.1  19.6  19.8  12.8  11.7
+[+05:01]       2    21.4  32.0  27.7  22.8  20.6  17.2  12.5
+[+05:01]       3    23.3  36.9  34.8  29.8  26.3  19.8  15.6
+[+05:01]       4    27.5  42.2  43.9  40.6  36.9  25.3  21.1
+[+05:01]       5    29.5  51.7  53.4  52.4  52.3  42.1  32.3
+[+05:01]       6    67.4  86.7  90.1  88.9  86.8  76.5  71.0
+[+05:01]     BB call vs first-position shove: 2bb=67.6% 4bb=13.4% 6bb=7.2% 8bb=6.0% 10bb=5.0% 15bb=3.0% 20bb=2.1%
+[+05:01]     
+[+05:01]     4 players left: open-shove top % by position (rows) x stack bb (cols)
+[+05:01]     pos       2     4     6     8    10    15    20
+[+05:01]       0    34.6  47.7  46.0  42.2  32.1  23.4  20.3
+[+05:01]       1    38.1  56.9  57.3  57.7  51.6  38.5  26.3
+[+05:01]       2    66.6  86.8  86.4  87.7  87.7  80.6  68.4
+[+05:01]     BB call vs first-position shove: 2bb=64.2% 4bb=25.9% 6bb=16.4% 8bb=10.9% 10bb=8.0% 15bb=5.4% 20bb=4.1%
+[+05:01]     
+[+05:01]     2 players left: open-shove top % by position (rows) x stack bb (cols)
+[+05:01]     pos       2     4     6     8    10    15    20
+[+05:01]       0    93.3  75.7  72.3  66.3  60.7  48.3  39.4
+[+05:01]     BB call vs first-position shove: 2bb=99.9% 4bb=75.9% 6bb=57.3% 8bb=47.5% 10bb=40.1% 15bb=29.1% 20bb=22.6%
+[+05:01]     
+[+05:01]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t1nlhe_v1.nlb (4.5 MB)
+[+05:01]     $ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/cand_nlhe.json --adapter examples/adapter_mock_solution.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t1nlhe_v1.py --bundle /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t1nlhe_v1.nlb
+[+05:05]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t1nlhe_v1.py (6.1 MB total)
+[+05:05]     smoke ok: variant nlhe, tables Tables, numpy False, import 1.16s, worst decision 162.196 ms
+[+05:26]     check numpy   : import 3.04s, peak memory 70.2 MB, 4486 decisions p99 1.381 ms, p99.9 53.14 ms, max 66.88 ms, over 1 ms 52, errors/illegal 0
+[+05:26]     check no numpy: import 1.33s, peak memory 61.2 MB, 5060 decisions p99 3.005 ms, p99.9 67.207 ms, max 184.34 ms, over 1 ms 60, errors/illegal 0
+[+05:26]     10 SNGs: via mock kit 68.5 pts/table, direct 67.5 (similar numbers = adapter maps state correctly)
+[+05:26]     decision parity: 1502/1502 identical to the bot fed our Obs directly
+[+05:26]     
+[+05:26]     $ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t1nlhe_v1 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t1nlhe_v1.py
+[+05:26]     t1nlhe_v1.py                         6.1 MB  35404c3f2290  params ['params/cand_nlhe.json']  bundle []  adapter other
+[+05:26]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t1nlhe_v1/MANIFEST.json
+[+05:26]     WARNING: more than 2 decisions per 1000 over 1 ms
+[+05:26]     
+[+05:26]     built and froze t1nlhe_v1 in 283s, sha 35404c3f2290. To submit: python scripts/day.py submit t1nlhe_v1
+[+05:26]     -> exit 0 after 287s
+[+05:26] *** t1nlhe_v1 READY: python scripts/day.py submit t1nlhe_v1 --as bot.py
+[+05:26] 
+[+05:26] === COPY THESE ===
+[+05:26] python scripts/day.py submit t1nlhe_v1 --as bot.py     # then upload dist/SUBMIT/bot.py
+[+05:26] python scripts/day.py rollback                          # back to the previous submission (sha-checked)
+[+05:26] python scripts/day.py status                            # what is live
+[+05:26] # A/B gate v1 vs v0 under the kit's rules (~400 paired SNGs):
+[+05:26]   .venv/bin/python scripts/ab_test.py --bundle bundles/day/t1nlhe_v1.nlb --keep-bundle --a prep:params/cand_nlhe.json --b heur:params/nlhe_final_legacy.json --sngs 400 --workers 3 --points 12,8,5,3,2,1,0,0 --fields zoo,passive,aggressive --schedule 10/20,15/30,25/50,50/100,75/150,100/200,150/300,200/400,300/600 --hands-per-level 25 --stack 2000 --ante 5 --max-hands 200
+[+05:26] log: bench/dayof/go_t1nlhe.log

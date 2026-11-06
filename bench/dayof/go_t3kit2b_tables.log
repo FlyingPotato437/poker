@@ -1,0 +1,148 @@
+[go +0m0s] build_tables start
+[04:30:25] variant tahoe: deck 52, hole 3, streets (3, 1, 1), device cpu
+[04:30:27] classes: 1,755 classes over 22,100 combos (1.6s)
+[04:30:27] preflop pass 1 (strength order): 113 rollouts/class
+[04:31:35]   198,315 rollouts x 1 opp in 67.9s
+[04:31:35] preflop pass 2 (equities + ranges): 1139 rollouts/class, 7 opponents
+[04:48:26]   1,998,945 rollouts x 7 opp in 1011.5s
+[04:48:26]   strongest: KcAcAd (0.749), 7cAcAd (0.766), QcAdAh (0.727), 2cAcAd (0.768), 4cAcAd (0.743)
+[04:52:54] postflop data, board 3: 60,000 samples (268.0s)
+[04:54:58] postflop data, board 4: 60,000 samples (123.8s)
+[04:56:31] postflop data, board 5: 60,000 samples (92.5s)
+[04:56:46]   epoch 1/10 train mse 0.03040
+[04:57:31]   epoch 5/10 train mse 0.00847
+[04:58:16]   epoch 9/10 train mse 0.00699
+[04:58:28]   epoch 10/10 train mse 0.00682
+[04:58:29]   epoch 1/10 train mse 0.06645
+[04:58:32]   epoch 5/10 train mse 0.01199
+[04:58:36]   epoch 9/10 train mse 0.01080
+[04:58:37]   epoch 10/10 train mse 0.01071
+[04:58:37] small MLP 64,32 validation MAE: 0.0566, 0.0542, 0.0508
+[04:58:37] postflop MLP validation MAE vs 1/2/3 opp: 0.0364, 0.0341, 0.0310
+[04:58:38] wrote bundles/day/t3kit2b_base.nlb (2.5 MB)
+[go +28m47s] build_tables done
+$ /Users/revanthguda/poker/.venv/bin/python -m gpu.pushfold --bundle bundles/day/t3kit2b_base.nlb --payouts 10,6,4,3,2,1,0,0 --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t3kit2b_v1.nlb --workers 3 --ante-bb 0.0625
+push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.65
+
+8 players left: open-shove top % by position (rows) x stack bb (cols)
+pos       2     4     6     8    10    15    20
+  0    12.6  35.4  32.1  25.0  21.5   9.5   7.9
+  1    14.0  40.0  42.8  33.3  24.2  12.7   7.7
+  2    14.6  44.1  49.5  46.0  36.5  24.6  10.9
+  3    15.7  50.8  60.2  56.4  49.6  30.8  22.5
+  4    17.2  57.0  68.4  74.5  68.7  51.1  34.3
+  5    18.6  64.9  84.3  87.0  94.2  85.2  64.0
+  6    67.9  96.2  99.9  99.9  99.9  99.8  99.8
+BB call vs first-position shove: 2bb=82.4% 4bb=20.1% 6bb=8.5% 8bb=5.6% 10bb=4.6% 15bb=3.0% 20bb=2.5%
+
+4 players left: open-shove top % by position (rows) x stack bb (cols)
+pos       2     4     6     8    10    15    20
+  0    20.1  50.6  57.4  53.4  51.8  33.0  23.7
+  1    22.8  54.6  67.0  68.6  66.1  59.9  43.8
+  2    77.4  88.1  95.2  98.5  99.8  92.6  91.3
+BB call vs first-position shove: 2bb=99.4% 4bb=43.0% 6bb=24.4% 8bb=16.8% 10bb=11.3% 15bb=6.9% 20bb=5.0%
+
+2 players left: open-shove top % by position (rows) x stack bb (cols)
+pos       2     4     6     8    10    15    20
+  0    99.9  86.2  78.6  74.8  72.1  62.2  55.5
+BB call vs first-position shove: 2bb=99.9% 4bb=97.8% 6bb=81.1% 8bb=69.5% 10bb=57.0% 15bb=41.7% 20bb=33.4%
+
+wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t3kit2b_v1.nlb (2.5 MB)
+$ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/ev_t3.json --adapter examples/answers/kit2_adapter.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v1.py --bundle /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t3kit2b_v1.nlb
+wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v1.py (3.4 MB total)
+smoke ok: variant tahoe, tables Tables, numpy False, import 0.57s, worst decision 91.589 ms
+check numpy   : import 1.68s, peak memory 52.3 MB, 4675 decisions p99 0.166 ms, p99.9 48.148 ms, max 86.49 ms, over 1 ms 18, errors/illegal 0
+check no numpy: import 0.66s, peak memory 42.6 MB, 4160 decisions p99 0.691 ms, p99.9 53.203 ms, max 114.81 ms, over 1 ms 42, errors/illegal 0
+loaded /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v1.py in 0.48s
+game   1: seat p0  points  0.00  hands  94  decisions   15  max  0.194 ms
+game   2: seat p1  points 10.00  hands 104  decisions  105  max  0.260 ms
+game   3: seat p2  points  2.00  hands  98  decisions   49  max 23.135 ms
+game   4: seat p3  points  2.00  hands 139  decisions   18  max  0.205 ms
+game   5: seat p4  points  2.00  hands 103  decisions    9  max  0.190 ms
+game   6: seat p5  points  2.00  hands 114  decisions   37  max  0.266 ms
+game   7: seat p6  points  2.00  hands 192  decisions   32  max 65.512 ms
+game   8: seat p7  points  4.00  hands  96  decisions  107  max  3.434 ms
+game   9: seat p0  points 10.00  hands  95  decisions   87  max  0.198 ms
+game  10: seat p1  points  3.00  hands  61  decisions   47  max 65.978 ms
+
+10 games: 3.70 points per game (fair share 3.25); 506 decisions, 6 over 1.0 ms, 0 exceptions, 0 illegal
+
+$ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t3kit2b_v1 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v1.py
+t3kit2b_v1.py                        3.4 MB  d794ed3ccf74  params ['params/ev_t3.json', 'params/rc1_plo4.json']  bundle []  adapter other
+wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t3kit2b_v1/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+
+built and froze t3kit2b_v1 in 112s, sha d794ed3ccf74. To submit: python scripts/day.py submit t3kit2b_v1
+[go +30m40s] t3kit2b_v1 step done: if it says built and froze, python scripts/day.py submit t3kit2b_v1
+[05:00:39] range equity for tahoe: grid 5x9, device cpu, cfg {'samples': 8000, 'k': 16, 'rollouts': 3, 'val_samples': 300, 'val_k': 64, 'val_rollouts': 8, 'chunk': 200000, 'epochs': 10, 'hidden': '1024,512', 'small_hidden': '64,32'}
+[05:02:09] board 3: 8,000 samples (89.6s), mean label 0.267, top-5% of top-8% 0.152
+[05:03:42] board 4: 8,000 samples (93.2s), mean label 0.239, top-5% of top-8% 0.127
+[05:06:20] board 5: 8,000 samples (157.9s), mean label 0.183, top-5% of top-8% 0.059
+[05:06:26]   epoch 1/10 train mse 0.08918
+[05:06:34]   epoch 5/10 train mse 0.02642
+[05:06:42]   epoch 9/10 train mse 0.02295
+[05:06:44]   epoch 10/10 train mse 0.02267
+[05:06:44] range MLP 1024,512: validation MAE 0.0664 (y=1,x=1 0.0583; y=1,x=.05 0.0795; y=.08,x=.05 0.0733)
+[05:06:45]   epoch 1/10 train mse 0.15306
+[05:06:46]   epoch 5/10 train mse 0.03429
+[05:06:47]   epoch 9/10 train mse 0.03000
+[05:06:47]   epoch 10/10 train mse 0.02981
+[05:06:47] range MLP 64,32: validation MAE 0.0869
+[05:06:48] wrote bundles/day/t3kit2b_base_rng.nlb (4.7 MB)
+[go +36m58s] range_eq done
+$ /Users/revanthguda/poker/.venv/bin/python -m gpu.pushfold --bundle bundles/day/t3kit2b_base_rng.nlb --payouts 10,6,4,3,2,1,0,0 --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t3kit2b_v2.nlb --workers 3 --ante-bb 0.0625
+push/fold: solved 182 spots (n=2..8, stacks 1..30 bb)
+bubble factors: 2527 spots; 8 left, equal stacks, all-in: BF 1.65
+
+8 players left: open-shove top % by position (rows) x stack bb (cols)
+pos       2     4     6     8    10    15    20
+  0    12.6  35.4  32.1  25.0  21.5   9.5   7.9
+  1    14.0  40.0  42.8  33.3  24.2  12.7   7.7
+  2    14.6  44.1  49.5  46.0  36.5  24.6  10.9
+  3    15.7  50.8  60.2  56.4  49.6  30.8  22.5
+  4    17.2  57.0  68.4  74.5  68.7  51.1  34.3
+  5    18.6  64.9  84.3  87.0  94.2  85.2  64.0
+  6    67.9  96.2  99.9  99.9  99.9  99.8  99.8
+BB call vs first-position shove: 2bb=82.4% 4bb=20.1% 6bb=8.5% 8bb=5.6% 10bb=4.6% 15bb=3.0% 20bb=2.5%
+
+4 players left: open-shove top % by position (rows) x stack bb (cols)
+pos       2     4     6     8    10    15    20
+  0    20.1  50.6  57.4  53.4  51.8  33.0  23.7
+  1    22.8  54.6  67.0  68.6  66.1  59.9  43.8
+  2    77.4  88.1  95.2  98.5  99.8  92.6  91.3
+BB call vs first-position shove: 2bb=99.4% 4bb=43.0% 6bb=24.4% 8bb=16.8% 10bb=11.3% 15bb=6.9% 20bb=5.0%
+
+2 players left: open-shove top % by position (rows) x stack bb (cols)
+pos       2     4     6     8    10    15    20
+  0    99.9  86.2  78.6  74.8  72.1  62.2  55.5
+BB call vs first-position shove: 2bb=99.9% 4bb=97.8% 6bb=81.1% 8bb=69.5% 10bb=57.0% 15bb=41.7% 20bb=33.4%
+
+wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t3kit2b_v2.nlb (4.7 MB)
+$ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/ev_t3.json --adapter examples/answers/kit2_adapter.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v2.py --bundle /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/bundles/day/t3kit2b_v2.nlb
+wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v2.py (6.4 MB total)
+smoke ok: variant tahoe, tables Tables, numpy False, import 0.90s, worst decision 81.821 ms
+check numpy   : import 2.01s, peak memory 75.5 MB, 3700 decisions p99 0.321 ms, p99.9 54.99 ms, max 75.53 ms, over 1 ms 25, errors/illegal 0
+check no numpy: import 1.08s, peak memory 64.0 MB, 3805 decisions p99 22.549 ms, p99.9 56.909 ms, max 71.93 ms, over 1 ms 52, errors/illegal 0
+loaded /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v2.py in 0.91s
+game   1: seat p0  points 10.00  hands  78  decisions   93  max 40.842 ms
+game   2: seat p1  points 10.00  hands 100  decisions  105  max 30.074 ms
+game   3: seat p2  points  2.00  hands  98  decisions   49  max  0.300 ms
+game   4: seat p3  points  2.00  hands  93  decisions   54  max 40.899 ms
+game   5: seat p4  points  2.00  hands  92  decisions   26  max 21.103 ms
+game   6: seat p5  points  2.00  hands 112  decisions   56  max 43.236 ms
+game   7: seat p6  points  2.00  hands 104  decisions   35  max 26.472 ms
+game   8: seat p7  points 10.00  hands  77  decisions   75  max 31.909 ms
+game   9: seat p0  points  4.00  hands  91  decisions   50  max 46.696 ms
+game  10: seat p1  points  3.00  hands  58  decisions   71  max  0.263 ms
+
+10 games: 4.70 points per game (fair share 3.25); 614 decisions, 13 over 1.0 ms, 0 exceptions, 0 illegal
+
+$ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t3kit2b_v2 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t3kit2b_v2.py
+t3kit2b_v2.py                        6.4 MB  8bb3107cff14  params ['params/ev_t3.json', 'params/rc1_plo4.json']  bundle []  adapter other
+wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t3kit2b_v2/MANIFEST.json
+WARNING: more than 2 decisions per 1000 over 1 ms
+
+built and froze t3kit2b_v2 in 114s, sha 8bb3107cff14. To submit: python scripts/day.py submit t3kit2b_v2
+[go +38m52s] t3kit2b_v2 built: python scripts/day.py submit t3kit2b_v2
+GO_TABLES_DONE
