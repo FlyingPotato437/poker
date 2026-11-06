@@ -218,6 +218,15 @@ class Evaluator:
             if len(set(combo)) == 5:
                 self.flush[key] = hand_value_5(combo, True, self.strength, v.R, v.ace_low_straight)
         self._combos = {}
+        # Must-use-k-hole variants (Omaha): best() combines hole-subset and board-subset prime
+        # products and looks only flush-capable suits up in the flush table. That needs a
+        # flush to be worth at least the same ranks unsuited (flush > high card, straight
+        # flush > straight), true of every preset; otherwise keep the per-combo loop.
+        # Setting _split = None forces the per-combo loop (the reference in tests).
+        nf, fl = self.nonflush, self.flush
+        hu = v.hole_used
+        self._split = hu if hu is not None and 0 < hu < 5 and all(fl[k] >= nf[k] for k in fl) else None
+        self._subsets = {}
 
     def combos(self, n_hole, n_board):
         """5-card index tuples into (hole + board) that the variant allows."""
@@ -247,6 +256,8 @@ class Evaluator:
 
     def best(self, hole, board):
         """Best value for hole + board, or -1 if no legal 5-card hand exists yet."""
+        if self._split is not None:
+            return self._best_split(hole, board, self._split)
         cards = tuple(hole) + tuple(board)
         p = self.prime
         s = self.suit
@@ -262,6 +273,53 @@ class Evaluator:
                 val = nf[key]
             if val > best:
                 best = val
+        return best
+
+    def _subset_idx(self, n, k):
+        key = (n, k)
+        got = self._subsets.get(key)
+        if got is None:
+            got = self._subsets[key] = tuple(itertools.combinations(range(n), k))
+        return got
+
+    def _best_split(self, hole, board, hu):
+        """best() for variants that use exactly hu hole cards: same value as the per-combo loop."""
+        nb = 5 - hu
+        if len(board) < nb or len(hole) < hu:
+            return -1
+        p = self.prime
+        ph = [p[c] for c in hole]
+        pb = [p[c] for c in board]
+        if hu == 2:
+            hp = [ph[i] * ph[j] for i, j in self._subset_idx(len(hole), 2)]
+        else:
+            hp = [math.prod([ph[i] for i in c]) for c in self._subset_idx(len(hole), hu)]
+        if nb == 3:
+            bp = [pb[i] * pb[j] * pb[k] for i, j, k in self._subset_idx(len(board), 3)]
+        else:
+            bp = [math.prod([pb[i] for i in c]) for c in self._subset_idx(len(board), nb)]
+        nf = self.nonflush
+        best = max([nf[a * b] for a in hp for b in bp])
+        # A flush needs nb board cards and hu hole cards of one suit.
+        s = self.suit
+        S = self.v.suits
+        cnt = [0] * S
+        for c in board:
+            cnt[s[c]] += 1
+        for su in range(S):
+            if cnt[su] < nb:
+                continue
+            hs = [p[c] for c in hole if s[c] == su]
+            if len(hs) < hu:
+                continue
+            bs = [p[c] for c in board if s[c] == su]
+            fl = self.flush
+            for hc in itertools.combinations(hs, hu):
+                a = math.prod(hc)
+                for bc in itertools.combinations(bs, nb):
+                    val = fl[a * math.prod(bc)]
+                    if val > best:
+                        best = val
         return best
 
     def category(self, value):
