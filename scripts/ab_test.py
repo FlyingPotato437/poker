@@ -36,13 +36,15 @@ AB_FIELDS["fresh+old-tunes*"] = {**{k: 1 for k in FRESH}, "prep:params/nlhe_quic
 AB_FIELDS["fresh+zoo*"] = {**DEFAULT_FIELD_MIX, **{k: 0.12 for k in FRESH}}
 # final_check's fields, in-process and without the deadline (not in the default list).
 AB_FIELDS.update({f"gate-{k}": v for k, v in final_fields("nlhe", {}).items()
-                  if k != "oos" and not k.startswith(("rival", "llm", "github"))})
+                  if k != "oos" and not k.startswith(("rival", "llm", "github", "event"))})
 # Rival-team fields (nolimit/rivals.py), not in the default list; rival-oos is sealed.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("rival") and k != "rival-oos"})
 # LLM-bug designs (nolimit/rivals.py): evaluation fields, not in the default list.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("llm")})
 # GitHub-bot designs (nolimit/rivals.py GITHUB_BOTS): evaluation fields, not in the default list.
 AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("github")})
+# Event-field designs (nolimit/rivals.py EVENT_BOTS): evaluation fields, not in the default list.
+AB_FIELDS.update({k: v for k, v in final_fields("nlhe", {}).items() if k.startswith("event")})
 
 
 def paired(rows, a, b):
@@ -62,7 +64,7 @@ def main():
     ap.add_argument("--sngs", type=int, default=800)
     ap.add_argument("--workers", type=int, default=os.cpu_count())
     ap.add_argument("--fields", default=",".join(
-        k for k in AB_FIELDS if not k.startswith(("fresh", "gate-", "rival", "llm", "github"))))
+        k for k in AB_FIELDS if not k.startswith(("fresh", "gate-", "rival", "llm", "github", "event"))))
     ap.add_argument("--payouts", default="default,top-heavy")
     ap.add_argument("--schedules", default="normal,fast")
     ap.add_argument("--seed", type=int, default=21)
