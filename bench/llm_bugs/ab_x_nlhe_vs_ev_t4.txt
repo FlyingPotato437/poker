@@ -1,0 +1,11 @@
+A = prep:params/x_nlhe.json
+B = prep:params/ev_t4.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  llm-bugs                  +3.74   0.78         +10.8%   0/0
+default   normal  llm-bugs+prep             +1.55   0.75          +4.5%   0/0
+default   normal  h2h 4v4           A 0.989x fair
+default   fast    llm-bugs                  +1.80   0.73          +5.2%   0/0
+default   fast    llm-bugs+prep             +1.73   0.75          +5.0%   0/0
+default   fast    h2h 4v4           A 0.978x fair
+
+mean over 4 cells: A-B +6.35% of fair (±1.08)  [205s]

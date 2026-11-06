@@ -1,0 +1,19 @@
+A = prep:params/x_nlhe.json
+B = prep:params/ev_t4.json
+blinds  style         A xfair   ±se  B xfair   ±se  A-B %fair   ±se
+normal  phase           1.771 0.029    1.743 0.031      +2.8%   3.0
+normal  raiseby         2.194 0.033    2.085 0.035     +10.9%   3.1
+normal  huequity        2.478 0.022    2.388 0.022      +9.0%   2.0
+normal  revsizer        1.996 0.034    1.886 0.036     +11.0%   3.2
+normal  limpjam         2.184 0.035    2.084 0.035     +10.1%   3.2
+normal  resteal         1.581 0.036    1.522 0.036      +5.9%   3.6
+normal  capclock        2.120 0.032    2.052 0.034      +6.8%   2.8
+normal  ftsbluff        1.832 0.036    1.804 0.035      +2.9%   2.8
+fast    phase           1.248 0.032    1.276 0.035      -2.8%   3.2
+fast    raiseby         1.776 0.038    1.700 0.039      +7.6%   3.1
+fast    huequity        2.212 0.023    2.177 0.024      +3.5%   2.1
+fast    revsizer        1.751 0.039    1.740 0.039      +1.1%   2.8
+fast    limpjam         1.710 0.037    1.632 0.037      +7.8%   3.2
+fast    resteal         1.322 0.038    1.239 0.037      +8.3%   3.2
+fast    capclock        1.828 0.038    1.790 0.038      +3.8%   2.8
+fast    ftsbluff        1.647 0.040    1.605 0.040      +4.2%   2.8
