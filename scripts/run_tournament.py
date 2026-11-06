@@ -13,10 +13,12 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from nolimit.engine import DEFAULT_PAYOUTS, DEFAULT_SCHEDULE  # noqa: E402
 from nolimit.harness import build_seatings, format_summary, parse_entry, run_games  # noqa: E402
 from nolimit.zoo import DEFAULT_FIELD_MIX  # noqa: E402
+from rules_cli import add_rule_args, rule_kwargs  # noqa: E402
 
 
 def parse_field(text):
@@ -38,6 +40,7 @@ def sng_kwargs(args):
         kw["ante"] = args.ante
     if getattr(args, "reopen_short", False):
         kw["reopen_short"] = True
+    kw.update(rule_kwargs(args))
     return kw
 
 
@@ -55,6 +58,7 @@ def add_common(ap):
     ap.add_argument("--time-limit-ms", type=float, help="enforce the per-decision limit like the host")
     ap.add_argument("--ante", type=int, default=0, help="ante in chips from every player, every hand")
     ap.add_argument("--reopen-short", action="store_true", help="a short all-in reopens the betting")
+    add_rule_args(ap)
 
 
 def main():

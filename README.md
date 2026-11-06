@@ -11,7 +11,7 @@ variant into lookup tables in minutes, plus a bot that runs on those tables in a
 > **Rules check first.** The rules don't say whether teams may bring pre-written code
 > or use their own compute during the build phase (3.3–3.4 name only Astra and Codex;
 > 5.4 allows code review before prizes). Ask the organizers in writing before relying
-> on this. See [PLAYBOOK.md](PLAYBOOK.md) for the day-of plan.
+> on this. See [PLAYBOOK.md](PLAYBOOK.md) for the day-of plan and [DAYOF.md](DAYOF.md) for the one-page copy-paste version.
 
 ## What's here
 
@@ -38,9 +38,14 @@ variant into lookup tables in minutes, plus a bot that runs on those tables in a
 | [scripts/package_bot.py](scripts/package_bot.py) | One-file submission: runtime + embedded tables + params + adapter, then a clean-interpreter smoke test. |
 | [scripts/freeze.py](scripts/freeze.py) | Copies the submission files read-only to `frozen/<tag>/` with a sha256 manifest of each part (runtime, params, tables, adapter); `--verify` re-checks them. |
 | [scripts/final_check.py](scripts/final_check.py) | Plays frozen files through the mock-kit adapter with auto model size, the deadline guard and a real 1 ms auto-fold, vs opponents written after the freeze; paired vs the old bot (or `--a`/`--b` any two packaged files), per field type. `--fields oos` adds the out-of-sample field; `--attackers B=...` names which bot each attacker targets. |
+| [scripts/go.py](scripts/go.py) | **Day-of, one command for everything** ([DAYOF.md](DAYOF.md)): announced rules in `variants/ANNOUNCE.json` → validation + summary + plan for unmodeled rules, preset match or `variants/day.json`, heuristic v0 in seconds, v1 from the preset bundle or a background table build, then the submit/rollback commands. Params per variant: `variants/PARAMS_MAP.json`. |
 | [scripts/day.py](scripts/day.py) | **Day-of, one command per step:** `build <tag>` (exact push/fold for the announced points and antes, package, clean-interpreter checks of memory / import / latency / illegal actions, kit simulator, freeze), `submit`, `rollback`, `status`. `--heuristic variants/day.json` packages a v0 for a new variant before its tables exist. |
 | [scripts/switch_study.py](scripts/switch_study.py) | Per-table param switching: every table is played on the base params to hand N, then stays or switches to each arm from the same state; uplift regression on what the bot saw by hand N, cross-validated rule, 95% CIs. |
 | [scripts/variant_stats.py](scripts/variant_stats.py) | Hand-category frequencies, to sanity-check a new variant's ranking order. |
+| [scripts/stipulation_sweep.py](scripts/stipulation_sweep.py) | One factor at a time around the default rules (players, stack, blind speed, antes, cap, reopen, points, field, variant, special house rules): x-fair and SD per cell, paired vs a baseline, factors ranked, sample-size table. Writes `bench/sweep/report.md`. |
+| [scripts/variance_report.py](scripts/variance_report.py) | Per-hand log (engine `log_hands`) broken down by position, hole class, stack depth, all-in: chips per hand, SD and share of variance. |
+| [scripts/parity_check.py](scripts/parity_check.py) | Engine with every house rule off vs the frozen pre-rules engine (`tests/legacy_engine.py`) on real tables: identical decisions and points. |
+| [scripts/rules_cli.py](scripts/rules_cli.py) | Shared flags for the engine's optional house rules (BB ante, straddle, bomb pots, run it twice, 7-2 bounty, KO points, bet/raise caps, dead button, chip scoring, uneven stacks). |
 | [adapter_template.py](adapter_template.py) | **The only part you write on the day:** map the starter kit's state/actions onto `Obs`. |
 | [examples/mock_kit.py](examples/mock_kit.py) | Fake starter kit (string cards, raise-by, no hand-end callback) for rehearsal; checks the packaged bot makes the same decision as the bot fed our own `Obs`, on every decision. |
 | [examples/kit2/](examples/kit2/) | Rehearsal kit #2 for the timed drill in [REHEARSAL.md](REHEARSAL.md): new variant (3 hole cards, exactly 2 used), antes, its own state format, timed simulator with `--parity`. Answer key in `examples/answers/`. |
