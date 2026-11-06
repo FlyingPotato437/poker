@@ -131,7 +131,7 @@ def build(args):
         print("heuristic tables: no push/fold charts, so --points/--ante-bb do not apply")
     elif args.points:
         cmd = [PY, "-m", "gpu.pushfold", "--bundle", bundle, "--payouts", args.points, "--out", day_bundle,
-               "--workers", "4"]
+               "--workers", str(args.workers)]
         if args.ante_bb:
             cmd += ["--ante-bb", str(args.ante_bb)]
         run(cmd)
@@ -283,6 +283,7 @@ def main():
     b.add_argument("--pure-python", action="store_true")
     b.add_argument("--kit-cmd", help='shell command running the kit simulator on "{bot}"')
     b.add_argument("--sngs", type=int, default=30, help="SNGs per check (2 seats each)")
+    b.add_argument("--workers", type=int, default=4, help="push/fold solver processes")
     s = sub.add_parser("submit")
     s.add_argument("tag")
     s.add_argument("--as", dest="name", help="file name the kit expects (remembered; default bot.py)")

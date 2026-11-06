@@ -1,0 +1,60 @@
+{
+ "_comment": "go.py test case: nlhe_points_ante",
+ "variant": {
+  "preset": "nlhe",
+  "_mechanics": "set any of these to override the preset; preset null = start from standard hold'em",
+  "name": null,
+  "ranks": null,
+  "suits": null,
+  "n_hole": null,
+  "streets": null,
+  "hole_used": null,
+  "category_order": null,
+  "ace_low_straight": null
+ },
+ "game_type": "high",
+ "betting": {
+  "type": "no-limit",
+  "raise_cap": null,
+  "short_allin_reopens": false
+ },
+ "players": 8,
+ "starting_stack": 2000,
+ "blinds": "10/20,15/30,25/50,50/100,75/150,100/200,150/300,200/400,300/600",
+ "hands_per_level": 25,
+ "ante": {
+  "type": "every-player",
+  "chips": 5,
+  "ante_bb_override": null
+ },
+ "hand_cap": 200,
+ "points": [
+  12,
+  8,
+  5,
+  3,
+  2,
+  1,
+  0,
+  0
+ ],
+ "time_limit_ms": 1.0,
+ "special_rules": {
+  "seven_deuce": false,
+  "straddle": false,
+  "bomb_pot": false,
+  "bounty": false,
+  "run_it_twice": false,
+  "other": ""
+ },
+ "kit": {
+  "raise_semantics": "raise-by",
+  "card_format": "'As' strings",
+  "bot_class": "Bot",
+  "method": "get_action",
+  "file_name": "bot.py",
+  "sim_cmd": "{py} examples/mock_kit.py {bot} 5",
+  "numpy_available": null,
+  "reuses_bot_across_tables": false
+ }
+}

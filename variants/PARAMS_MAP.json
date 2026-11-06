@@ -1,0 +1,17 @@
+{
+  "_comment": "The ONE place go.py picks params. preset.<name> = v1 params when that preset's bundle is used. new_variant = v1 params on a bundle built on the day (holdem_like: 2 hole cards, any 5 of 7; other: everything else). heuristic_v0 = params for the heuristic-tables v0 (rules engine). Defaults: cand_nlhe for nlhe (bot-upgrades), the rc1 params (ev_t3) for every other preset. Update when the per-variant winners are in.",
+  "heuristic_v0": "params/nlhe_final_legacy.json",
+  "preset": {
+    "nlhe": "params/cand_nlhe.json",
+    "plo4": "params/ev_t3.json",
+    "plo5": "params/ev_t3.json",
+    "shortdeck": "params/ev_t3.json",
+    "shortdeck_triton": "params/ev_t3.json",
+    "royal": "params/ev_t3.json",
+    "holdem3": "params/ev_t3.json"
+  },
+  "new_variant": {
+    "holdem_like": "params/ev_t4.json",
+    "other": "params/ev_t3.json"
+  }
+}
