@@ -11,7 +11,8 @@ from nolimit.zoo import ZOO
 
 BUNDLE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bundles", "nlhe_rng.nlb")
 need_bundle = pytest.mark.skipif(not os.path.exists(BUNDLE), reason="bundles/nlhe_rng.nlb not built")
-OFF = {"resteal_on": 0.0, "sh_open": 0.0, "hu_sb_play": 0.0, "mw_call": 0.0, "cap_fade": 0.0}
+OFF = {"resteal_on": 0.0, "sh_open": 0.0, "hu_sb_play": 0.0, "mw_call": 0.0, "cap_fade": 0.0,
+       "rs2_on": 0.0, "mw_rng": 0.0}
 
 
 @pytest.fixture(scope="module")
@@ -86,3 +87,33 @@ def test_cap_fade_counts_hands(T):
     assert bot._nh == 20 and bot.p["risk_av"] == 0.0
     bot._unfade()
     assert bot.p["risk_av"] == 1.0
+
+
+def test_response_counters():
+    from nolimit.runtime import SeatStats, ingest_history
+    stats = [SeatStats() for _ in range(4)]
+    # SB 1, BB 2; seat 3 opens, seat 0 jams, SB folds, BB calls, the opener folds.
+    ingest_history(stats, ((1, 0, POST, 10, False), (2, 0, POST, 20, False), (3, 0, RAISE, 60, False),
+                           (0, 0, RAISE, 300, True), (1, 0, FOLD, 10, False), (2, 0, CALL, 300, False),
+                           (3, 0, FOLD, 60, False)))
+    o, j, sb, bb = stats[3], stats[0], stats[1], stats[2]
+    assert (o.fi_opp, o.fi_raise, o.fi_jam, o.o3_n, o.o3_f, o.oj_n, o.oj_f) == (1, 1, 0, 1, 1, 1, 1)
+    assert (o.ai_n, o.ai_c) == (1, 0)
+    assert (j.fi_opp, j.ai_n, j.o3_n) == (0, 0, 0)
+    assert (sb.ai_n, sb.ai_c, bb.ai_n, bb.ai_c) == (1, 0, 1, 1)
+
+
+@need_bundle
+def test_resteal2_reads_fold_to_reraise(T):
+    for folds, want in ((20, RAISE), (0, FOLD)):
+        bot = PrepBot(T, {"rs2_on": 1.0}, seed=1)
+        bot.new_table(1, 3)
+        st = bot.stats[0]
+        st.o3_n = st.oj_n = 20
+        st.o3_f = st.oj_f = folds
+        assert bot.act(_obs(T, "7h2d"))[0] == want
+    off = PrepBot(T, None, seed=1)
+    off.new_table(1, 3)
+    st = off.stats[0]
+    st.o3_n = st.o3_f = st.oj_n = st.oj_f = 20
+    assert off.act(_obs(T, "7h2d")) == (FOLD, 0)

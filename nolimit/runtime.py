@@ -922,13 +922,21 @@ class SeatStats:
     # min-raises (min-bets) short of all-in; they flag degenerate bots (exploit "degen_n").
     __slots__ = ("hands", "vpip", "pfr", "shove", "faced", "folded", "aggr", "passive",
                  "bet_opp", "bets", "raised", "faced_ab", "folded_ab", "prior",
-                 "acts", "allin", "minr")
+                 "acts", "allin", "minr",
+                 "fi_opp", "fi_raise", "fi_jam", "o3_n", "o3_f", "o3_c", "oj_n", "oj_f", "ai_n", "ai_c")
 
     def __init__(self):
         self.hands = self.vpip = self.pfr = self.shove = 0
         self.faced = self.folded = self.aggr = self.passive = 0
         self.bet_opp = self.bets = self.raised = self.faced_ab = self.folded_ab = 0
         self.acts = self.allin = self.minr = 0
+        # Preflop response counters (resteal / multiway calls; no other code reads them):
+        # fi_*  acted in an unopened pot (no raise yet): opportunities, non-all-in opens, jams;
+        # o3_*  after opening (non-all-in), faced a re-raise: times, folds, calls (rest re-raised);
+        # oj_*  ... of those, the re-raise faced included an all-in: times, folds;
+        # ai_*  faced an all-in raise preflop: times, continued (call or re-raise).
+        self.fi_opp = self.fi_raise = self.fi_jam = 0
+        self.o3_n = self.o3_f = self.o3_c = self.oj_n = self.oj_f = self.ai_n = self.ai_c = 0
         self.prior = PRIORS
 
     def rate(self, name):
@@ -991,6 +999,7 @@ def ingest_history(stats, history):
     bets = {}
     aggr = set()
     bb = inc = 1
+    opener, o_pend, o_jam, ai_top, n_r = -1, False, False, False, 0
     for seat, st, kind, amt, all_in in history:
         seen.add(seat)
         if st != street:
@@ -1015,6 +1024,32 @@ def ingest_history(stats, history):
             elif not all_in:
                 s.minr += 1
         if st == 0:
+            if n_r == 0:
+                s.fi_opp += 1
+                if kind == RAISE:
+                    if all_in:
+                        s.fi_jam += 1
+                    else:
+                        s.fi_raise += 1
+                        opener = seat
+            elif seat == opener and o_pend:
+                s.o3_n += 1
+                s.oj_n += o_jam
+                if kind == FOLD:
+                    s.o3_f += 1
+                    s.oj_f += o_jam
+                elif kind == CALL:
+                    s.o3_c += 1
+                opener = -1
+            if ai_top and cur > prev:
+                s.ai_n += 1
+                s.ai_c += kind != FOLD
+            if kind == RAISE:
+                n_r += 1
+                if opener >= 0 and seat != opener:
+                    o_pend = True
+                    o_jam = o_jam or all_in
+                ai_top = all_in
             if kind == RAISE:
                 vp.add(seat)
                 pr.add(seat)
@@ -1119,6 +1154,24 @@ DEFAULT_PARAMS = {
     "mw_behind": 0.0,         # equity tax per player still to act behind a shove call
     "cap_fade": 0.0,          # over the last this many hands before the cap, fade risk_av to 0
     "cap_hands": 200.0,       # ... and pf_shove_scale to 1 (hand cap of the tournament)
+    # resteal v2 (_resteal2): where the preflop rules fold vs one non-all-in open, jam if the
+    # jam's EV (opener's fold rate from its observed responses to re-raises, ICM) beats folding
+    "rs2_on": 0.0,            # >= 0.5: on
+    "rs2_lo": 0.0,            # effective stack window vs the opener, in big blinds
+    "rs2_hi": 25.0,
+    "rs2_margin": 0.0,        # jam EV must beat folding by this share of the pot
+    "rs2_fj": 0.59,           # population fold rate of an opener facing a jam ...
+    "rs2_f3": 0.53,           # ... and facing any re-raise (measured over the A/B fields)
+    "rs2_w": 6.0,             # pseudo-observations of those priors
+    "rs2_min_n": 0.0,         # opener must have faced this many re-raises (0 = prior is enough)
+    "rs2_cw": 1.0,            # opener calls with the top (1 - f) * rs2_cw of its open range
+    "rs2_px": 0.0,            # logit(fold) shift per unit of (0.4 - opener's pot odds to call)
+    # multiway shove calls v2 (with mw_call): ranges from observed first-in jam / jam-call rates
+    "mw_rng": 0.0,            # >= 0.5: on
+    "mw_margin": 0.0,         # added to the equity needed for a multiway call
+    "mw_bh": 0.0,             # >= 0.5: also the case with no caller yet, players behind (else the old rule)
+    "mw_ys": 1.0,             # scales the shover's range
+    "mw_yc": 1.0,             # scales callers' ranges
 }
 
 PARAM_SPACE = {
@@ -1142,10 +1195,17 @@ PARAM_SPACE = {
     "resteal_on": (0.0, 2.0), "resteal_call": (0.3, 3.0), "resteal_margin": (-0.1, 0.3),
     "sh_open": (0.0, 1.0), "sh_open_scale": (0.6, 1.5), "hu_sb_play": (0.0, 1.0),
     "mw_call": (0.0, 1.0), "mw_behind": (0.0, 0.05), "cap_fade": (0.0, 60.0), "cap_hands": (100.0, 400.0),
+    "rs2_on": (0.0, 1.0), "rs2_lo": (0.0, 15.0), "rs2_hi": (10.0, 40.0), "rs2_margin": (-0.1, 0.3),
+    "rs2_fj": (0.2, 0.9), "rs2_f3": (0.2, 0.9), "rs2_w": (1.0, 20.0), "rs2_min_n": (0.0, 10.0),
+    "rs2_cw": (0.5, 2.0), "rs2_px": (-5.0, 5.0),
+    "mw_rng": (0.0, 1.0), "mw_margin": (-0.1, 0.1), "mw_bh": (0.0, 1.0), "mw_ys": (0.5, 2.0), "mw_yc": (0.5, 2.0),
 }
 # The EV engine is a mode switch, not something to search over; nor are the preflop feature
 # switches or the tournament's hand cap.
-TUNE_EXCLUDE = ("ev_post", "resteal_on", "mw_call", "cap_hands")
+TUNE_EXCLUDE = ("ev_post", "resteal_on", "mw_call", "cap_hands", "rs2_on", "mw_rng", "mw_bh")
+# Priors for the preflop response rates (SeatStats fi_* / ai_*), population averages over the
+# A/B fields: open share and jam share of unopened pots, continue rate facing an all-in.
+RS_PRIORS = {"open": 0.15, "jam_fi": 0.06, "ai_c": 0.14}
 # Open-raise share by number of players still to act behind (short-handed opening, sh_open).
 SH_OPEN = (0.50, 0.50, 0.42, 0.28, 0.23, 0.19, 0.16, 0.14)
 POST_SIZES = (0.33, 0.66, 1.0, 1.5)    # bet sizes, fractions of the pot
@@ -1532,6 +1592,12 @@ class PrepBot(BotBase):
         return order
 
     def _preflop(self, obs):
+        a = self._preflop_rules(obs)
+        if a[0] == FOLD and self.p["rs2_on"] >= 0.5:
+            return self._resteal2(obs) or a
+        return a
+
+    def _preflop_rules(self, obs):
         p, T, me = self.p, self.T, obs.seat
         cls = self._cls
         pct = T.pct(cls)
@@ -1634,7 +1700,9 @@ class PrepBot(BotBase):
         else:
             call = pct <= thr * p["pf_call_scale"]
         n_in = sum(1 for s in order if obs.in_hand[s] and s != me)
-        if n_in > 1 and p["mw_call"] >= 0.5:
+        if n_in > 1 and p["mw_call"] >= 0.5 and p["mw_rng"] >= 0.5:
+            call = self._mw_call2(obs, cls, order, raises, shover, n, eff_bb, need, call)
+        elif n_in > 1 and p["mw_call"] >= 0.5:
             cur = max(obs.bets)
             others = [s for s in order if obs.in_hand[s] and s != me and s != shover]
             done = [s for s in others if obs.bets[s] >= cur or obs.stacks[s] == 0]
@@ -1659,6 +1727,108 @@ class PrepBot(BotBase):
             # resteal_on 1: jam on EV where the old rule folds; 2: jam EV decides alone.
             return self._resteal(obs, cls, shover) if rs else (FOLD, 0)
         return self._shove(obs) if obs.min_raise_to > 0 else (CALL, 0)
+
+    def _mw_call2(self, obs, cls, order, raises, shover, n, eff_bb, need, call):
+        """Call a shove with others in on equity vs every committed range: the shover's from
+        its first-in jam rate (shrunk toward the push/fold chart), each caller's from how
+        often it continues vs an all-in (shrunk toward the chart's call range)."""
+        p, T, me = self.p, self.T, obs.seat
+        cur = max(obs.bets)
+        others = [s for s in order if obs.in_hand[s] and s != me and s != shover]
+        done = [s for s in others if obs.bets[s] >= cur or obs.stacks[s] == 0]
+        k_act = len(others) - len(done)
+        if not done:
+            if p["mw_bh"] < 0.5:
+                return call and T.eq_vs_range(cls, 0.08) >= 0.5
+            done = []
+        w = p["rs2_w"]
+        spos = order.index(shover) if shover in order else 0
+        st = self.stats[shover]
+        if len(raises) == 1:
+            prior = T.shove_threshold(n, spos, eff_bb)
+            if prior is None:
+                prior = RS_PRIORS["jam_fi"] * 3
+            y_s = (st.fi_jam + w * prior) / (st.fi_opp + w)
+        else:
+            y_s = max(st.rate("shove"), st.rate("pfr") * 0.8) * 1.5
+        y_s = _clamp(y_s * p["mw_ys"], 0.02, 1.0)
+        eq = T.eq_vs_range(cls, y_s)
+        for s in done:
+            o = self.stats[s]
+            cpos = order.index(s) if s in order else 0
+            prior = T.call_threshold(n, spos, cpos, eff_bb)
+            if prior is None:
+                prior = RS_PRIORS["ai_c"]
+            y_c = (o.ai_c + w * prior) / (o.ai_n + w)
+            eq *= T.eq_vs_range(cls, _clamp(y_c * p["mw_yc"], 0.02, 1.0))
+        k = len(done) + 1
+        if k > 1:
+            e1 = T.eq(cls, 1)
+            eq = min(1.0, eq * T.eq(cls, k) / max(e1 ** k, 1e-6))
+        return eq - p["mw_behind"] * k_act >= need + p["mw_margin"]
+
+    def _resteal2(self, obs):
+        """Jam instead of folding vs one non-all-in open, if the jam's EV beats folding.
+
+        f = the opener's fold rate facing a jam: its observed jam folds, shrunk toward its
+        fold rate vs any re-raise, itself shrunk toward the population (rs2_f3, rs2_fj). It
+        calls with the top (1 - f) of its open range (open share of unopened pots, shrunk);
+        players still to act or already called come in with their observed all-in continue
+        rate. Losses carry the ICM bubble factor. Returns None to keep the fold."""
+        p, T, me = self.p, self.T, obs.seat
+        raises = [h for h in obs.history if h[1] == 0 and h[2] == RAISE]
+        if (len(raises) != 1 or raises[0][4] or obs.min_raise_to <= 0
+                or obs.to_call >= obs.stacks[me]):
+            return None
+        opener = raises[0][0]
+        stacks, bets, pot = obs.stacks, obs.bets, obs.pot
+        mine = stacks[me] + bets[me]
+        theirs = stacks[opener] + bets[opener]
+        eff = min(mine, theirs)
+        eff_bb = eff / max(obs.bb, 1)
+        if not p["rs2_lo"] <= eff_bb <= p["rs2_hi"]:
+            return None
+        st = self.stats[opener]
+        if st.o3_n < p["rs2_min_n"]:
+            return None
+        w = p["rs2_w"]
+        f3 = (st.o3_f + w * p["rs2_f3"]) / (st.o3_n + w)
+        f = (st.oj_f + w * f3 * p["rs2_fj"] / max(p["rs2_f3"], 0.01)) / (st.oj_n + w)
+        f = _clamp(f, 0.0, 0.97)
+        v_add = max(eff - bets[opener], 0)
+        need_v = v_add / max(pot + v_add + max(eff - bets[me], 0), 1)
+        if p["rs2_px"]:
+            z = math.log(max(f, 1e-3) / max(1.0 - f, 1e-3)) + p["rs2_px"] * (0.4 - need_v)
+            f = 1.0 / (1.0 + math.exp(-z))
+        c = 1.0 - f
+        total = sum(stacks) + max(pot, sum(bets))
+        n_alive = sum(1 for s in range(len(stacks)) if stacks[s] + bets[s] > 0 or obs.in_hand[s])
+        w_icm = p["icm_weight"]
+
+        def ev_called(s, y):
+            th = stacks[s] + bets[s]
+            e = min(mine, th)
+            risk = max(e - bets[me], 0)
+            gain = pot + max(e - bets[s], 0)
+            eq = T.eq_vs_range(self._cls, y)
+            bf = T.bubble_factor(n_alive, mine / max(total, 1), th / max(total, 1), risk / max(e, 1))
+            bf = 1.0 if bf is None else 1.0 + w_icm * (bf - 1.0)
+            return eq * gain - (1.0 - eq) * risk * bf
+
+        y_open = _clamp((st.fi_raise + w * RS_PRIORS["open"]) / (st.fi_opp + w), 0.02, 1.0)
+        ev = c * ev_called(opener, _clamp(y_open * c * p["rs2_cw"], 0.01, 1.0))
+        fold_all = f
+        for s in range(len(stacks)):
+            if s == me or s == opener or not obs.in_hand[s] or stacks[s] <= 0:
+                continue
+            o = self.stats[s]
+            yb = _clamp((o.ai_c + w * RS_PRIORS["ai_c"]) / (o.ai_n + w), 0.01, 0.6)
+            ev += fold_all * yb * ev_called(s, yb)
+            fold_all *= 1.0 - yb
+        ev += fold_all * pot
+        if ev > p["rs2_margin"] * pot:
+            return self._shove(obs)
+        return None
 
     def _resteal(self, obs, cls, opener):
         """Jam or fold vs one open that is not all-in, on the EV of the jam:
