@@ -50,7 +50,8 @@ no `pip install`.
    Its summary must match the announcement line by line (deck, hole cards, hole cards used,
    board, ante, blinds, hands per level, stack, cap, points 1st..last, time limit, kit).
    `points` = place points 1st..last. If the kit says a raise is a street TOTAL, that is
-   `raise-to`.
+   `raise-to`. `kit.sim_cmd` must be the exact simulator command that works (`{py}` = our
+   python, `{bot}` = the bot file); go.py runs it for every build, and a wrong path fails the build.
 2. **Adapter.** `cp adapter_template.py my_adapter.py`; implement `to_obs`, `to_kit_action`
    and the kit's class/method (e.g. `class PokerBot` with `get_move`). Keep `self.core =
    make_core()` in `__init__`, `make_core`, `_tables` and the guarded `gc_settle` block as
@@ -82,7 +83,8 @@ no `pip install`.
    variants/day_announce.json --adapter my_adapter.py --kit-cmd "<kit sim> {bot}"`. It builds
    `day_v0` (heuristic tables, exact rules), and for a preset also `day_v1`; for a new
    variant it starts the table build in the background (`bench/dayof/go_day_tables.log`,
-   ends with `GO_TABLES_DONE`) which builds `day_v1` itself. Without go.py, use `day.py`:
+   ends with `GO_TABLES_DONE`) which builds the table tags itself (`day_v1`, and `day_v2`
+   with the range net if go.py splits them; its `=== COPY THESE ===` block lists them). Without go.py, use `day.py`:
    - new variant: write `variants/day.json` (keys: name, ranks, suits, n_hole, streets,
      hole_used, category_order, ace_low_straight; see `variants/example_day.json`), then
      `.venv/bin/python scripts/day.py build v0 --heuristic variants/day.json --adapter my_adapter.py --kit-cmd "<kit sim> {bot}"`
@@ -94,6 +96,10 @@ no `pip install`.
 6. **Rule change mid-build** (new points, antes): edit the JSON, rebuild under a NEW tag
    (`go.py ... --tag day2 --v0 never`, or `day.py build v2 ... --points <new>`). Push/fold is
    re-solved per build; a running table build is not restarted.
+   NEW variant: rerunning go.py starts ANOTHER table build. After the first go.py run, rebuild
+   with `day.py build` only: v0 fixes `day.py build <new> --heuristic variants/day.json ...`,
+   table tags: the `day.py build ...` line from go.py's COPY THESE block, with a new tag and the new
+   `--points` / `--ante-bb` (bundle `bundles/day/day_base_rng.nlb` = with range net, `day_base.nlb` = without).
 
 ## Params per variant (do not edit params files; pick the file)
 
@@ -140,7 +146,9 @@ rule). Otherwise HANDOFF.md "Live plan for T1-T6" and PLAYBOOK.md "When to fall 
 - Build stops: read the last 40 lines of its output. Most failures are the kit check: fix
   `my_adapter.py`, rebuild with a new tag. Earlier tags stay frozen and submittable.
 - Table build slow or crashed: keep v0 live; log `bench/dayof/go_<tag>_tables.log`, rerun
-  `bash bench/dayof/go_<tag>_tables.sh` (stages resume).
+  `bash bench/dayof/go_<tag>_tables.sh` (stages resume). "MPS backend out of memory" with
+  large "other allocations" means other processes hold the GPU: tell the human to quit them
+  (browsers, other builds) before the resume, or the retry fails the same way.
 - Latency over 1 ms in checks: rebuild with `--pure-python`; next, `PrepBot.deadline = 0.0004`
   at the end of the adapter.
 - Report in the answer: the tag, the sha (first 12), `errors/illegal`, kit simulator line,

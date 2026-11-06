@@ -99,7 +99,7 @@ cd "$ROOT"
 
 free_tag() {   # first of day, day2, day3, ... whose <tag>_v0 / <tag>_v1 are not frozen yet
   local t=day i=1
-  while [ -e "$ROOT/frozen/${t}_v0" ] || [ -e "$ROOT/frozen/${t}_v1" ]; do i=$((i + 1)); t="day$i"; done
+  while [ -e "$ROOT/frozen/${t}_v0" ] || [ -e "$ROOT/frozen/${t}_v1" ] || [ -e "$ROOT/frozen/${t}_v2" ]; do i=$((i + 1)); t="day$i"; done
   echo "$t"
 }
 
