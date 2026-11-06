@@ -44,9 +44,10 @@ SPECIAL = ("seven_deuce", "straddle", "bomb_pot", "bounty", "run_it_twice")
 MECHANICS = ("ranks", "suits", "n_hole", "streets", "hole_used", "category_order", "ace_low_straight")
 OFFICIAL = {"players": 8, "starting_stack": 2000, "hands_per_level": 25, "hand_cap": 200, "time_limit_ms": 1.0}
 
-# Measured table-build minutes on this M5 Pro (MPS), see DAYOF.md: minutes = a + b * (5-card
-# combos evaluated per showdown). Calibrated on 2-hole (21 combos) and kit2 3-hole/2-used (30).
-ETA = {"laptop": (6.0, 0.55), "fast": (3.0, 0.2)}
+# Table-build minutes measured on this M5 Pro under heavy load from other jobs (load 400-700,
+# CPU, 3 threads) for a 2-hole variant (21 five-card combos per showdown), scaled linearly by
+# combos: (build_tables, range_eq, one day.py build with checks). An idle laptop is faster.
+ETA = {"fast": (13.0, 12.0, 4.0), "laptop": (30.0, 40.0, 4.0)}
 
 PLANS = {
     "pot-limit": "Pot-limit: the bot stays legal if the adapter passes the kit's pot-limit maximum as "
@@ -195,8 +196,10 @@ def combos_per_showdown(vd):
 
 
 def eta_minutes(vd, profile):
-    a, b = ETA[profile]
-    return a + b * combos_per_showdown(vd)
+    """(minutes to v1, minutes to v2) after go.py starts, from the measured runs in DAYOF.md."""
+    bt, re, chk = ETA[profile]
+    c = combos_per_showdown(vd) / 21.0
+    return bt * c + chk, bt * c + chk + re * c + chk
 
 
 def ante_bb(spec):
@@ -467,7 +470,8 @@ def day_build(tag, adapter, kit_cmd, spec, sngs, workers, extra):
 
 
 def table_script(tag, vpath, spec, params, adapter, kit_cmd, profile, sngs, workers, device="auto"):
-    """Background chain: build_tables -> range_eq -> day.py build <tag>_v1."""
+    """Background chain: build_tables -> day.py build <tag>_v1 (no range net) -> range_eq ->
+    day.py build <tag>_v2 (with the range net, what the EV engine reads ranges with)."""
     base = f"bundles/day/{tag}_base.nlb"
     rng = f"bundles/day/{tag}_base_rng.nlb"
     work = f"bundles/day/work_{tag}"
@@ -477,8 +481,9 @@ def table_script(tag, vpath, spec, params, adapter, kit_cmd, profile, sngs, work
     bt = [PY, "-m", "gpu.build_tables", "--variant", vpath, "--out", base, "--work", work, "--skip", "pushfold",
           "--payouts", pts_arg(spec), "--device", device] + prof_bt
     re = [PY, "-m", "gpu.range_eq", "--bundle", base, "--out", rng, "--work", work, "--device", device] + prof_re
-    v1 = day_build(f"{tag}_v1", adapter, kit_cmd, spec, sngs, workers,
-                   ["--bundle", rng, "--params", params, "--points", pts_arg(spec), "--ante-bb", str(spec["ante_bb"])])
+    solve = ["--params", params, "--points", pts_arg(spec), "--ante-bb", str(spec["ante_bb"])]
+    v1 = day_build(f"{tag}_v1", adapter or "<adapter>", kit_cmd, spec, sngs, workers, ["--bundle", base] + solve)
+    v2 = day_build(f"{tag}_v2", adapter or "<adapter>", kit_cmd, spec, sngs, workers, ["--bundle", rng] + solve)
     lines = [
         "#!/bin/bash",
         f"# go.py background table build for {tag} ({profile} profile)",
@@ -492,20 +497,23 @@ def table_script(tag, vpath, spec, params, adapter, kit_cmd, profile, sngs, work
         # smaller chunks, reusing the finished stages
         q(bt) + " || { el 'build_tables failed: retry with --chunk 50000 --reuse'; " + q(bt + RETRY) + "; }",
         "el build_tables done",
-        q(re) + " || { el 'range_eq failed: retry with --chunk 50000'; " + q(re + RETRY) + "; }",
-        "el range_eq done",
-        q(v1),
-        f"el {tag}_v1 built: python scripts/day.py submit {tag}_v1",
-        "echo GO_TABLES_DONE",
     ]
-    return "\n".join(lines) + "\n", v1, rng
+    if adapter:
+        lines += [q(v1) + f" || el '{tag}_v1 build FAILED (keep v0); going on to the range net'",
+                  f"el {tag}_v1 step done: if it says 'built and froze', python scripts/day.py submit {tag}_v1"]
+    lines += [q(re) + " || { el 'range_eq failed: retry with --chunk 50000'; " + q(re + RETRY) + "; }",
+              "el range_eq done"]
+    if adapter:
+        lines += [q(v2), f"el {tag}_v2 built: python scripts/day.py submit {tag}_v2"]
+    lines.append("echo GO_TABLES_DONE")
+    return "\n".join(lines) + "\n", v1, v2
 
 
 # Quicker-than-laptop settings (measured in DAYOF.md): fewer Monte Carlo samples, same nets.
 RETRY = ["--chunk", "50000", "--reuse"]
 FAST_BT = ["--rows-budget", "2000000", "--eq-cap", "20000", "--post-samples", "60000", "--post-rollouts", "24",
            "--val-samples", "800", "--val-rollouts", "200", "--epochs", "10"]
-FAST_RE = ["--samples", "20000", "--k", "24", "--val-samples", "300", "--val-k", "64", "--epochs", "10"]
+FAST_RE = ["--samples", "8000", "--k", "16", "--val-samples", "300", "--val-k", "64", "--epochs", "10"]
 
 
 def main(argv=None):
@@ -525,6 +533,9 @@ def main(argv=None):
     ap.add_argument("--device", default=os.environ.get("NOLIMIT_DEVICE") or "auto",
                     help="torch device for the table build, passed to build_tables/range_eq --device "
                          "(default: $NOLIMIT_DEVICE, else auto = gpu/'s own choice)")
+    ap.add_argument("--tables-only", action="store_true",
+                    help="new variant: start the table build now, before the adapter exists; rerun later with "
+                         "--adapter and the same --tag to build v0 and the table bots")
     ap.add_argument("--foreground-tables", action="store_true", help="wait for the table build (tests/timing)")
     args = ap.parse_args(argv)
 
@@ -551,7 +562,7 @@ def main(argv=None):
     params, why = pick_params(preset if has_bundle else None, vd, pmap)
     log(summary(spec, preset, params, why))
 
-    if not args.check:
+    if not args.check and not args.tables_only:
         aerr, awarn = check_adapter(args.adapter, spec)
         warnings += awarn
         if aerr:
@@ -572,7 +583,7 @@ def main(argv=None):
     if not kit_cmd:
         log("WARNING: no kit simulator (--kit-cmd or kit.sim_cmd): builds are checked on our engine only")
 
-    tags = [f"{args.tag}_v0", f"{args.tag}_v1"]
+    tags = [f"{args.tag}_v0", f"{args.tag}_v1", f"{args.tag}_v2"]
     taken = [t for t in tags if os.path.exists(os.path.join(ROOT, "frozen", t))]
     if taken and not args.check:
         log(f"ERROR: frozen/{taken[0]} exists (tags are never overwritten): rerun with a new --tag")
@@ -592,16 +603,29 @@ def main(argv=None):
             json.dump(vd, fh, indent=1)
         log.run([PY, "scripts/variant_stats.py", "--variant", vpath, "--samples", "20000"])
 
-    adapter = deadline_adapter(args.adapter, spec, args.tag)
+    only = os.path.join(ROOT, "bench", "dayof", f"go_{args.tag}_tables.only")
+    if args.tables_only:
+        if has_bundle:
+            log(f"--tables-only: preset {preset} already has a bundle, nothing to build")
+            return 0
+        args.adapter = None
+    adapter = deadline_adapter(args.adapter, spec, args.tag) if args.adapter else None
     if adapter != args.adapter:
         log(f"adapter with deadline line: {os.path.relpath(adapter, ROOT)}")
     name = spec["kit"].get("file_name") or "bot.py"
     done = []
 
-    bg_log = v1_cmd = None
-    if not has_bundle:
+    bg_log = v1_cmd = v2_cmd = None
+    started_earlier = not has_bundle and not args.tables_only and os.path.exists(only)
+    if started_earlier:     # go.py --tables-only ran earlier for this tag: don't restart the build
         eta = eta_minutes(vd, args.tables)
-        script, v1_cmd, rng = table_script(args.tag, vpath, spec, params, adapter, kit_cmd, args.tables,
+        _, v1_cmd, v2_cmd = table_script(args.tag, vpath, spec, params, adapter, kit_cmd, args.tables,
+                                         args.sngs, args.workers, args.device)
+        bg_log = os.path.join("bench", "dayof", f"go_{args.tag}_tables.log")
+        log(f"tables: started earlier by --tables-only ({bg_log}); building whatever is finished")
+    if not has_bundle and not started_earlier:
+        eta = eta_minutes(vd, args.tables)
+        script, v1_cmd, v2_cmd = table_script(args.tag, vpath, spec, params, adapter, kit_cmd, args.tables,
                                            args.sngs, args.workers, args.device)
         spath = os.path.join(ROOT, "bench", "dayof", f"go_{args.tag}_tables.sh")
         bg_log = os.path.join("bench", "dayof", f"go_{args.tag}_tables.log")
@@ -609,7 +633,8 @@ def main(argv=None):
             fh.write(script)
         os.chmod(spath, 0o755)
         log(f"tables: no bundle for this variant -> background build ({args.tables} profile, device {args.device}, "
-            f"~{eta:.0f} min + ~2 min for the v1 checks on an idle laptop): {os.path.relpath(spath, ROOT)}")
+            f"v1 (no range net) in ~{eta[0]:.0f} min, v2 (range net) in ~{eta[1]:.0f} min; measured on a loaded "
+            f"machine, see DAYOF.md): {os.path.relpath(spath, ROOT)}")
         log(f"        progress: tail -f {bg_log}")
         if args.foreground_tables:
             bg = None
@@ -617,6 +642,11 @@ def main(argv=None):
             bg = subprocess.Popen(["bash", spath], cwd=ROOT, stdout=open(os.path.join(ROOT, bg_log), "w"),
                                   stderr=subprocess.STDOUT, start_new_session=True)
             log(f"        started, pid {bg.pid}")
+        if args.tables_only:
+            open(only, "w").write(time.strftime("%H:%M:%S\n"))
+            log(f"--tables-only: when the adapter is ready, run the same command with --adapter <adapter> and "
+                f"--tag {args.tag} (without --tables-only)")
+            return 0
 
     if args.v0 == "always" or not has_bundle:
         log(f"--- {tags[0]}: heuristic tables, exact rules (submittable while tables build) ---")
@@ -639,26 +669,40 @@ def main(argv=None):
             done.append(tags[1])
             log(f"*** {tags[1]} READY: python scripts/day.py submit {tags[1]} --as {name}")
         gate = ab_cmd(spec, f"bundles/day/{tags[1]}.nlb", f"prep:{params}", f"heur:{pmap['heuristic_v0']}")
+    elif started_earlier:
+        rng_b, base_b = (os.path.join(ROOT, "bundles", "day", f"{args.tag}_base{x}.nlb") for x in ("_rng", ""))
+        done_log = os.path.exists(os.path.join(ROOT, bg_log)) and "GO_TABLES_DONE" in open(os.path.join(ROOT, bg_log)).read()
+        for t, cmd, ready in ((tags[1], v1_cmd, os.path.exists(base_b)), (tags[2], v2_cmd, done_log)):
+            if ready and not os.path.exists(os.path.join(ROOT, "frozen", t)):
+                log(f"--- {t}: table bundle is finished ---")
+                if log.run(cmd) == 0:
+                    done.append(t)
+                    log(f"*** {t} READY: python scripts/day.py submit {t} --as {name}")
+        gate = ab_cmd(spec, f"bundles/day/{tags[2]}.nlb", f"prep:{params}", f"heur:{pmap['heuristic_v0']}")
     else:
         if args.foreground_tables:
             log.run(["bash", os.path.join("bench", "dayof", f"go_{args.tag}_tables.sh")])
-            if os.path.exists(os.path.join(ROOT, "frozen", tags[1])):
-                done.append(tags[1])
-        gate = ab_cmd(spec, f"bundles/day/{tags[1]}.nlb", f"prep:{params}", f"heur:{pmap['heuristic_v0']}")
+            done += [t for t in tags[1:] if os.path.exists(os.path.join(ROOT, "frozen", t))]
+        gate = ab_cmd(spec, f"bundles/day/{tags[2]}.nlb", f"prep:{params}", f"heur:{pmap['heuristic_v0']}")
 
     log("")
     log("=== COPY THESE ===")
     if done:
         log(f"python scripts/day.py submit {done[-1]} --as {name}     # then upload dist/SUBMIT/{name}")
-    if not has_bundle and tags[1] not in done:
-        log(f"# {tags[1]} builds itself when the tables finish (ETA ~{eta_minutes(vd, args.tables):.0f} min); "
-            f"watch for GO_TABLES_DONE in: tail -f {bg_log}")
-        log(f"python scripts/day.py submit {tags[1]} --as {name}     # once it says '{tags[1]} built'")
-        log("# if the background chain stopped after range_eq, build v1 by hand:")
-        log("  " + " ".join(shlex.quote(c) for c in v1_cmd).replace(PY, ".venv/bin/python"))
+    if not has_bundle and tags[2] not in done:
+        eta = eta_minutes(vd, args.tables)
+        log(f"# the background chain builds {tags[1]} (tables, no range net, ETA ~{eta[0]:.0f} min) and then "
+            f"{tags[2]} (with the range net, ~{eta[1]:.0f} min); progress: tail -f {bg_log}")
+        log(f"python scripts/day.py submit {tags[1]} --as {name}     # once the log says '{tags[1]} ... built and froze'")
+        log(f"python scripts/day.py submit {tags[2]} --as {name}     # once it says '{tags[2]} built' / GO_TABLES_DONE")
+        log("# if the chain stopped (or ran --tables-only), build by hand when the bundle exists"
+            " (v1: bundles/day/<tag>_base.nlb, v2: bundles/day/<tag>_base_rng.nlb):")
+        for c in (v1_cmd, v2_cmd):
+            log("  " + " ".join(shlex.quote(x) for x in c).replace(shlex.quote(PY), ".venv/bin/python"))
     log("python scripts/day.py rollback                          # back to the previous submission (sha-checked)")
     log("python scripts/day.py status                            # what is live")
-    log(f"# A/B gate v1 vs v0 under the kit's rules (~400 paired SNGs):\n  {gate}")
+    log(f"# A/B gate, newest table bot vs the heuristic v0, kit rules (~400 paired SNGs; use the "
+        f"bundles/day/<tag>.nlb of the tag you test):\n  {gate}")
     log(f"log: {os.path.relpath(log.path, ROOT)}")
     return 0
 

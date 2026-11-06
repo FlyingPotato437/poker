@@ -171,7 +171,8 @@ def test_eta_and_combos():
     assert go.combos_per_showdown(spec["variant"]) == 30
     assert go.combos_per_showdown(go.PRESETS["nlhe"].to_dict()) == 21
     assert go.combos_per_showdown(go.PRESETS["plo4"].to_dict()) == 60
-    assert go.eta_minutes(spec["variant"], "fast") < go.eta_minutes(spec["variant"], "laptop")
+    fast, lap = go.eta_minutes(spec["variant"], "fast"), go.eta_minutes(spec["variant"], "laptop")
+    assert fast[0] < fast[1] < lap[1]
 
 
 def test_check_mode_builds_nothing(tmp_path, monkeypatch):
@@ -187,11 +188,51 @@ def test_check_mode_builds_nothing(tmp_path, monkeypatch):
     assert rc == 2
 
 
+def test_tags_checked_before_building(tmp_path, monkeypatch):
+    monkeypatch.setattr(go, "LOGDIR", str(tmp_path))
+    monkeypatch.setattr(go, "ROOT", str(tmp_path))
+    (tmp_path / "frozen" / "x_v2").mkdir(parents=True)
+    rc = go.main([os.path.join(ROOT, "variants", "examples", "kit2_tahoe.json"), "--tag", "x",
+                  "--adapter", os.path.join(ROOT, "examples", "answers", "kit2_adapter.py")])
+    assert rc == 2 and "frozen/x_v2 exists" in (tmp_path / "go_x.log").read_text()
+
+
 def test_table_script_chain():
     spec, _, _ = ok(load("examples/kit2_tahoe.json"))
-    text, v1, rng = go.table_script("tt", "variants/day.json", spec, "params/ev_t3.json", "a.py", "k {bot}",
-                                    "fast", 10, 3)
+    text, v1, v2 = go.table_script("tt", "variants/day.json", spec, "params/ev_t3.json", "a.py", "k {bot}",
+                                   "fast", 10, 3, "cpu")
     assert "gpu.build_tables" in text and "gpu.range_eq" in text and "--skip pushfold" in text
-    assert text.index("gpu.build_tables") < text.index("gpu.range_eq") < text.index("day.py build tt_v1")
-    assert "--points 10,6,4,3,2,1,0,0" in " ".join(v1) and "--ante-bb 0.0625" in " ".join(v1)
-    assert rng.endswith("tt_base_rng.nlb")
+    assert "--device cpu" in text and "NOLIMIT_DEVICE=cpu" in text
+    assert (text.index("gpu.build_tables") < text.index("day.py build tt_v1") < text.index("gpu.range_eq")
+            < text.index("day.py build tt_v2"))
+    for cmd in (v1, v2):
+        assert "--points 10,6,4,3,2,1,0,0" in " ".join(cmd) and "--ante-bb 0.0625" in " ".join(cmd)
+    assert v1[v1.index("--bundle") + 1].endswith("tt_base.nlb")
+    assert v2[v2.index("--bundle") + 1].endswith("tt_base_rng.nlb")
+
+
+def test_tables_only_then_full_run(tmp_path, monkeypatch):
+    """--tables-only starts the chain without an adapter; the later full run doesn't restart it."""
+    for d in ("variants", "bench/dayof", "frozen"):
+        (tmp_path / d).mkdir(parents=True)
+    monkeypatch.setattr(go, "LOGDIR", str(tmp_path))
+    monkeypatch.setattr(go, "ROOT", str(tmp_path))
+    started = []
+
+    class FakePopen:
+        pid = 1
+
+        def __init__(self, cmd, **kw):
+            started.append(cmd)
+
+    monkeypatch.setattr(go.subprocess, "Popen", FakePopen)
+    runs = []
+    monkeypatch.setattr(go.Log, "run", lambda self, cmd, env=None: runs.append(cmd) or 0)
+    ann = os.path.join(ROOT, "variants", "examples", "custom_7plus_flush.json")
+    assert go.main([ann, "--tag", "q", "--tables-only"]) == 0
+    script = (tmp_path / "bench" / "dayof" / "go_q_tables.sh").read_text()
+    assert "gpu.build_tables" in script and "day.py build" not in script
+    assert len(started) == 1 and (tmp_path / "bench" / "dayof" / "go_q_tables.only").exists()
+    assert go.main([ann, "--tag", "q", "--adapter", os.path.join(ROOT, "examples", "adapter_mock_solution.py")]) == 0
+    assert len(started) == 1                                   # not restarted
+    assert [c[3] for c in runs if "day.py" in " ".join(c)] == ["q_v0"]    # tables not finished yet
