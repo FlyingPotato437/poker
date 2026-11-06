@@ -22,45 +22,50 @@ simulator command). Examples: `variants/examples/*.json`.
 It prints the plain-English summary, the warnings and the plan for anything the bot can't
 model. Read it against the announcement. Fix the JSON until it matches.
 
-## T+2: start go.py (Srikanth writes the adapter meanwhile; go.py waits for nothing else)
+## T+2: new variant? start the tables now, before the adapter exists
 
-New variant? Start the tables before the adapter is done, so the GPU isn't idle:
 ```bash
-.venv/bin/python scripts/go.py variants/day_announce.json --check      # shows "NEW variant" and the ETA
+.venv/bin/python scripts/go.py variants/day_announce.json --tables-only
 ```
-then, as soon as the adapter passes the kit simulator by hand:
+(Preset variants skip this: their bundle is on disk.) The table build runs in the
+background (`bench/dayof/go_day_tables.log`) while Srikanth writes the adapter.
+
+## T+5 to T+10: the one command, as soon as the adapter passes the kit simulator by hand
+
 ```bash
 .venv/bin/python scripts/go.py variants/day_announce.json --adapter <adapter> --kit-cmd "<kit simulator> {bot}"
 ```
 (`--kit-cmd` can live in the JSON as `kit.sim_cmd`; `{py}` there = our python.)
 
-What it does: (1) validate + summary; (2) preset if the hand evaluation is identical, else
-writes `variants/day.json`; (3) new variant: starts the table build in the background
-(`bench/dayof/go_day_tables.log`), which builds `day_v1` by itself when done; (4) builds
-`day_v0` (heuristic tables, exact rules, kit-checked, frozen); (5) preset: builds `day_v1`
-from the preset bundle with the points/ante re-solve and the params from
-`variants/PARAMS_MAP.json`; (6) prints the commands below. Log: `bench/dayof/go_day.log`.
+It validates the JSON and prints a summary, then picks the preset if the hand evaluation is
+identical, or writes `variants/day.json`. It builds `day_v0` (heuristic tables, exact rules,
+kit-checked, frozen) in 15–40 s idle (2 min measured under load). Then:
+- **Preset:** it builds `day_v1` from the preset bundle, with the points/ante re-solve
+  and the params from `variants/PARAMS_MAP.json`. Measured under load: 3.5–5.5 min; idle
+  about 1 min.
+- **New variant:** it starts the table chain, or picks it up if `--tables-only` already
+  started it. `day_v1` is the bundle without the range net; it is frozen as soon as
+  `build_tables` ends. `day_v2` adds the range net. Rerun the same command later and it
+  builds whichever bundle is finished.
 
-## T+5: submit v0 (before the first practice round)
+It ends with the exact submit, rollback and status lines and an A/B gate command with the
+kit's rules. Log: `bench/dayof/go_day.log`.
+
+## Submit v0 at once (before the first practice round)
 
 ```bash
 .venv/bin/python scripts/day.py submit day_v0 --as <file name>     # upload dist/SUBMIT/<file name>
 ```
 
-## T+6 to T+10: preset -> submit v1 as soon as go.py prints "day_v1 READY"
+## Then each stronger bot as its READY / "built and froze" line appears
 
 ```bash
-.venv/bin/python scripts/day.py submit day_v1
+.venv/bin/python scripts/day.py submit day_v1                 # preset: minutes; new variant: tables done
+tail -f bench/dayof/go_day_tables.log                         # new variant: v1, then v2, then GO_TABLES_DONE
+.venv/bin/python scripts/day.py submit day_v2                 # new variant: with the range net
 ```
-
-## New variant: v1 when the background build says GO_TABLES_DONE
-
-```bash
-tail -f bench/dayof/go_day_tables.log                      # "day_v1 built" then GO_TABLES_DONE
-.venv/bin/python scripts/day.py submit day_v1
-```
-If the chain stopped after the range net, go.py printed the `day.py build day_v1 ...` line
-to run by hand. A/B gate first if there's time (go.py prints it with the kit's rules).
+If the chain stopped, go.py printed the `day.py build day_v1/day_v2 ...` lines to run by
+hand. Run the A/B gate first if there's time (go.py prints it).
 
 ## Rule changes mid-build (new points, antes)
 
@@ -69,8 +74,8 @@ new tag; the preset/heuristic builds take minutes, a running table build is not 
 ```bash
 .venv/bin/python scripts/go.py variants/day_announce.json --adapter <adapter> --tag day2 --v0 never
 ```
-For a new variant whose tables are done: `day.py build day2_v1 --bundle bundles/day/day_base_rng.nlb
---params <P> --points <new> --ante-bb <a> --adapter <adapter> --kit-cmd "..."`.
+For a new variant whose tables are done: the `day.py build day_v2 ...` line go.py printed,
+with tag `day2_v2` and the new `--points` / `--ante-bb`.
 
 ## Always
 
@@ -84,7 +89,7 @@ For a new variant whose tables are done: `day.py build day2_v1 --bundle bundles/
 | Rule | go.py does | You do |
 |---|---|---|
 | Preset variant (nlhe, plo4, plo5, shortdeck(_triton), royal, holdem3) | v0 + v1 from the preset bundle | Submit v1 |
-| New mechanics (ranks, suits, hole cards, board layout, ranking, hole_used) | v0 now, tables + v1 in the background | Submit v0, then v1 |
+| New mechanics (ranks, suits, hole cards, board layout, ranking, hole_used) | v0 now; tables in the background, then v1 (no range net), then v2 | Submit v0, v1, v2 in turn |
 | Points, antes, BB ante | Exact push/fold re-solve | Nothing |
 | Blinds, hands per level, stack, cap, seats 2–10 | Nothing needed (A/B command uses them) | Nothing |
 | Time limit ≠ 1 ms | Adds `PrepBot.deadline = 0.6 × limit` to a copy of the adapter | Check p99.9 in the build output |
