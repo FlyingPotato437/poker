@@ -1604,7 +1604,13 @@ class PrepBot(BotBase):
         if n > 1:
             # Multiway: equities vs each range don't simply multiply; correct by how equity vs
             # n random hands compares to (equity vs one)^n. Heads-up doesn't need this model.
-            e = T.post_equity(obs.hole, obs.board)
+            if time.perf_counter() - self._t0 > self.deadline:
+                # Out of time already (slow range model): skip the second net, use the
+                # made-hand heuristic. The raise loop below will stop at once too.
+                self.deadline_hits += 1
+                e = heuristic_post_equity(T.v, T.ev, obs.hole, obs.board)
+            else:
+                e = T.post_equity(obs.hole, obs.board)
             erand = e[n - 1] if n <= 3 else e[2] ** (n / 3.0)
             corr = (erand / max(e[0] ** n, 1e-6)) ** (1.0 / n)
         real = 1.0 if len(obs.board) >= T.v.n_board else p["realize"]
