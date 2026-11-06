@@ -924,7 +924,7 @@ class SeatStats:
                  "bet_opp", "bets", "raised", "faced_ab", "folded_ab", "prior",
                  "acts", "allin", "minr",
                  "fi_opp", "fi_raise", "fi_jam", "o3_n", "o3_f", "o3_c", "oj_n", "oj_f", "ai_n", "ai_c",
-                 "fs_n", "fs_f")
+                 "fs_n", "fs_f", "fs_r")
 
     def __init__(self):
         self.hands = self.vpip = self.pfr = self.shove = 0
@@ -936,8 +936,8 @@ class SeatStats:
         # o3_*  after opening (non-all-in), faced a re-raise: times, folds, calls (rest re-raised);
         # oj_*  ... of those, the re-raise faced included an all-in: times, folds;
         # ai_*  faced an all-in raise preflop: times, continued (call or re-raise);
-        # fs_*  first action facing one non-all-in open: times, folds (fold to a steal).
-        self.fi_opp = self.fi_raise = self.fi_jam = self.fs_n = self.fs_f = 0
+        # fs_*  first action facing one non-all-in open: times, folds (fold to a steal), re-raises.
+        self.fi_opp = self.fi_raise = self.fi_jam = self.fs_n = self.fs_f = self.fs_r = 0
         self.o3_n = self.o3_f = self.o3_c = self.oj_n = self.oj_f = self.ai_n = self.ai_c = 0
         self.prior = PRIORS
 
@@ -1047,6 +1047,7 @@ def ingest_history(stats, history):
             if n_r == 1 and opener >= 0 and seat != opener and seat not in acted0:
                 s.fs_n += 1
                 s.fs_f += kind == FOLD
+                s.fs_r += kind == RAISE
             acted0.add(seat)
             if ai_top and cur > prev:
                 s.ai_n += 1
@@ -1187,6 +1188,9 @@ DEFAULT_PARAMS = {
     "st_prod": 0.0,           # >= 0.5: on
     "st_any": 0.9,            # open any two when that product is at least this
     "st_prior": 0.8,          # prior fold-to-open rate (rs2_w pseudo-observations)
+    "st_drop_n": 0.0,         # a seat with no voluntary chip drops out of the product only after this many hands
+    "st_max_r": 1.0,          # no any-two open when a seat behind re-raises opens more often than this (shrunk)
+    "st_prior_r": 0.08,       # prior re-raise rate facing one open
 }
 
 PARAM_SPACE = {
@@ -1215,7 +1219,8 @@ PARAM_SPACE = {
     "rs2_cw": (0.5, 2.0), "rs2_px": (-5.0, 5.0),
     "mw_rng": (0.0, 1.0), "mw_margin": (-0.1, 0.1), "mw_bh": (0.0, 1.0), "mw_ys": (0.5, 2.0), "mw_yc": (0.5, 2.0),
     "rs2_vp_open": (0.1, 1.0), "rs2_vp_tab": (0.1, 1.0), "rs2_cfix": (0.0, 1.0),
-    "st_prod": (0.0, 1.0), "st_any": (0.6, 1.0), "st_prior": (0.5, 0.95),
+    "st_prod": (0.0, 1.0), "st_any": (0.6, 1.0), "st_prior": (0.5, 0.95), "st_drop_n": (0.0, 30.0),
+    "st_max_r": (0.02, 1.0), "st_prior_r": (0.0, 0.3),
 }
 # The EV engine is a mode switch, not something to search over; nor are the preflop feature
 # switches or the tournament's hand cap.
@@ -1654,8 +1659,10 @@ class PrepBot(BotBase):
                     prod, w = 1.0, p["rs2_w"]
                     for s in behind:
                         o = self.stats[s]
-                        if o.vpip > 0:
+                        if o.vpip > 0 or o.hands < p["st_drop_n"]:
                             prod *= (o.fs_f + w * p["st_prior"]) / (o.fs_n + w)
+                            if (o.fs_r + w * p["st_prior_r"]) / (o.fs_n + w) > p["st_max_r"]:
+                                prod = 0.0
                     if prod >= p["st_any"]:
                         thr = 1.0
             if pct <= thr:
