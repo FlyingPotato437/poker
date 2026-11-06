@@ -1,7 +1,7 @@
 """Range-conditioned postflop equity: adds a second MLP (rng_*) to an existing bundle.
 
     python -m gpu.range_eq --bundle bundles/nlhe.nlb             # GPU profile
-    python -m gpu.range_eq --bundle bundles/day.nlb --laptop     # day-of, offline (MPS)
+    python -m gpu.range_eq --bundle bundles/day.nlb --laptop     # day-of, offline (CPU; --device mps opts in)
 
 The model predicts hero's heads-up equity against an opponent holding the top x (by
 postflop strength) of their top y (by preflop strength) hands, on the grid
@@ -22,7 +22,7 @@ import numpy as np
 import torch
 
 from gpu.build_tables import log, train_mlp
-from gpu.tensor_eval import TorchEval, pick_device
+from gpu.tensor_eval import TorchEval, pick_device, run_with_fallback, set_threads
 from nolimit.bundle_io import read_bundle_np, write_bundle
 from nolimit.runtime import RANGE_X, RANGE_Y, Variant
 
@@ -107,7 +107,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--bundle", required=True, help="bundle with mlp_*; rng_* is added in place")
     ap.add_argument("--out", help="write here instead of overwriting --bundle")
-    ap.add_argument("--device", default="auto")
+    ap.add_argument("--device", default="auto", help="auto|cpu|mps|cuda (see gpu.build_tables --help)")
+    ap.add_argument("--threads", type=int, help="torch CPU threads (default $NOLIMIT_THREADS or all)")
     ap.add_argument("--laptop", action="store_true")
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--work", help="data cache dir (default: <bundle dir>/work_<variant>)")
@@ -125,7 +126,15 @@ def main():
     if "mlp_w1" not in arrs:
         raise SystemExit("bundle has no postflop MLP; build it first (gpu.build_tables)")
     v = Variant.from_dict(meta["variant"])
-    dev = pick_device(args.device)
+    log(f"torch threads {set_threads(args.threads)}")
+    finished = set()
+    run_with_fallback(lambda d: build(args, cfg, meta, arrs, v, d, finished),
+                      pick_device(args.device, log=log), log=log)
+
+
+def build(args, cfg, meta, arrs, v, dev, finished):
+    """Everything after argument parsing. finished holds "data" once this process saved
+    range_data.npz, so an out-of-memory fallback to CPU only redoes the training."""
     torch.manual_seed(args.seed)
     te = TorchEval(v, dev)
     work = args.work or os.path.join(os.path.dirname(os.path.abspath(args.bundle)), f"work_{v.name}")
@@ -133,7 +142,7 @@ def main():
     data_path = os.path.join(work, "range_data.npz")
     log(f"range equity for {v.name}: grid {len(RANGE_Y)}x{len(RANGE_X)}, device {dev}, cfg {cfg}")
 
-    if args.reuse and os.path.exists(data_path):
+    if (args.reuse or "data" in finished) and os.path.exists(data_path):
         d = np.load(data_path)
         X, Yl, Xv, Yv = (torch.from_numpy(d[key]) for key in ("X", "Y", "Xv", "Yv"))
         log(f"reusing {len(X):,} cached samples")
@@ -156,6 +165,7 @@ def main():
                 f"mean label {y.mean():.3f}, top-5% of top-8% {y[:, -1].mean():.3f}")
         X, Yl, Xv, Yv = (torch.cat(parts[key]) for key in ("X", "Y", "Xv", "Yv"))
         np.savez(data_path, X=X.numpy(), Y=Yl.numpy(), Xv=Xv.numpy(), Yv=Yv.numpy())
+        finished.add("data")
 
     out = {}
     hidden = [int(x) for x in cfg["hidden"].split(",")]

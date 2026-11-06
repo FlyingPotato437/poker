@@ -1,5 +1,8 @@
 """Vectorized torch mirror of nolimit.runtime's evaluator and features (CUDA, MPS or CPU)."""
+import gc
 import itertools
+import math
+import os
 
 import torch
 
@@ -7,21 +10,84 @@ from nolimit.runtime import (FIVE_KIND, FLUSH, FULL_HOUSE, HIGH, N_CATEGORIES, P
                              STRAIGHT, STRAIGHT_FLUSH, TRIPS, TWO_PAIR, feature_dim, get_variant,
                              straight_windows)
 
+DEVICE_ENV = "NOLIMIT_DEVICE"        # cpu | mps | cuda | auto
+THREADS_ENV = "NOLIMIT_THREADS"      # torch CPU threads (default: torch's own choice)
+EVAL_BATCH_ENV = "NOLIMIT_EVAL_BATCH"
+# 5-card hands per eval5 call. eval5 keeps ~0.5 KB of intermediates per hand (the 5x5
+# rank-count matrix dominates), so 1M hands is a few hundred MB whatever the chunk size.
+DEFAULT_EVAL_BATCH = 1 << 20
+# best() looks 5-card values up in a table of all C(D, 5) hands (built once with eval5;
+# 21 MB for 52 cards), several times faster than eval5 on CPU. NOLIMIT_EVAL_LUT=0 disables it.
+LUT_ENV = "NOLIMIT_EVAL_LUT"
+LUT_MAX = 8_000_000
 
-def pick_device(name="auto"):
-    if name != "auto":
-        return torch.device(name)
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    if torch.backends.mps.is_available():
-        return torch.device("mps")
-    return torch.device("cpu")
+
+def pick_device(name="auto", log=None):
+    """--device beats $NOLIMIT_DEVICE beats auto. auto = CUDA if present, else CPU.
+
+    MPS is opt-in (--device mps or NOLIMIT_DEVICE=mps): it shares unified memory with
+    everything else on the Mac, and with other jobs running it ran out of memory mid-build.
+    A device that is asked for but missing falls back to CPU with a warning.
+    """
+    name = (name or "auto").lower()
+    if name == "auto":
+        name = (os.environ.get(DEVICE_ENV) or "auto").lower()
+    if name == "auto":
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ok = {"cuda": torch.cuda.is_available, "mps": torch.backends.mps.is_available}.get(
+        name.split(":")[0], lambda: True)
+    if not ok():
+        (log or print)(f"device {name} not available, using cpu")
+        return torch.device("cpu")
+    return torch.device(name)
+
+
+def set_threads(n=None):
+    """Cap torch's CPU threads (n, else $NOLIMIT_THREADS); returns the count in effect."""
+    n = n or int(os.environ.get(THREADS_ENV) or 0)
+    if n > 0:
+        torch.set_num_threads(n)
+    return torch.get_num_threads()
+
+
+def is_oom(exc):
+    oom = getattr(torch, "OutOfMemoryError", None)
+    return (oom is not None and isinstance(exc, oom)) or (
+        isinstance(exc, RuntimeError) and "out of memory" in str(exc).lower())
+
+
+def free_device_memory(dev):
+    gc.collect()
+    if dev.type == "mps":
+        torch.mps.empty_cache()
+    elif dev.type == "cuda":
+        torch.cuda.empty_cache()
+
+
+def run_with_fallback(fn, dev, log=print):
+    """fn(dev); if a CUDA/MPS device runs out of memory, free it and run fn(cpu) once.
+
+    fn should skip work it already finished (build_tables keeps the stages done in this run).
+    """
+    if dev.type == "cpu":
+        return fn(dev)
+    try:
+        return fn(dev)
+    except Exception as e:  # noqa: BLE001 - only OOM is handled, the rest is re-raised
+        if not is_oom(e):
+            raise
+        msg = str(e).splitlines()[0][:200]
+    # Outside the except block, so the traceback (and the device tensors it pins) is gone.
+    log(f"{dev} out of memory ({msg}); continuing on cpu")
+    free_device_memory(dev)
+    return fn(torch.device("cpu"))
 
 
 class TorchEval:
-    def __init__(self, variant, device):
+    def __init__(self, variant, device, eval_batch=None, use_lut=None):
         v = self.v = get_variant(variant)
         self.dev = device
+        self.eval_batch = int(eval_batch or os.environ.get(EVAL_BATCH_ENV) or DEFAULT_EVAL_BATCH)
         strength = [0] * N_CATEGORIES
         for i, c in enumerate(v.category_order):
             strength[c] = i
@@ -35,13 +101,18 @@ class TorchEval:
             W[i, list(w)] = 1.0
         self.windows = W if wins else None
         self._combo_idx = {}
-        k = max(v.n_hole, 1)
+        self._lut = None
+        if use_lut is None:
+            use_lut = os.environ.get(LUT_ENV, "1") != "0"
+        self.use_lut = bool(use_lut) and math.comb(v.D, 5) <= LUT_MAX
+        k = max(v.n_hole, 5)
         B = [[0] * (k + 1) for _ in range(v.D + 1)]
         for n in range(v.D + 1):
             B[n][0] = 1
             for r in range(1, min(n, k) + 1):
                 B[n][r] = B[n - 1][r - 1] + (B[n - 1][r] if r <= n - 1 else 0)
         self.binom = torch.tensor(B, dtype=torch.long, device=device)
+        self._cols5 = torch.arange(1, 6, device=device)
 
     def combo_idx(self, n_hole, n_board):
         key = (n_hole, n_board)
@@ -95,7 +166,46 @@ class TorchEval:
         if idx.numel() == 0:
             return torch.full((hole.shape[0],), -1, dtype=torch.long, device=self.dev)
         cards = torch.cat([hole, board], dim=1)
-        return self.eval5(cards[:, idx]).max(dim=1).values
+        presorted = self.use_lut and self.v.hole_used is None
+        if presorted:
+            # Any 5 of the cards may be used, so order is free: sort once and every
+            # (increasing) combo_idx subset comes out sorted, ready for the table lookup.
+            cards, _ = cards.sort(dim=1)
+        N = cards.shape[0]
+        rows = max(1, self.eval_batch // idx.shape[0])     # bound the working set per batch
+        out = None if N <= rows else torch.empty(N, dtype=torch.long, device=self.dev)
+        for s0 in range(0, N, rows):
+            sub = cards[s0:s0 + rows][:, idx]
+            if self.use_lut:
+                if not presorted:
+                    sub, _ = sub.sort(dim=-1)
+                val = self.lookup5(sub)
+            else:
+                val = self.eval5(sub)
+            val = val.max(dim=1).values
+            if out is None:
+                return val
+            out[s0:s0 + rows] = val
+        return out
+
+    def lookup5(self, c):
+        """c: (..., 5) long card ids sorted ascending -> eval5(c), via the C(D, 5) table."""
+        if self._lut is None:
+            combos = torch.combinations(torch.arange(self.v.D, device=self.dev), 5)
+            lut = torch.empty(combos.shape[0], dtype=torch.long, device=self.dev)
+            for s0 in range(0, combos.shape[0], self.eval_batch):
+                part = combos[s0:s0 + self.eval_batch]
+                lut[self._colex5(part)] = self.eval5(part)
+            self._lut = lut
+        key = self._colex5(c)
+        dup = (c[..., 1:] == c[..., :-1]).any(-1)       # not a real hand (masked-out villains)
+        val = self._lut[key.clamp(max=self._lut.shape[0] - 1)]
+        if bool(dup.any()):
+            val[dup] = self.eval5(c[dup])
+        return val
+
+    def _colex5(self, c):
+        return self.binom[c, self._cols5].sum(-1)
 
     def category(self, val):
         return self.cat_of_strength[val >> 20]
