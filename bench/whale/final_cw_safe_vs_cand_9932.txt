@@ -1,0 +1,5 @@
+A = prep:params/cw_safe.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  whale1                    +0.60   0.88          +1.7%   0/0
+default   normal  whale-mirror              -1.62   0.86          -4.7%   0/0

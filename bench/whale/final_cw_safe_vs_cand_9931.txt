@@ -17,3 +17,11 @@ default   fast    whale-mirror              +0.62   0.56          +1.8%   0/0
 default   fast    whale2                    -1.11   0.59          -3.2%   0/0
 default   fast    whale-br                  -0.86   0.53          -2.5%   0/0
 default   fast    gate-weak                 +0.06   0.10          +0.2%   0/0
+default   fast    gate-strong               -0.16   0.47          -0.5%   0/0
+default   fast    gate-mixed                -0.33   0.36          -1.0%   0/0
+default   fast    rival-strong              +0.57   0.58          +1.6%   0/0
+default   fast    rival-strong+prep          -0.09   0.56          -0.3%   0/0
+default   fast    rival-real                -0.51   0.54          -1.5%   0/0
+default   fast    llm-bugs                  +0.27   0.36          +0.8%   0/0
+
+mean over 22 cells: A-B -0.35% of fair (±0.40)  [2910s]
