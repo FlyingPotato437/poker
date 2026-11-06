@@ -1,0 +1,6 @@
+gc enabled after import: False  _GC_CONTROL: True  freeze count: 17722
+kit2 totals: {'decisions': 861, 'timeouts': 11, 'exceptions': 0, 'illegal': 0}  max ms 12.36
+exploit level by (postflop, level 0-4): {(False, 0): 37, (False, 1): 42, (False, 2): 63, (False, 3): 285, (False, 4): 222, (True, 0): 24, (True, 1): 51, (True, 2): 92, (True, 3): 45}
+degenerate-seat flags seen (1 = check/fold, 2 = jam/min-raise): {1: 960}
+sh_open curve lookups: 374
+gc collections during play (one per PokerBot built = per table): 10 for 10 tables
