@@ -200,7 +200,7 @@ def test_tags_checked_before_building(tmp_path, monkeypatch):
 def test_table_script_chain():
     spec, _, _ = ok(load("examples/kit2_tahoe.json"))
     text, v1, v2 = go.table_script("tt", "variants/day.json", spec, "params/ev_t3.json", "a.py", "k {bot}",
-                                   "fast", 10, 3, "cpu")
+                                   "fast", 10, 3, "cpu", "params/nlhe_final_legacy.json")
     assert "gpu.build_tables" in text and "gpu.range_eq" in text and "--skip pushfold" in text
     assert "--device cpu" in text and "NOLIMIT_DEVICE=cpu" in text
     assert (text.index("gpu.build_tables") < text.index("day.py build tt_v1") < text.index("gpu.range_eq")
@@ -208,6 +208,9 @@ def test_table_script_chain():
     for cmd in (v1, v2):
         assert "--points 10,6,4,3,2,1,0,0" in " ".join(cmd) and "--ante-bb 0.0625" in " ".join(cmd)
     assert v1[v1.index("--bundle") + 1].endswith("tt_base.nlb")
+    assert v1[v1.index("--params") + 1] == "params/nlhe_final_legacy.json"     # no range net: rules engine
+    assert v2[v2.index("--params") + 1] == "params/ev_t3.json"
+    assert go.load_params_map()["new_variant_no_range_net"] == "params/nlhe_final_legacy.json"
     assert v2[v2.index("--bundle") + 1].endswith("tt_base_rng.nlb")
 
 

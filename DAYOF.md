@@ -105,10 +105,51 @@ with tag `day2_v2` and the new `--points` / `--ante-bb`.
 - A build fails: go.py stops at that step and says which; the earlier tags stay frozen and
   submittable. Most failures are the kit check: fix the adapter, rerun with a new `--tag`.
 - v1 misbehaves in a practice round: `day.py rollback` first, then investigate.
-- Upgraded bot (NLHE `cand_nlhe`) misbehaves: `day.py build v1b --preset nlhe --params params/ev_t4.json --points ... --adapter ...`, or rc1 bytes: `day.py build rc1k --from-frozen rc1 --adapter ...`.
+- A `cand_*` params file (from `variants/PARAMS_MAP.json`) misbehaves: rebuild with the rc1
+  params: `day.py build v1b --preset <preset> --params params/ev_t3.json` (`ev_t4.json` for
+  nlhe) `--points ... --ante-bb ... --adapter ... --kit-cmd ...`. Or use the rc1 bytes:
+  `day.py build rc1k --from-frozen rc1 --adapter ...`.
+- Slow or loaded laptop: `--tables quick`, which does about a third of fast's Monte Carlo
+  work (its timing is an estimate, not measured). The `laptop` profile is the slow,
+  most accurate one.
 - Table build too slow / crashed: v0 stays live; rerun `bash bench/dayof/go_day_tables.sh` (stages
   are checkpointed in `bundles/day/work_day`; add `--reuse` by hand to skip finished ones).
 - Unknown rule: write it in `special_rules.other`, submit v0, decide by hand.
+
+## Measured (Nov 6, this M5 Pro, CPU, 3 threads, with other jobs loading the machine at 350–1000)
+
+Times are from the go.py start. On this machine, every step ran 5–50× slower than on an
+idle laptop: the push/fold solve took 3–12 min instead of 12 s. MPS ran out of memory
+twice, because other jobs held 27 of 30 GB of GPU memory, so these runs used `--device
+cpu`.
+
+| Case | v0 (heuristic) | v1 | v2 (range net) |
+|---|---|---|---|
+| NLHE, points 12..0, ante 5 (preset, cand_nlhe) | 0:39 | 5:26 | – |
+| PLO4 (preset) | 0:18 | 3:46 | – |
+| kit2 Tahoe, 3 hole / exactly 2 (new, fast profile) | 1:49 (0:14 in an earlier run) | 30:48 | 39:00 |
+| 7+ deck, flush > full house (new, fast profile) | 0:16 | build_tables 12:56 (+~2 min for the v1 build) | not rerun with the final range settings |
+
+The `laptop` profile was not viable here. Its tahoe preflop pass alone ran for more than 10
+min on MPS before running out of memory. That is why `fast` (fewer Monte Carlo samples, same
+nets) is the default, and why v1 ships without the range net.
+
+Quick-build table bot vs the heuristic v0, paired, 400 SNGs, zoo field:
+- 7+ variant, `fast` tables without the range net: with the rules engine
+  (`nlhe_final_legacy`, what go.py's v1 now uses) **+32.2% of fair ± 5.8**; with `ev_t4`,
+  +24.3% ± 5.3 (`bench/dayof/go_ab_custom_v1*_vs_v0.txt`).
+- kit2 under kit rules (stack 1500, ante 5, 15 hands per level, points 10..0), 800 SNGs,
+  fields zoo / passive / aggressive (`bench/dayof/go_ab_kit2_800*.txt`):
+  - v1 with `ev_t3`: **−9.3% ± 2.4**. The EV engine without a range net is worse than v0.
+  - v1 with the rules engine (`nlhe_final_legacy`): **+1.8% ± 2.4** (+6.6 / −9.1 / +7.9).
+    go.py now uses this (`PARAMS_MAP new_variant_no_range_net`).
+  - v2 (range net) with `ev_t3`: **−0.6% ± 2.5** (+5.8 / −15.0 / +7.4). The 4v4 head to
+    head is 1.14× fair.
+
+  So the fast tables for a 3-hole/Omaha-style variant are no better than v0 within the noise,
+  and they lose to passive fields (the same weak spot the Oct 31 rehearsal found). Submit
+  v1/v2 there only if the go.py A/B gate under the kit's rules is positive. Otherwise keep
+  v0 and tune `params/` on the day bundle if time allows (PLAYBOOK).
 
 ## T1–T6 (scored rounds, 20 min apart)
 
