@@ -995,7 +995,7 @@ DEFAULT_PARAMS = {
     "risk_depth": 0.0,        # premium fades below this many big blinds (0 = never fades)
     "pool_w": 0.0,            # unknown seats start from the table's pooled stats (0 = fixed PRIORS)
     # short-stack / short-handed preflop (all off by default: 0 reproduces the older play)
-    "resteal_on": 0.0,        # >= 0.5: vs one non-all-in open in push/fold, jam on jam EV
+    "resteal_on": 0.0,        # vs one non-all-in open in push/fold: 1 = also jam where jam EV > 0, 2 = jam EV only
     "resteal_call": 1.0,      # scales how often the opener calls the jam (shove/pfr estimate)
     "resteal_margin": 0.0,    # jam EV must beat folding by this share of the pot
     "sh_open": 0.0,           # blend opens toward max(old, curve by players behind)
@@ -1025,7 +1025,7 @@ PARAM_SPACE = {
     "cont_b4": (-3.0, 3.0), "call_width": (0.5, 2.5), "raise_cont": (0.5, 1.6),
     "realize_chk": (0.6, 1.1), "ev_margin": (-0.05, 0.2), "call_ev_margin": (-0.1, 0.4),
     "risk_av": (0.0, 3.0), "risk_depth": (0.0, 60.0), "pool_w": (0.0, 1.0),
-    "resteal_on": (0.0, 1.0), "resteal_call": (0.3, 3.0), "resteal_margin": (-0.1, 0.3),
+    "resteal_on": (0.0, 2.0), "resteal_call": (0.3, 3.0), "resteal_margin": (-0.1, 0.3),
     "sh_open": (0.0, 1.0), "sh_open_scale": (0.6, 1.5), "hu_sb_play": (0.0, 1.0),
     "mw_call": (0.0, 1.0), "mw_behind": (0.0, 0.05), "cap_fade": (0.0, 60.0), "cap_hands": (100.0, 400.0),
 }
@@ -1396,8 +1396,9 @@ class PrepBot(BotBase):
             return (FOLD, 0)
 
         shover = raises[-1][0]
-        if (p["resteal_on"] >= 0.5 and len(raises) == 1 and not raises[-1][4]
-                and obs.min_raise_to > 0 and obs.to_call < obs.stacks[me]):
+        rs = (p["resteal_on"] >= 0.5 and len(raises) == 1 and not raises[-1][4]
+              and obs.min_raise_to > 0 and obs.to_call < obs.stacks[me])
+        if rs and p["resteal_on"] >= 1.5:
             return self._resteal(obs, cls, shover)
         spos = order.index(shover) if shover in order else 0
         need = self._need(obs, shover, None) + p["pf_margin"]
@@ -1434,15 +1435,16 @@ class PrepBot(BotBase):
         elif n_in > 1:
             call = call and T.eq_vs_range(cls, 0.08) >= 0.5
         if not call:
-            return (FOLD, 0)
+            # resteal_on 1: jam on EV where the old rule folds; 2: jam EV decides alone.
+            return self._resteal(obs, cls, shover) if rs else (FOLD, 0)
         return self._shove(obs) if obs.min_raise_to > 0 else (CALL, 0)
 
     def _resteal(self, obs, cls, opener):
         """Jam or fold vs one open that is not all-in, on the EV of the jam:
         sum over who calls of P * (eq * (pot + their call) - (1 - eq) * our risk * BF),
         plus P(all fold) * pot. The opener calls with the top share of their open range
-        (shove rate over raise rate, both shrunk to the priors, scaled by the price they
-        get); anyone else in calls with a tight range."""
+        (0.8 x their postflop continue rate, scaled by the price they get); anyone else
+        in calls with a tight range."""
         p, T, me = self.p, self.T, obs.seat
         stacks, bets = obs.stacks, obs.bets
         pot = obs.pot
@@ -1467,8 +1469,9 @@ class PrepBot(BotBase):
         eff = min(mine, theirs)
         v_add = max(eff - bets[opener], 0)
         need_v = v_add / max(pot + v_add + max(eff - bets[me], 0), 1)
-        c = st.rate("shove") / max(st.rate("pfr"), 0.01)
-        c = _clamp(c * p["resteal_call"] * 0.41 / max(need_v, 0.05), 0.05, 1.0)
+        # No fold-to-3-bet stat is kept; how often they give up to a bet postflop stands in.
+        c = (1.0 - st.rate("fold_to_bet")) * 0.8
+        c = _clamp(c * p["resteal_call"] * 0.41 / max(need_v, 0.05), 0.2, 1.0)
         ev = c * ev_called(opener, y_open * c)
         fold_all = 1.0 - c
         for s in range(len(stacks)):
