@@ -1,0 +1,41 @@
+A = prep:params/cand_relk2_nlhe.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  event                     +0.17   0.90          +0.5%   0/0
+default   normal  event+prep                +1.15   0.92          +3.3%   0/0
+default   normal  github                    -0.48   0.67          -1.4%   0/0
+default   normal  llm-bugs                  -0.59   0.56          -1.7%   0/0
+default   normal  rival-real                -0.79   0.76          -2.3%   0/0
+default   normal  rival-strong              -1.89   0.73          -5.4%   0/0
+default   normal  rival-strong+prep          -1.20   0.79          -3.5%   0/0
+default   normal  gate-strong               -0.95   0.72          -2.7%   0/0
+default   normal  h2h 4v4           A 1.011x fair
+default   fast    event                     +0.72   0.69          +2.1%   0/0
+default   fast    event+prep                +0.52   0.70          +1.5%   0/0
+default   fast    github                    -0.58   0.68          -1.7%   0/0
+default   fast    llm-bugs                  -1.29   0.61          -3.7%   0/0
+default   fast    rival-real                +0.79   0.64          +2.3%   0/0
+default   fast    rival-strong              -0.06   0.59          -0.2%   0/0
+default   fast    rival-strong+prep          -0.10   0.59          -0.3%   0/0
+default   fast    gate-strong               +0.13   0.58          +0.4%   0/0
+default   fast    h2h 4v4           A 0.999x fair
+top-heavy normal  event                     -0.44   1.08          -2.0%   0/0
+top-heavy normal  event+prep                -0.30   1.03          -1.4%   0/0
+top-heavy normal  github                    +0.33   0.83          +1.5%   0/0
+top-heavy normal  llm-bugs                  +0.40   0.70          +1.8%   0/0
+top-heavy normal  rival-real                -0.14   1.03          -0.6%   0/0
+top-heavy normal  rival-strong              -0.93   0.93          -4.3%   0/0
+top-heavy normal  rival-strong+prep          +0.92   1.01          +4.2%   0/0
+top-heavy normal  gate-strong               +0.58   0.85          +2.6%   0/0
+top-heavy normal  h2h 4v4           A 1.005x fair
+top-heavy fast    event                     +0.34   0.83          +1.5%   0/0
+top-heavy fast    event+prep                -0.33   0.81          -1.5%   0/0
+top-heavy fast    github                    -0.17   0.84          -0.8%   0/0
+top-heavy fast    llm-bugs                  -0.86   0.72          -4.0%   0/0
+top-heavy fast    rival-real                -0.32   0.81          -1.5%   0/0
+top-heavy fast    rival-strong              +0.25   0.78          +1.1%   0/0
+top-heavy fast    rival-strong+prep          -0.56   0.76          -2.6%   0/0
+top-heavy fast    gate-strong               +2.70   0.80         +12.3%   0/0
+top-heavy fast    h2h 4v4           A 1.014x fair
+
+mean over 32 cells: A-B -0.19% of fair (±0.56)  [1711s]
