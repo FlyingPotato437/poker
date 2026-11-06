@@ -1,0 +1,212 @@
+== f_resteal
+default   normal  gate-weak                 -4.08   0.92         -11.7%   0/0
+default   normal  h2h 4v4           A 0.966x fair
+mean over 1 cells: A-B -11.75% of fair (±2.64)  [46s]
+== f_resteal15
+default   normal  gate-weak                 -3.64   0.88         -10.5%   0/0
+default   normal  h2h 4v4           A 0.977x fair
+mean over 1 cells: A-B -10.49% of fair (±2.54)  [33s]
+== f_mw
+default   normal  gate-weak                 -0.04   0.25          -0.1%   0/0
+default   normal  h2h 4v4           A 1.011x fair
+mean over 1 cells: A-B -0.13% of fair (±0.72)  [37s]
+== f_shopen
+default   normal  gate-weak                 +0.23   0.87          +0.7%   0/0
+default   normal  h2h 4v4           A 1.013x fair
+mean over 1 cells: A-B +0.65% of fair (±2.49)  [44s]
+== f_cap
+default   normal  gate-weak                 -0.12   0.06          -0.4%   0/0
+default   normal  h2h 4v4           A 0.999x fair
+mean over 1 cells: A-B -0.35% of fair (±0.17)  [44s]
+== f_resteal
+default   normal  gate-weak                 -1.34   0.62          -3.8%   0/0
+default   normal  rival-strong              -0.09   1.14          -0.3%   0/0
+default   normal  h2h 4v4           A 0.957x fair
+mean over 2 cells: A-B -2.05% of fair (±1.87)  [58s]
+== f_resteal15
+default   normal  gate-weak                 -0.11   0.44          -0.3%   0/0
+default   normal  rival-strong              -0.57   1.23          -1.6%   0/0
+default   normal  h2h 4v4           A 0.969x fair
+mean over 2 cells: A-B -0.98% of fair (±1.88)  [64s]
+== f_resteal20
+default   normal  gate-weak                 -0.11   0.44          -0.3%   0/0
+default   normal  rival-strong              -0.40   1.23          -1.2%   0/0
+default   normal  h2h 4v4           A 0.968x fair
+mean over 2 cells: A-B -0.74% of fair (±1.88)  [58s]
+== f_rsadd15
+default   normal  gate-weak                 -0.36   0.25          -1.0%   0/0
+default   normal  rival-strong              -0.07   0.07          -0.2%   0/0
+default   normal  h2h 4v4           A 1.006x fair
+mean over 2 cells: A-B -0.62% of fair (±0.38)  [43s]
+== f_rsadd15m
+default   normal  gate-weak                 -0.23   0.18          -0.7%   0/0
+default   normal  rival-strong              +0.00   0.00          +0.0%   0/0
+default   normal  h2h 4v4           A 1.003x fair
+mean over 2 cells: A-B -0.33% of fair (±0.25)  [33s]
+== f_rsadd25
+default   normal  gate-weak                 -0.14   0.19          -0.4%   0/0
+default   normal  rival-strong              +0.00   0.00          +0.0%   0/0
+default   normal  h2h 4v4           A 1.009x fair
+mean over 2 cells: A-B -0.21% of fair (±0.27)  [32s]
+== f_shopen
+default   normal  gate-weak                 +0.38   0.69          +1.1%   0/0
+default   normal  gate-strong               -0.42   0.65          -1.2%   0/0
+default   normal  gate-mixed                +0.57   0.66          +1.7%   0/0
+default   normal  rival-strong              +0.76   0.75          +2.2%   0/0
+default   normal  rival-strong+prep          +0.79   0.67          +2.3%   0/0
+default   normal  rival-mid                 +2.11   0.85          +6.1%   0/0
+default   normal  rival-real                +0.19   0.82          +0.5%   0/0
+default   normal  h2h 4v4           A 1.006x fair
+default   fast    gate-weak                 +0.36   0.45          +1.0%   0/0
+default   fast    gate-strong               +0.07   0.38          +0.2%   0/0
+default   fast    gate-mixed                +0.54   0.45          +1.6%   0/0
+default   fast    rival-strong              +0.18   0.44          +0.5%   0/0
+default   fast    rival-strong+prep          -0.14   0.33          -0.4%   0/0
+default   fast    rival-mid                 +0.39   0.69          +1.1%   0/0
+default   fast    rival-real                -0.49   0.44          -1.4%   0/0
+default   fast    h2h 4v4           A 1.001x fair
+mean over 14 cells: A-B +1.09% of fair (±0.47)  [151s]
+== f_mw
+default   normal  gate-weak                 -0.02   0.30          -0.1%   0/0
+default   normal  gate-strong               +0.29   0.56          +0.8%   0/0
+default   normal  gate-mixed                -0.78   0.49          -2.3%   0/0
+default   normal  rival-strong              -0.05   0.67          -0.2%   0/0
+default   normal  rival-strong+prep          +0.09   0.71          +0.3%   0/0
+default   normal  rival-mid                 -0.63   0.35          -1.8%   0/0
+default   normal  rival-real                -0.24   0.60          -0.7%   0/0
+default   normal  h2h 4v4           A 1.011x fair
+default   fast    gate-weak                 -1.46   0.62          -4.2%   0/0
+default   fast    gate-strong               -0.89   0.77          -2.6%   0/0
+default   fast    gate-mixed                +0.24   0.70          +0.7%   0/0
+default   fast    rival-strong              -0.24   0.68          -0.7%   0/0
+default   fast    rival-strong+prep          -0.44   0.74          -1.3%   0/0
+default   fast    rival-mid                 -0.74   0.54          -2.1%   0/0
+default   fast    rival-real                -0.25   0.66          -0.7%   0/0
+default   fast    h2h 4v4           A 1.004x fair
+mean over 14 cells: A-B -1.05% of fair (±0.47)  [136s]
+== f_cap15
+default   normal  gate-weak                 -0.01   0.01          -0.0%   0/0
+default   normal  gate-strong               +0.00   0.04          +0.0%   0/0
+default   normal  gate-mixed                -0.05   0.02          -0.1%   0/0
+default   normal  rival-strong              -0.05   0.05          -0.1%   0/0
+default   normal  rival-strong+prep          +0.08   0.06          +0.2%   0/0
+default   normal  rival-mid                 -0.03   0.03          -0.1%   0/0
+default   normal  rival-real                -0.01   0.03          -0.0%   0/0
+default   normal  h2h 4v4           A 0.999x fair
+default   fast    gate-weak                 +0.00   0.00          +0.0%   0/0
+default   fast    gate-strong               +0.00   0.00          +0.0%   0/0
+default   fast    gate-mixed                +0.00   0.00          +0.0%   0/0
+default   fast    rival-strong              +0.00   0.00          +0.0%   0/0
+default   fast    rival-strong+prep          +0.00   0.00          +0.0%   0/0
+default   fast    rival-mid                 +0.00   0.00          +0.0%   0/0
+default   fast    rival-real                +0.00   0.00          +0.0%   0/0
+default   fast    h2h 4v4           A 1.000x fair
+mean over 14 cells: A-B -0.01% of fair (±0.02)  [137s]
+== f_shopen_nohu
+default   normal  gate-weak                 +0.34   0.69          +1.0%   0/0
+default   normal  gate-strong               -0.30   0.65          -0.9%   0/0
+default   normal  gate-mixed                +0.62   0.66          +1.8%   0/0
+default   normal  rival-strong              +0.76   0.75          +2.2%   0/0
+default   normal  rival-strong+prep          +0.78   0.67          +2.2%   0/0
+default   normal  rival-mid                 +1.86   0.85          +5.4%   0/0
+default   normal  rival-real                +0.18   0.82          +0.5%   0/0
+default   normal  h2h 4v4           A 1.005x fair
+default   fast    gate-weak                 +0.36   0.45          +1.0%   0/0
+default   fast    gate-strong               +0.15   0.38          +0.4%   0/0
+default   fast    gate-mixed                +0.45   0.45          +1.3%   0/0
+default   fast    rival-strong              +0.18   0.44          +0.5%   0/0
+default   fast    rival-strong+prep          -0.14   0.33          -0.4%   0/0
+default   fast    rival-mid                 +0.39   0.69          +1.1%   0/0
+default   fast    rival-real                -0.49   0.44          -1.4%   0/0
+default   fast    h2h 4v4           A 1.001x fair
+mean over 14 cells: A-B +1.06% of fair (±0.47)  [150s]
+== f_sh085
+default   normal  gate-weak                 -0.20   0.49          -0.6%   0/0
+default   normal  gate-strong               -0.07   0.49          -0.2%   0/0
+default   normal  gate-mixed                +0.65   0.50          +1.9%   0/0
+default   normal  rival-strong              +0.08   0.47          +0.2%   0/0
+default   normal  rival-strong+prep          +0.43   0.38          +1.2%   0/0
+default   normal  rival-mid                 +1.77   0.60          +5.1%   0/0
+default   normal  rival-real                -0.18   0.56          -0.5%   0/0
+default   normal  h2h 4v4           A 1.000x fair
+default   fast    gate-weak                 +0.31   0.27          +0.9%   0/0
+default   fast    gate-strong               +0.42   0.26          +1.2%   0/0
+default   fast    gate-mixed                +0.55   0.28          +1.6%   0/0
+default   fast    rival-strong              +0.12   0.18          +0.3%   0/0
+default   fast    rival-strong+prep          -0.01   0.13          -0.0%   0/0
+default   fast    rival-mid                 +0.05   0.34          +0.1%   0/0
+default   fast    rival-real                -0.05   0.26          -0.2%   0/0
+default   fast    h2h 4v4           A 1.000x fair
+mean over 14 cells: A-B +0.80% of fair (±0.31)  [137s]
+== f_sh115
+default   normal  gate-weak                 +1.43   0.84          +4.1%   0/0
+default   normal  gate-strong               +1.04   0.87          +3.0%   0/0
+default   normal  gate-mixed                +1.20   0.76          +3.4%   0/0
+default   normal  rival-strong              +0.13   0.86          +0.4%   0/0
+default   normal  rival-strong+prep          +1.24   0.79          +3.6%   0/0
+default   normal  rival-mid                 +2.38   0.99          +6.8%   0/0
+default   normal  rival-real                +0.58   0.93          +1.7%   0/0
+default   normal  h2h 4v4           A 1.007x fair
+default   fast    gate-weak                 -0.12   0.56          -0.4%   0/0
+default   fast    gate-strong               +0.25   0.56          +0.7%   0/0
+default   fast    gate-mixed                +0.97   0.62          +2.8%   0/0
+default   fast    rival-strong              +0.81   0.59          +2.3%   0/0
+default   fast    rival-strong+prep          +0.06   0.44          +0.2%   0/0
+default   fast    rival-mid                 +0.65   0.85          +1.9%   0/0
+default   fast    rival-real                -1.01   0.62          -2.9%   0/0
+default   fast    h2h 4v4           A 0.994x fair
+mean over 14 cells: A-B +1.97% of fair (±0.58)  [139s]
+== f_mw04
+default   normal  gate-weak                 +0.01   0.24          +0.0%   0/0
+default   normal  gate-strong               +0.52   0.49          +1.5%   0/0
+default   normal  gate-mixed                -0.56   0.39          -1.6%   0/0
+default   normal  rival-strong              +0.48   0.52          +1.4%   0/0
+default   normal  rival-strong+prep          -0.33   0.57          -1.0%   0/0
+default   normal  rival-mid                 -0.41   0.27          -1.2%   0/0
+default   normal  rival-real                -0.63   0.48          -1.8%   0/0
+default   normal  h2h 4v4           A 1.002x fair
+default   fast    gate-weak                 -0.19   0.48          -0.5%   0/0
+default   fast    gate-strong               -0.07   0.65          -0.2%   0/0
+default   fast    gate-mixed                +1.07   0.59          +3.1%   0/0
+default   fast    rival-strong              +0.22   0.56          +0.6%   0/0
+default   fast    rival-strong+prep          -0.35   0.62          -1.0%   0/0
+default   fast    rival-mid                 -0.66   0.46          -1.9%   0/0
+default   fast    rival-real                -0.07   0.50          -0.2%   0/0
+default   fast    h2h 4v4           A 0.995x fair
+mean over 14 cells: A-B -0.20% of fair (±0.38)  [136s]
+== f_sh130
+default   normal  gate-weak                 +2.41   0.86          +6.9%   0/0
+default   normal  gate-strong               +0.14   0.93          +0.4%   0/0
+default   normal  gate-mixed                +1.61   0.86          +4.6%   0/0
+default   normal  rival-strong              +0.78   0.98          +2.2%   0/0
+default   normal  rival-strong+prep          +0.24   0.85          +0.7%   0/0
+default   normal  rival-mid                 +1.32   1.16          +3.8%   0/0
+default   normal  rival-real                -0.51   1.05          -1.5%   0/0
+default   normal  h2h 4v4           A 1.012x fair
+default   fast    gate-weak                 +0.44   0.62          +1.3%   0/0
+default   fast    gate-strong               -0.14   0.70          -0.4%   0/0
+default   fast    gate-mixed                +1.16   0.69          +3.3%   0/0
+default   fast    rival-strong              +1.26   0.67          +3.6%   0/0
+default   fast    rival-strong+prep          +0.17   0.55          +0.5%   0/0
+default   fast    rival-mid                 +0.18   0.93          +0.5%   0/0
+default   fast    rival-real                -0.66   0.72          -1.9%   0/0
+default   fast    h2h 4v4           A 0.997x fair
+mean over 14 cells: A-B +1.72% of fair (±0.65)  [146s]
+== f_sh115hu9
+default   normal  gate-weak                 +1.48   0.84          +4.3%   0/0
+default   normal  gate-strong               +0.92   0.88          +2.7%   0/0
+default   normal  gate-mixed                +0.98   0.75          +2.8%   0/0
+default   normal  rival-strong              +0.13   0.86          +0.4%   0/0
+default   normal  rival-strong+prep          +1.26   0.79          +3.6%   0/0
+default   normal  rival-mid                 +2.26   0.99          +6.5%   0/0
+default   normal  rival-real                +0.53   0.93          +1.5%   0/0
+default   normal  h2h 4v4           A 1.008x fair
+default   fast    gate-weak                 -0.17   0.56          -0.5%   0/0
+default   fast    gate-strong               +0.25   0.56          +0.7%   0/0
+default   fast    gate-mixed                +0.97   0.61          +2.8%   0/0
+default   fast    rival-strong              +0.85   0.59          +2.4%   0/0
+default   fast    rival-strong+prep          +0.06   0.44          +0.2%   0/0
+default   fast    rival-mid                 +0.65   0.85          +1.9%   0/0
+default   fast    rival-real                -0.93   0.62          -2.7%   0/0
+default   fast    h2h 4v4           A 0.994x fair
+mean over 14 cells: A-B +1.90% of fair (±0.58)  [144s]

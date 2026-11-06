@@ -1,0 +1,86 @@
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:503: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(np.asarray(f, dtype=np.float32) @ w1 + b1, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: divide by zero encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: overflow encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:504: RuntimeWarning: invalid value encountered in matmul
+  h = np.maximum(h @ w2 + b2, 0.0)
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: divide by zero encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: overflow encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: invalid value encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: divide by zero encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: overflow encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: invalid value encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: divide by zero encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: overflow encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: invalid value encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: divide by zero encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: overflow encountered in matmul
+  o = h @ w3 + b3
+/Users/revanthguda/poker/.claude/worktrees/agent-a910ceae16e55946d/nolimit/runtime.py:505: RuntimeWarning: invalid value encountered in matmul
+  o = h @ w3 + b3
+hpl=25 gate-weak          cap  32.0%  hero alive at cap  10.3%  mean hands  165.5  players-left-at-cap % of SNGs: 2:28.0 3:4.0
+hpl=25 gate-strong        cap  19.3%  hero alive at cap   7.3%  mean hands  165.4  players-left-at-cap % of SNGs: 2:18.7 3:0.7
+hpl=25 gate-mixed         cap  17.0%  hero alive at cap   6.0%  mean hands  156.3  players-left-at-cap % of SNGs: 2:16.7 3:0.3
+hpl=25 rival-strong       cap  29.3%  hero alive at cap   4.3%  mean hands  179.5  players-left-at-cap % of SNGs: 2:28.7 3:0.7
+hpl=25 rival-strong+prep  cap  24.3%  hero alive at cap   3.7%  mean hands  178.5  players-left-at-cap % of SNGs: 2:22.3 3:1.7 4:0.3
+hpl=25 rival-mid          cap  22.7%  hero alive at cap   7.0%  mean hands  161.5  players-left-at-cap % of SNGs: 2:22.0 3:0.7
+hpl=25 rival-real         cap  24.7%  hero alive at cap   5.3%  mean hands  173.9  players-left-at-cap % of SNGs: 2:23.7 3:1.0
+hpl=10 gate-weak          cap   8.3%  hero alive at cap   0.0%  mean hands  107.7  players-left-at-cap % of SNGs: 2:8.3
+hpl=10 gate-strong        cap   4.0%  hero alive at cap   0.3%  mean hands   99.2  players-left-at-cap % of SNGs: 2:4.0
+hpl=10 gate-mixed         cap   5.7%  hero alive at cap   0.0%  mean hands  101.9  players-left-at-cap % of SNGs: 2:5.3 3:0.3
+hpl=10 rival-strong       cap   0.0%  hero alive at cap   0.0%  mean hands   89.1  players-left-at-cap % of SNGs: 
+hpl=10 rival-strong+prep  cap   0.0%  hero alive at cap   0.0%  mean hands   91.5  players-left-at-cap % of SNGs: 
+hpl=10 rival-mid          cap   0.3%  hero alive at cap   0.0%  mean hands   93.9  players-left-at-cap % of SNGs: 2:0.3
+hpl=10 rival-real         cap   0.0%  hero alive at cap   0.0%  mean hands   90.1  players-left-at-cap % of SNGs: 
