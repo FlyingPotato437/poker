@@ -39,8 +39,11 @@ Only the submitter submits. Pass bundles/params between laptops on a USB stick o
 - [ ] **Set up Revanth's laptop** the same way: copy the repo with `bundles/`, `params/`,
   `dist/` (rsync or a USB stick), `uv sync`, then **with Wi-Fi off** run
   `.venv/bin/python -m pytest -q` and one `gpu.build_tables --quick` to check torch works
-  offline (MPS on Apple silicon; CPU elsewhere is ~5–10x slower, so use `--quick`/preset
-  bundles there).
+  offline. Default device is now CPU (CUDA if present); `--device mps` opts in to MPS and
+  falls back to CPU on out-of-memory. Measured Nov 6 on this laptop under load avg 200–420,
+  CPU, `--threads 4 --workers 3`, variants/example_day.json: `build_tables --laptop` 20.3 min
+  (peak 1.6 GB), `range_eq --laptop` 31.6 min (peak 3.4 GB). On an idle laptop `--device mps`
+  is faster; if time is short use a preset bundle.
 - [ ] On the GPU box, build max-accuracy bundles for every preset (each one is a fallback
   for a "close" variant). Run detached so a dropped SSH session can't kill it:
   ```bash

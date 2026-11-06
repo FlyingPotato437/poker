@@ -1,8 +1,12 @@
-"""Build the lookup-table bundle for one variant. Heavy parts run on GPU.
+"""Build the lookup-table bundle for one variant. Heavy parts run on CUDA if present, else CPU.
 
     python -m gpu.build_tables --variant nlhe --out bundles/nlhe.nlb             # full run (CUDA)
-    python -m gpu.build_tables --variant day.json --out bundles/day.nlb --laptop # day-of, offline (~5 min M3 Pro)
+    python -m gpu.build_tables --variant day.json --out bundles/day.nlb --laptop # day-of, offline (CPU)
     python -m gpu.build_tables --variant plo4 --out bundles/plo4.nlb --quick     # ~1 min smoke test
+
+Device: --device / $NOLIMIT_DEVICE (cpu|mps|cuda). MPS is opt-in only: under load it ran out
+of unified memory mid-build. Any CUDA/MPS out-of-memory error falls back to CPU, keeping the
+stages already finished. On a shared machine cap CPU use with --threads N --workers N.
 
 Stages (each checkpointed in --work, rerun with --reuse to skip finished ones):
   classes   suit-isomorphic hole-card classes and the combo -> class map
@@ -20,7 +24,7 @@ import numpy as np
 import torch
 
 from gpu import pushfold
-from gpu.tensor_eval import TorchEval, pick_device
+from gpu.tensor_eval import TorchEval, pick_device, run_with_fallback, set_threads
 from nolimit.bundle_io import write_bundle
 from nolimit.engine import DEFAULT_PAYOUTS
 from nolimit.runtime import PRESETS, Variant, feature_dim
@@ -192,9 +196,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--variant", required=True, help="preset name or variant JSON file")
     ap.add_argument("--out", required=True)
-    ap.add_argument("--device", default="auto")
+    ap.add_argument("--device", default="auto",
+                    help="auto|cpu|mps|cuda; auto = $NOLIMIT_DEVICE, else CUDA if present, else CPU "
+                         "(MPS only when asked; it falls back to CPU if it runs out of memory)")
+    ap.add_argument("--threads", type=int, help="torch CPU threads (default $NOLIMIT_THREADS or all)")
+    ap.add_argument("--workers", type=int, help="push/fold solver processes (default: all cores)")
     ap.add_argument("--quick", action="store_true", help="small sample sizes for a ~1 min smoke test")
-    ap.add_argument("--laptop", action="store_true", help="day-of offline profile sized for a laptop GPU")
+    ap.add_argument("--laptop", action="store_true", help="day-of offline profile sized for a laptop")
     ap.add_argument("--work", help="checkpoint dir (default: <out dir>/work_<variant>)")
     ap.add_argument("--reuse", action="store_true", help="reuse finished stages from --work")
     ap.add_argument("--skip", default="", help="comma list of stages to skip: postflop,pushfold")
@@ -210,7 +218,15 @@ def main():
     skip = set(filter(None, args.skip.split(",")))
 
     v = load_variant(args.variant)
-    dev = pick_device(args.device)
+    log(f"torch threads {set_threads(args.threads)}")
+    finished = set()
+    run_with_fallback(lambda d: build(args, cfg, skip, v, d, finished),
+                      pick_device(args.device, log=log), log=log)
+
+
+def build(args, cfg, skip, v, dev, finished):
+    """Everything after argument parsing. finished: stages saved by this process, so an
+    out-of-memory fallback to CPU picks up where the GPU/MPS run stopped."""
     torch.manual_seed(args.seed)
     te = TorchEval(v, dev)
     work = args.work or os.path.join(os.path.dirname(os.path.abspath(args.out)), f"work_{v.name}")
@@ -221,7 +237,11 @@ def main():
 
     def stage(name):
         path = os.path.join(work, name + ".npz")
-        return path, (args.reuse and os.path.exists(path))
+        return path, ((args.reuse or name in finished) and os.path.exists(path))
+
+    def save(name, path, **arrays):
+        np.savez(path, **arrays)
+        finished.add(name)
 
     path, done = stage("classes")
     if done:
@@ -230,7 +250,7 @@ def main():
     else:
         t0 = time.time()
         combo_class, reps, weight = enumerate_classes(v)
-        np.savez(path, combo_class=combo_class, reps=reps, weight=weight)
+        save("classes", path, combo_class=combo_class, reps=reps, weight=weight)
         log(f"classes: {len(reps):,} classes over {len(combo_class):,} combos ({time.time() - t0:.1f}s)")
     C = len(reps)
 
@@ -248,7 +268,7 @@ def main():
         log(f"preflop pass 2 (equities + ranges): {r_eq} rollouts/class, {k_max} opponents")
         class_eq, eq_range = class_equities(te, reps, k_max, r_eq, cfg["chunk"],
                                             combo_class, class_pct, Y)
-        np.savez(path, class_pct=class_pct, class_eq=class_eq, eq_range=eq_range)
+        save("preflop", path, class_pct=class_pct, class_eq=class_eq, eq_range=eq_range)
         best = np.argsort(class_pct)[:5]
         log("  strongest: " + ", ".join(
             "".join(v.ranks[c // v.suits] + "cdhs"[c % v.suits] for c in reps[i]) +
@@ -294,7 +314,7 @@ def main():
                     Xs.append(X), Ys.append(Yl), Xv.append(xv), Yv.append(yv)
                     log(f"postflop data, board {cum}: {len(X):,} samples ({time.time() - t0:.1f}s)")
                 X, Yl, xv, yv = torch.cat(Xs), torch.cat(Ys), torch.cat(Xv), torch.cat(Yv)
-                np.savez(data_path, X=X.numpy(), Y=Yl.numpy(), Xv=xv.numpy(), Yv=yv.numpy())
+                save("postflop_data", data_path, X=X.numpy(), Y=Yl.numpy(), Xv=xv.numpy(), Yv=yv.numpy())
             hidden = [int(x) for x in cfg["hidden"].split(",")]
             weights, mae = train_mlp(X, Yl, xv, yv, hidden, cfg["epochs"], dev)
             mae_s = None
@@ -305,7 +325,7 @@ def main():
                 weights.update({"mlpsmall_" + k[4:]: a for k, a in ws.items()})
                 log(f"small MLP {cfg['small_hidden']} validation MAE: {', '.join(f'{m:.4f}' for m in mae_s)}")
             extra = {} if mae_s is None else {"mae_small": np.array(mae_s)}
-            np.savez(path, mae=np.array(mae), **extra, **weights)
+            save("postflop", path, mae=np.array(mae), **extra, **weights)
         log(f"postflop MLP validation MAE vs 1/2/3 opp: {', '.join(f'{m:.4f}' for m in mae)}")
         arrays.update(weights)
         meta["mlp_mae"] = mae
@@ -315,9 +335,9 @@ def main():
 
     if "pushfold" not in skip:
         payouts = [float(x) for x in args.payouts.split(",")]
-        shove, call = pushfold.solve_charts(class_pct, weight, eq_range, payouts, log=log)
+        shove, call = pushfold.solve_charts(class_pct, weight, eq_range, payouts, workers=args.workers, log=log)
         arrays["pf_shove"], arrays["pf_call"] = shove, call
-        arrays["icm_bf"] = pushfold.bubble_factors(payouts, log=log)
+        arrays["icm_bf"] = pushfold.bubble_factors(payouts, workers=args.workers, log=log)
         meta.update(pf_stacks=list(pushfold.DEFAULT_STACKS), pf_nmax=8, payouts=payouts,
                     bf_shares=list(pushfold.BF_SHARES), bf_fracs=list(pushfold.BF_FRACS))
 
