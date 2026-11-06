@@ -1,0 +1,3 @@
+A = prep:params/cw_safe.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
