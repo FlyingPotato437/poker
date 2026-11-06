@@ -1,0 +1,45 @@
+A = prep:params/lc_h5_nlhe.json
+B = prep:params/cand_nlhe.json
+seed 9990, 300 SNGs per field, 25 hands per level; lam/P/acc/lvl are A's
+
+== github  (300 SNGs)
+hands     A chips/hand  dealt B chips/hand  dA-B bb/tbl-hand    ±se  lvl>0   lvl    lam weak   P weak  lam strong P strong    lam prep   P prep    acc seat-hands
+1-25            +1.185   24.6       +1.208            -0.020  0.022   0.97  2.88        0.56     0.85           -        -           -        -   0.96      44734
+26-50           +0.791   24.1       +0.831            -0.038  0.034   1.00  3.60        0.80     0.91           -        -           -        -   0.97      38936
+51-100          +0.620   45.4       +0.596            +0.021  0.029   1.00  3.81        0.87     0.93           -        -           -        -   0.98      62838
+101-200         +0.510   46.1       +0.511            -0.002  0.015   1.00  3.76        0.88     0.92           -        -           -        -   0.98      41354
+points A-B per table +0.760 ±1.533 (+2.2% of fair); bb won per table A +99.8, B +100.3
+
+== llm-bugs  (300 SNGs)
+hands     A chips/hand  dealt B chips/hand  dA-B bb/tbl-hand    ±se  lvl>0   lvl    lam weak   P weak  lam strong P strong    lam prep   P prep    acc seat-hands
+1-25            +0.948   24.6       +0.926            +0.022  0.029   0.95  2.49        0.48     0.74           -        -           -        -   0.85      42115
+26-50           +1.021   23.4       +1.013            +0.009  0.042   0.99  3.21        0.71     0.81           -        -           -        -   0.88      30736
+51-100          +0.702   41.0       +0.663            +0.030  0.041   0.99  3.55        0.77     0.83           -        -           -        -   0.88      41311
+101-200         +0.518   37.5       +0.504            +0.007  0.014   0.99  3.67        0.78     0.81           -        -           -        -   0.85      26601
+points A-B per table +0.417 ±1.160 (+1.2% of fair); bb won per table A +95.5, B +92.4
+
+== rival-real  (300 SNGs)
+hands     A chips/hand  dealt B chips/hand  dA-B bb/tbl-hand    ±se  lvl>0   lvl    lam weak   P weak  lam strong P strong    lam prep   P prep    acc seat-hands
+1-25            +0.488   24.8       +0.474            +0.015  0.014   0.91  2.12        0.50     0.76        0.41     0.63        0.26     0.42   0.75      48684
+26-50           +0.311   24.3       +0.293            +0.018  0.046   0.91  2.48        0.73     0.83        0.57     0.64        0.17     0.19   0.76      42957
+51-100          +0.229   43.7       +0.259            -0.027  0.021   0.90  2.71        0.78     0.84        0.62     0.67        0.10     0.11   0.77      69560
+101-200         +0.267   47.5       +0.252            +0.011  0.013   0.95  3.14        0.80     0.83        0.66     0.68        0.12     0.13   0.79      56722
+points A-B per table +0.724 ±1.391 (+2.1% of fair); bb won per table A +42.4, B +41.8
+
+== rival-strong+prep  (300 SNGs)
+hands     A chips/hand  dealt B chips/hand  dA-B bb/tbl-hand    ±se  lvl>0   lvl    lam weak   P weak  lam strong P strong    lam prep   P prep    acc seat-hands
+1-25            +0.155   24.9       +0.180            -0.024  0.013   0.89  1.93           -        -        0.42     0.65        0.29     0.47   0.69      50841
+26-50           +0.116   24.4       +0.116            -0.001  0.008   0.84  2.05           -        -        0.60     0.68        0.23     0.26   0.76      47678
+51-100          +0.083   43.0       +0.086            -0.002  0.016   0.80  2.17           -        -        0.66     0.70        0.15     0.16   0.81      81408
+101-200         +0.176   40.2       +0.183            -0.001  0.008   0.89  2.77           -        -        0.70     0.73        0.15     0.15   0.83      66862
+points A-B per table -0.223 ±0.999 (-0.6% of fair); bb won per table A +17.3, B +18.2
+
+== all fields pooled  (1200 SNGs)
+hands     A chips/hand  dealt B chips/hand  dA-B bb/tbl-hand    ±se  lvl>0   lvl    lam weak   P weak  lam strong P strong    lam prep   P prep    acc seat-hands
+1-25            +0.692   24.7       +0.694            -0.002  0.010   0.93  2.37        0.52     0.79        0.42     0.64        0.28     0.46   0.81     186374
+26-50           +0.555   24.1       +0.558            -0.003  0.018   0.93  2.85        0.76     0.86        0.58     0.66        0.22     0.25   0.83     160307
+51-100          +0.407   43.3       +0.400            +0.006  0.014   0.93  3.09        0.82     0.88        0.64     0.69        0.14     0.15   0.85     255117
+101-200         +0.366   42.8       +0.362            +0.004  0.006   0.96  3.36        0.84     0.87        0.68     0.71        0.14     0.15   0.85     191539
+points A-B per table +0.419 ±0.643 (+1.2% of fair); bb won per table A +63.7, B +63.2
+
+[115s]

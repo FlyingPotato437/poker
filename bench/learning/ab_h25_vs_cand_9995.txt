@@ -1,0 +1,21 @@
+A = prep:params/lc_h25_nlhe.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  github                    -0.71   0.61          -2.0%   0/0
+default   normal  llm-bugs                  +0.19   0.57          +0.6%   0/0
+default   normal  rival-real                +0.77   0.63          +2.2%   0/0
+default   normal  gate-weak                 -0.79   0.66          -2.3%   0/0
+default   normal  gate-strong               -0.31   0.54          -0.9%   0/0
+default   normal  gate-mixed                -0.56   0.62          -1.6%   0/0
+default   normal  rival-strong+prep          -0.17   0.57          -0.5%   0/0
+default   normal  h2h 4v4           A 1.000x fair
+default   fast    github                    -0.38   0.68          -1.1%   0/0
+default   fast    llm-bugs                  -1.06   0.59          -3.0%   0/0
+default   fast    rival-real                -0.72   0.48          -2.1%   0/0
+default   fast    gate-weak                 +0.67   0.72          +1.9%   0/0
+default   fast    gate-strong               -0.20   0.46          -0.6%   0/0
+default   fast    gate-mixed                +0.54   0.65          +1.5%   0/0
+default   fast    rival-strong+prep          -0.51   0.36          -1.5%   0/0
+default   fast    h2h 4v4           A 1.011x fair
+
+mean over 14 cells: A-B -0.66% of fair (±0.45)  [870s]
