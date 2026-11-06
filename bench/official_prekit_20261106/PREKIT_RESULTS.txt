@@ -1,0 +1,28 @@
+PRE-KIT PREPARATION — 2026-11-06
+
+Generic docs are available; downloadable starter kit and variant still await announcement.
+Implemented published-interface memory, per-table payouts, legal actions and split packaging.
+Official SDK/variant/host validation remains required. No upload or activation.
+
+Full local-workspace suite: 284 passed, 1 optional dependency skipped (includes earlier research tests).
+Local final rehearsal: 36,472 decisions; 3 over 1 ms; maximum 1.499 ms.
+Team Linux box: 35,917 decisions; 0 over 1 ms; maximum 0.624 ms.
+Both: zero illegal actions, unexpected memory resets, history mismatches or statistic mismatches.
+Timing includes our adapter/memory, excludes official host transport and sandbox overhead.
+Each platform: 24 tables per preset, 2 candidate seats/table; 6 presets at 8 seats, Royal at 7.
+Royal cannot deal 8 players from its 20-card deck and full 5-card board; adapter guards this.
+
+Candidate ZIPs and hash manifests: build/official/v2/
+Each agent.py: 1,297 bytes; ZIP sizes: 4.68–30.13 MB.
+Full checklist: OFFICIAL_READY.md
+Day-of entry: .venv/bin/python scripts/day.py prepare PRESET --out build/official/event-v1 --variant-id ACTUAL_ID
+
+Memory: bounded JSON, full public event deltas, fresh core per decision, no cross-table learning.
+Payouts: actual config overrides defaults; ICM rank basis supports arbitrary payout vectors.
+ICM remains grid/equal-other-stacks approximation; mismatched push/fold charts disabled.
+Frozen releases unchanged. No claim of improved tournament strength.
+Next: read released kit, map exact variant/protocol, official pack/check, 8-seat and no-bank host tests.
+
+GitHub clean-checkout validation: 108 tests passed; all 14 rc2 files verified.
+Rebuilt NLHE from tracked inputs and rehearsed 1,740 decisions with no illegal actions,
+history/statistic mismatches or unexpected memory resets.

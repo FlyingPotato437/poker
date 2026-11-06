@@ -1,5 +1,7 @@
 # Timed rehearsal (60 minutes, both of us, Wi-Fi off)
 
+**Nov 6 preparation:** [OFFICIAL_READY.md](OFFICIAL_READY.md) is the current interface, memory, payout and packaging checklist. Use `scripts/day.py prepare`; older workflows below are historical research instructions. Pre-kit candidates still require the released SDK and variant checks.
+
 This is a dress rehearsal of the build phase against a kit neither of us has seen:
 `examples/kit2/`. It covers:
 

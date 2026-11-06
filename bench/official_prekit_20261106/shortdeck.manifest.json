@@ -1,0 +1,76 @@
+{
+  "chart_iters": 600,
+  "checks": {
+    "agent_bytes": 1297,
+    "entries": 8,
+    "sha256": "28c58f4cd06e2a8e38b160865f6e96dd3f84ae0a9b2ffa7a48ac276e64778c21",
+    "unpacked_bytes": 4830459,
+    "upload_bytes": 4770652
+  },
+  "config": {
+    "default_payouts": [
+      50.0,
+      30.0,
+      20.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hand_cap": 250,
+    "hands_per_level": 20,
+    "kit_verified": false,
+    "max_players_from_deck": 15,
+    "variant": {
+      "ace_low_straight": true,
+      "category_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        5,
+        7,
+        8,
+        9
+      ],
+      "hole_used": null,
+      "n_hole": 2,
+      "name": "shortdeck",
+      "ranks": "6789TJQKA",
+      "streets": [
+        3,
+        1,
+        1
+      ],
+      "suits": 4
+    },
+    "variant_ids": [
+      "shortdeck"
+    ],
+    "variant_rules_verified": false
+  },
+  "files": {
+    "agent.py": "324c19a0cf9493b9ef0b4b0a34d773f44c96ebba6db5b7cb73b7b831209a0efc",
+    "core_runtime.py": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+    "icm_basis.nlb": "2de9bdc70deebc0696279af683ab4f7cf9b9855b14ef302fa7e88130c1cc42eb",
+    "model.json": "2f79a13a471dfe13159ef81827dbc8f3044d7e41fce9e4db5d355914daefa546",
+    "official_adapter.py": "fd33b2b9766b9457fdfb0b3bf0eaea6adf2cc0d1aa1822c43e0f963c24a529c4",
+    "official_payouts.py": "2e66586b1513129f3074f82e8d0b504ee019ddf63bed12e24ae1a0809b69b93c",
+    "params.json": "fe67d788f608e3bbce3e6ed95ae17a9e090ed6fb585f99a6e9025083e12dcec4",
+    "tables.nlb": "ff3f7d728587d5e9a4a90e4af15d51af6643f09786f0be92a27c9822e2613fa6"
+  },
+  "frozen_runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+  "missing_checks": [
+    "actual SDK imports and schema",
+    "announced variant rules and ID",
+    "official pack/check",
+    "official 8-seat simulation",
+    "zero-bank host timing"
+  ],
+  "source": "frozen/rc2/shortdeck_bot.py",
+  "source_sha256": "861963e124817a989868ec17f69e2a8df402776271f00d43d0d949db5e8d1b9b",
+  "status": "PRE_KIT_CANDIDATE"
+}

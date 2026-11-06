@@ -1,5 +1,7 @@
 # Day-of playbook
 
+**Nov 6 preparation:** [OFFICIAL_READY.md](OFFICIAL_READY.md) is the current interface, memory, payout and packaging checklist. Use `scripts/day.py prepare`; older workflows below are historical research instructions. Pre-kit candidates still require the released SDK and variant checks.
+
 **Bay Area Regional, Fri Nov 6**, Sequoia HQ, 2800 Sand Hill Road, Suite 101, Menlo Park.
 Team: Srikanth + Revanth. Doors 5:00 PM, **kickoff 6:00 PM sharp**. Confirm seats by
 **Mon Nov 2, 11:59 PM PT** (draft reply with our rules questions: `organizer_reply.md`).

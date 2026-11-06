@@ -1,4 +1,10 @@
-"""Day-of pipeline, one command per step, so either teammate can run all of it.
+"""Day-of entry point. Use `prepare` for the Nov 6 published interface.
+
+    python scripts/day.py prepare nlhe --out build/official/nlhe-v2
+    python scripts/official.py kit-check build/official/nlhe-v2 --kit /path/to/starter-kit
+
+The older commands below are historical research tooling, require
+--legacy-research, and do NOT produce official-contract-ready submissions.
 
     python scripts/day.py build v0 --preset nlhe --points 100,65,45,30,20,12,6,0 --adapter my_adapter.py
     python scripts/day.py build v0 --heuristic variants/day.json --adapter my_adapter.py   # new variant, no tables yet
@@ -236,7 +242,14 @@ def status():
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--legacy-research", action="store_true", help="enable historical single-file workflow")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("prepare", help="build an explicit-memory, payout-aware, split-file candidate")
+    p.add_argument("preset")
+    p.add_argument("--out", required=True)
+    p.add_argument("--points", default="50,30,20,0,0,0,0,0")
+    p.add_argument("--variant-id", action="append")
+    p.add_argument("--workers", type=int, default=2)
     b = sub.add_parser("build")
     b.add_argument("tag")
     b.add_argument("--preset", default="nlhe")
@@ -258,7 +271,16 @@ def main():
     r.add_argument("tag", nargs="?", help="default: the tag submitted before the current one")
     sub.add_parser("status")
     args = ap.parse_args()
-    if args.cmd == "build":
+    if args.cmd == "prepare":
+        cmd = [PY, "scripts/official.py", "build", "--preset", args.preset,
+               "--out", args.out, "--payouts", args.points, "--workers", str(args.workers)]
+        for variant_id in args.variant_id or []:
+            cmd += ["--variant-id", variant_id]
+        run(cmd)
+    elif args.cmd in ("build", "submit", "rollback") and not args.legacy_research:
+        sys.exit("Old single-file workflow is incompatible with the published Nov 6 interface. "
+                 "Use day.py prepare and scripts/official.py; --legacy-research is for historical replay only.")
+    elif args.cmd == "build":
         build(args)
     elif args.cmd == "submit":
         submit(args.tag, args.name)

@@ -1,4 +1,10 @@
-"""Bundle runtime + tables + tuned params + adapter into one submission file, then smoke-test it.
+"""LEGACY RESEARCH packaging. For Nov 6 uploads use scripts/official.py.
+
+This historical single-file format does not implement the official explicit-memory
+interface and embedded models can exceed the 1 MB agent.py limit. Its smoke test
+is not an official upload check.
+
+Bundle runtime + tables + tuned params + mock adapter into one research file.
 
     python scripts/package_bot.py --bundle bundles/day.nlb --params params/day.json --out dist/bot.py
     python scripts/package_bot.py --variant plo4 --out dist/bot.py          # heuristic, no tables

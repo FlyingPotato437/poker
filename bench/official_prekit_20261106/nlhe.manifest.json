@@ -1,0 +1,76 @@
+{
+  "chart_iters": 600,
+  "checks": {
+    "agent_bytes": 1297,
+    "entries": 8,
+    "sha256": "496438c2fcc90f5320d10513fe34490475db01ae480ebdd7d1c9c27bc6e4a921",
+    "unpacked_bytes": 4907316,
+    "upload_bytes": 4847524
+  },
+  "config": {
+    "default_payouts": [
+      50.0,
+      30.0,
+      20.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hand_cap": 250,
+    "hands_per_level": 20,
+    "kit_verified": false,
+    "max_players_from_deck": 23,
+    "variant": {
+      "ace_low_straight": true,
+      "category_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "hole_used": null,
+      "n_hole": 2,
+      "name": "nlhe",
+      "ranks": "23456789TJQKA",
+      "streets": [
+        3,
+        1,
+        1
+      ],
+      "suits": 4
+    },
+    "variant_ids": [
+      "nlhe"
+    ],
+    "variant_rules_verified": false
+  },
+  "files": {
+    "agent.py": "324c19a0cf9493b9ef0b4b0a34d773f44c96ebba6db5b7cb73b7b831209a0efc",
+    "core_runtime.py": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+    "icm_basis.nlb": "2de9bdc70deebc0696279af683ab4f7cf9b9855b14ef302fa7e88130c1cc42eb",
+    "model.json": "5eb47e1aa488a917e30684daf16a7b95b51c791b23604087571c5827a8546984",
+    "official_adapter.py": "fd33b2b9766b9457fdfb0b3bf0eaea6adf2cc0d1aa1822c43e0f963c24a529c4",
+    "official_payouts.py": "2e66586b1513129f3074f82e8d0b504ee019ddf63bed12e24ae1a0809b69b93c",
+    "params.json": "46b9161aaab5df173994919262465c8e47552742dea902e2547d6fed9da560c2",
+    "tables.nlb": "157c2178541745b5164e51509c5179d4a91e1dafc199f614f57ef0c1564d7ae0"
+  },
+  "frozen_runtime_sha256": "e7bdc69a4843b5072e222c1ff6476c09f1647d276baa844f484f5d2b058cd06b",
+  "missing_checks": [
+    "actual SDK imports and schema",
+    "announced variant rules and ID",
+    "official pack/check",
+    "official 8-seat simulation",
+    "zero-bank host timing"
+  ],
+  "source": "frozen/rc2/nlhe_bot.py",
+  "source_sha256": "8a3af61dca4684fdb4a58377472315f3c56ca41b6bbc146a354221831b808764",
+  "status": "PRE_KIT_CANDIDATE"
+}

@@ -1,5 +1,12 @@
 # nolimit-prep
 
+**November 6 update:** Start with [OFFICIAL_READY.md](OFFICIAL_READY.md) for the
+current memory adapter, per-table payouts, packaging and release checklist.
+Published limits are 50 MB uploaded, 200 MB unpacked and 1 MB for `agent.py`;
+default payouts are 50/30/20 with a 250-hand cap. Use `scripts/day.py prepare`.
+The material below describes the earlier research pipeline. Prepared candidates
+still need the released starter kit, announced variant and official-host checks.
+
 Prep kit for **No Limit: A Bot Building Tournament** (Sequoia / OpenAI / Citadel Securities,
 [rules](https://pokerbot.sequoiacap.com/rules.html)). The variant is secret until the
 build phase, bots get **1 ms per decision in Python**, **100 MB** max, and scoring is

@@ -1,0 +1,19 @@
+{
+  "scope": "published-contract mock, not official SDK/host",
+  "tables": 24,
+  "players": 8,
+  "hero_seats_per_table": 2,
+  "decisions": 5858,
+  "import_s": 0.0732306248974055,
+  "p50_ms": 0.124333,
+  "p99_ms": 0.249709,
+  "p999_ms": 0.283834,
+  "max_ms": 0.32,
+  "over_1ms": 0,
+  "max_memory_bytes": 778,
+  "illegal": 0,
+  "unexpected_memory_resets": 0,
+  "stats_mismatches": 0,
+  "history_mismatches": 0,
+  "mismatch_examples": []
+}

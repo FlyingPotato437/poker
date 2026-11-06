@@ -1,5 +1,7 @@
 # Handoff (Nov 4): state of the bot work and what to run next
 
+**Nov 6 preparation:** [OFFICIAL_READY.md](OFFICIAL_READY.md) is the current interface, memory, payout and packaging checklist. Use `scripts/day.py prepare`; older workflows below are historical research instructions. Pre-kit candidates still require the released SDK and variant checks.
+
 Read this first, then `bench/rc2_results.md`, which has every result, decision rule and
 verdict in order. The `README.md` covers the code layout, `PLAYBOOK.md` the day-of steps,
 and `REHEARSAL.md` the timed drill.

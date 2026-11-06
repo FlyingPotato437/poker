@@ -1,0 +1,76 @@
+{
+  "chart_iters": 600,
+  "checks": {
+    "agent_bytes": 1297,
+    "entries": 8,
+    "sha256": "4f61144668659a72526d963e2a9f432b962e0db9cc7010596e13312e330ca57b",
+    "unpacked_bytes": 7915351,
+    "upload_bytes": 7837886
+  },
+  "config": {
+    "default_payouts": [
+      50.0,
+      30.0,
+      20.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hand_cap": 250,
+    "hands_per_level": 20,
+    "kit_verified": false,
+    "max_players_from_deck": 11,
+    "variant": {
+      "ace_low_straight": true,
+      "category_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "hole_used": 2,
+      "n_hole": 4,
+      "name": "plo4",
+      "ranks": "23456789TJQKA",
+      "streets": [
+        3,
+        1,
+        1
+      ],
+      "suits": 4
+    },
+    "variant_ids": [
+      "plo4"
+    ],
+    "variant_rules_verified": false
+  },
+  "files": {
+    "agent.py": "324c19a0cf9493b9ef0b4b0a34d773f44c96ebba6db5b7cb73b7b831209a0efc",
+    "core_runtime.py": "95b22bbffb8e448208583efc265538159054e596a6e3150f99b44f50ddc9af9f",
+    "icm_basis.nlb": "2de9bdc70deebc0696279af683ab4f7cf9b9855b14ef302fa7e88130c1cc42eb",
+    "model.json": "f8f93cd75b6f47894c4eb67222f8ca35dbc3a53c5047237847e7866bd0b21c49",
+    "official_adapter.py": "fd33b2b9766b9457fdfb0b3bf0eaea6adf2cc0d1aa1822c43e0f963c24a529c4",
+    "official_payouts.py": "2e66586b1513129f3074f82e8d0b504ee019ddf63bed12e24ae1a0809b69b93c",
+    "params.json": "015de3c950ddd95744a160b176db8ef000a282a0626d47211e19320198deab34",
+    "tables.nlb": "8ea3281acc84eb070a1e3d049851b5f5cba7af0634b1198aa9aebb75f8ea6718"
+  },
+  "frozen_runtime_sha256": "95b22bbffb8e448208583efc265538159054e596a6e3150f99b44f50ddc9af9f",
+  "missing_checks": [
+    "actual SDK imports and schema",
+    "announced variant rules and ID",
+    "official pack/check",
+    "official 8-seat simulation",
+    "zero-bank host timing"
+  ],
+  "source": "frozen/rc2/plo4_bot.py",
+  "source_sha256": "f4b5c993440af72ef11bbb075cd7410cc3e9429ada9442db0122899e03b9e639",
+  "status": "PRE_KIT_CANDIDATE"
+}
