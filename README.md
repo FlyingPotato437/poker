@@ -66,7 +66,10 @@ uv pip install --python .venv/bin/python numpy torch pytest
 .venv/bin/python -m pytest -q
 ```
 
-On a CUDA box install the matching torch wheel; `--device auto` picks CUDA, then MPS, then CPU.
+On a CUDA box install the matching torch wheel; `--device auto` picks `$NOLIMIT_DEVICE`, else CUDA, else CPU. MPS is
+opt-in (`--device mps`): with other jobs running it ran out of unified memory mid-build, and
+any CUDA/MPS out-of-memory now falls back to CPU keeping finished stages. On CPU, `best()` uses
+an exact C(D,5) value table (~3.7x faster than `eval5`); `--threads N` caps torch threads.
 
 ## Pipeline
 
