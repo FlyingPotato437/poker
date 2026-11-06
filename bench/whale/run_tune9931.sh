@@ -4,7 +4,6 @@
 set -u
 cd "$(dirname "$0")/../.."
 PY=/Users/revanthguda/poker/.venv/bin/python
-while pgrep -f "ab_test.py|whale_flow.py" > /dev/null; do sleep 15; done
 for V in "$@"; do
   $PY scripts/ab_test.py --bundle bundles/nlhe_rng.nlb --a prep:params/$V.json --b prep:params/cand_nlhe.json \
       --sngs ${SNGS:-600} --payouts default --schedules ${SCHED:-normal} --seed 9931 --no-h2h --workers 4 \

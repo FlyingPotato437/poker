@@ -1,0 +1,13 @@
+A = prep:params/cw_all.json
+B = prep:params/cand_nlhe.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  whale1                    +0.57   1.50          +1.6%   0/0
+default   normal  whale-mirror              +0.40   1.44          +1.1%   0/0
+default   normal  whale2                    +0.35   1.50          +1.0%   0/0
+default   normal  whale-br                  -1.38   1.32          -4.0%   0/0
+default   normal  gate-strong               +1.84   1.21          +5.3%   0/0
+default   normal  rival-strong+prep          +0.90   1.50          +2.6%   0/0
+default   normal  rival-real                -1.73   1.43          -5.0%   0/0
+default   normal  llm-bugs                  -1.06   0.61          -3.0%   0/0
+
+mean over 8 cells: A-B -0.04% of fair (±1.37)  [1109s]

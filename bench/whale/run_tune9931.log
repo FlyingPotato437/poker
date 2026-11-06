@@ -1,0 +1,8 @@
+cw_det done 03:32:54
+cw_all done 03:51:24
+cw_safe done 04:07:00
+cw_boost done 04:36:39
+bench/whale/run_tune9931.sh: line 7: 25204 Terminated: 15          $PY scripts/ab_test.py --bundle bundles/nlhe_rng.nlb --a prep:params/$V.json --b prep:params/cand_nlhe.json --sngs ${SNGS:-600} --payouts default --schedules ${SCHED:-normal} --seed 9931 --no-h2h --workers 4 --fields ${FIELDS:-whale1,whale-mirror,whale2,whale-br,gate-strong,rival-strong+prep,rival-real,llm-bugs} > bench/whale/screen_${V}_9931.txt 2>&1
+cw_f3 done 04:53:33
+bench/whale/run_tune9931.sh: line 7: 32966 Terminated: 15          $PY scripts/ab_test.py --bundle bundles/nlhe_rng.nlb --a prep:params/$V.json --b prep:params/cand_nlhe.json --sngs ${SNGS:-600} --payouts default --schedules ${SCHED:-normal} --seed 9931 --no-h2h --workers 4 --fields ${FIELDS:-whale1,whale-mirror,whale2,whale-br,gate-strong,rival-strong+prep,rival-real,llm-bugs} > bench/whale/screen_${V}_9931.txt 2>&1
+cw_shove done 05:03:09
