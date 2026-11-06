@@ -1,0 +1,7 @@
+A = prep:params/nlhe_final_legacy.json
+B = heur:params/nlhe_final_legacy.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+kit       kit     zoo                      +11.20   2.00         +32.2%   0/0
+kit       kit     h2h 4v4           A 1.051x fair
+
+mean over 1 cells: A-B +32.22% of fair (±5.77)  [79s]

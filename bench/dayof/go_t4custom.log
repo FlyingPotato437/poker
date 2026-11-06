@@ -1,0 +1,61 @@
+[+00:00] go.py variants/examples/custom_7plus_flush.json --adapter examples/adapter_mock_solution.py --tag t4custom --variant-out variants/day_t4custom.json --device cpu   (2026-11-06 04:03:20)
+[+00:00] Game: sevenplus (high, no-limit)
+[+00:00]   deck 8 ranks 789TJQKA x 4 suits = 32 cards; 2 hole cards; board 3+1+1; any 5 of hole+board; ace low yes
+[+00:00]   ranking (weakest first): high < pair < two_pair < trips < straight < full_house < flush < quads < straight_flush < five_kind
+[+00:00]   -> NEW variant (no preset matches)
+[+00:00] Table: 8 players, stack 2000, 9 blind levels every 25 hands (10/20, 15/30, 25/50, 50/100, 75/150, 100/200, ...), hand cap 200
+[+00:00]   ante: none -> push/fold solved at ante 0 bb (no ante)
+[+00:00]   points 1st..last: 100,65,45,30,20,12,6,0
+[+00:00]   time limit 1 ms per decision
+[+00:00] Kit: raise-by, cards 'As' strings, class Bot.get_action, submit as bot.py
+[+00:00] Params for v1: params/ev_t4.json (PARAMS_MAP new_variant.holdem_like)
+[+00:00] PLAN: Kit uses raise-BY: to_obs must give min_raise_to/max_raise_to as raise-TO totals (add the current bet) and to_kit_action must subtract it again.
+[+00:00] variant: writing variants/day_t4custom.json
+[+00:00] $ /Users/revanthguda/poker/.venv/bin/python scripts/variant_stats.py --variant variants/day_t4custom.json --samples 20000
+[+00:05]     sevenplus: deck 32, 2 hole, board (3, 1, 1), hole_used=None
+[+00:05]     category          5-card freq  best at showdown   rank here (0 = weakest)
+[+00:05]     high                  26.060%            0.470%   0
+[+00:05]     pair                  53.515%           17.975%   1
+[+00:05]     two_pair              11.855%           41.090%   2
+[+00:05]     trips                  5.365%            8.025%   3
+[+00:05]     straight               2.335%           19.095%   4
+[+00:05]     full_house             0.650%           10.695%   5
+[+00:05]     flush                  0.115%            1.805%   6
+[+00:05]     quads                  0.095%            0.695%   7
+[+00:05]     straight_flush         0.010%            0.150%   8
+[+00:05]     five_kind              0.000%            0.000%   9
+[+00:05]     -> exit 0 after 6s
+[+00:05] tables: no bundle for this variant -> background build (fast profile, device cpu, ~7 min + ~2 min for the v1 checks on an idle laptop): bench/dayof/go_t4custom_tables.sh
+[+00:05]         progress: tail -f bench/dayof/go_t4custom_tables.log
+[+00:06]         started, pid 13730
+[+00:06] --- t4custom_v0: heuristic tables, exact rules (submittable while tables build) ---
+[+00:06] $ /Users/revanthguda/poker/.venv/bin/python scripts/day.py build t4custom_v0 --adapter examples/adapter_mock_solution.py --sngs 20 --workers 3 --heuristic variants/day_t4custom.json --params params/nlhe_final_legacy.json --kit-cmd '/Users/revanthguda/poker/.venv/bin/python examples/mock_kit.py {bot} 5'
+[+00:06]     heuristic tables: no push/fold charts, so --points/--ante-bb do not apply
+[+00:06]     $ /Users/revanthguda/poker/.venv/bin/python scripts/package_bot.py --params params/nlhe_final_legacy.json --adapter examples/adapter_mock_solution.py --out /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t4custom_v0.py --variant variants/day_t4custom.json
+[+00:06]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t4custom_v0.py (0.1 MB total)
+[+00:07]     smoke ok: variant sevenplus, tables HeuristicTables, numpy False, import 0.22s, worst decision 50.735 ms
+[+00:10]     check numpy   : import 1.18s, peak memory 35.1 MB, 3988 decisions p99 0.107 ms, p99.9 40.969 ms, max 231.33 ms, over 1 ms 10, errors/illegal 0
+[+00:13]     check no numpy: import 0.13s, peak memory 25.1 MB, 3976 decisions p99 0.112 ms, p99.9 25.819 ms, max 85.31 ms, over 1 ms 9, errors/illegal 0
+[+00:16]     10 SNGs: via mock kit 52.4 pts/table, direct 41.0 (similar numbers = adapter maps state correctly)
+[+00:16]     decision parity: 1174/1174 identical to the bot fed our Obs directly
+[+00:16]     
+[+00:16]     $ /Users/revanthguda/poker/.venv/bin/python scripts/freeze.py --tag t4custom_v0 --files /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/dist/day/t4custom_v0.py
+[+00:16]     t4custom_v0.py                       0.1 MB  fbe099e1a7cd  params ['params/nlhe_final_legacy.json']  bundle os.environ.setdefault('NOLIMIT_VARIANT', '{"name":"sevenplus","ranks":"789TJQKA","suits":4,"n_hole":2,"streets":[3,1,1],"hole_used":null,"category_order":[0,1,2,3,4,6,5,7,8,9],"ace_low_straight":true}')  adapter other
+[+00:16]     wrote /Users/revanthguda/poker/.claude/worktrees/agent-af59e2c142ba83ca8/frozen/t4custom_v0/MANIFEST.json
+[+00:16]     WARNING: more than 2 decisions per 1000 over 1 ms
+[+00:16]     
+[+00:16]     built and froze t4custom_v0 in 10s, sha fbe099e1a7cd. To submit: python scripts/day.py submit t4custom_v0
+[+00:16]     -> exit 0 after 10s
+[+00:16] *** t4custom_v0 READY: python scripts/day.py submit t4custom_v0 --as bot.py
+[+00:16] 
+[+00:16] === COPY THESE ===
+[+00:16] python scripts/day.py submit t4custom_v0 --as bot.py     # then upload dist/SUBMIT/bot.py
+[+00:16] # t4custom_v1 builds itself when the tables finish (ETA ~7 min); watch for GO_TABLES_DONE in: tail -f bench/dayof/go_t4custom_tables.log
+[+00:16] python scripts/day.py submit t4custom_v1 --as bot.py     # once it says 't4custom_v1 built'
+[+00:16] # if the background chain stopped after range_eq, build v1 by hand:
+[+00:16]   .venv/bin/python scripts/day.py build t4custom_v1 --adapter examples/adapter_mock_solution.py --sngs 20 --workers 3 --bundle bundles/day/t4custom_base_rng.nlb --params params/ev_t4.json --points 100,65,45,30,20,12,6,0 --ante-bb 0.0 --kit-cmd '.venv/bin/python examples/mock_kit.py {bot} 5'
+[+00:16] python scripts/day.py rollback                          # back to the previous submission (sha-checked)
+[+00:16] python scripts/day.py status                            # what is live
+[+00:16] # A/B gate v1 vs v0 under the kit's rules (~400 paired SNGs):
+[+00:16]   .venv/bin/python scripts/ab_test.py --bundle bundles/day/t4custom_v1.nlb --keep-bundle --a prep:params/ev_t4.json --b heur:params/nlhe_final_legacy.json --sngs 400 --workers 3 --points 100,65,45,30,20,12,6,0 --fields zoo,passive,aggressive --schedule 10/20,15/30,25/50,50/100,75/150,100/200,150/300,200/400,300/600 --hands-per-level 25 --stack 2000 --max-hands 200
+[+00:16] log: bench/dayof/go_t4custom.log
