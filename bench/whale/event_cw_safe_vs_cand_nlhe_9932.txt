@@ -1,3 +1,13 @@
 A = prep:params/cw_safe.json
 B = prep:params/cand_nlhe.json
 points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  whale-event               -0.66   0.95          -1.9%   0/0
+default   normal  whale-event-cfr           -1.91   0.82          -5.5%   0/0
+default   normal  whale-event-br            -0.38   0.88          -1.1%   0/0
+default   normal  event                     -1.81   0.82          -5.2%   0/0
+default   fast    whale-event               -0.27   0.51          -0.8%   0/0
+default   fast    whale-event-cfr           -0.95   0.47          -2.7%   0/0
+default   fast    whale-event-br            +0.49   0.49          +1.4%   0/0
+default   fast    event                     -0.28   0.51          -0.8%   0/0
+
+mean over 8 cells: A-B -2.08% of fair (±0.72)  [1031s]
