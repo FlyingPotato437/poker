@@ -86,3 +86,22 @@ def test_cap_fade_counts_hands(T):
     assert bot._nh == 20 and bot.p["risk_av"] == 0.0
     bot._unfade()
     assert bot.p["risk_av"] == 1.0
+
+
+@need_bundle
+def test_pre_mw_behind(T):
+    # 6-handed, 100 bb: CO (seat 2) opens to 3 bb, hero on the button (seat 3) with JJ, blinds behind.
+    hist = ((4, 0, POST, 10, False), (5, 0, POST, 20, False), (0, 0, FOLD, 0, False),
+            (1, 0, FOLD, 0, False), (2, 0, RAISE, 60, False))
+    obs = Obs(hole=hole(T, "JhJd"), board=(), street=0, seat=3, button=3,
+              stacks=(2000, 2000, 1940, 2000, 1990, 1980), bets=(0, 0, 60, 0, 10, 20),
+              in_hand=(False, False, True, True, True, True), pot=90, to_call=60, min_raise_to=100,
+              max_raise_to=2000, sb=10, bb=20, ante=0, hand_no=5, history=hist)
+    acts = []
+    for w in (None, 1.0, 0.0):
+        bot = PrepBot(T, None if w is None else {"pre_mw_behind": w}, seed=1)
+        bot.new_table(3, 6)
+        acts.append(bot.act(obs))
+    # Default counts the blinds still to act as already in the pot and folds JJ; 0 counts only the opener.
+    assert acts[0] == acts[1] == (FOLD, 0)
+    assert acts[2][0] == RAISE

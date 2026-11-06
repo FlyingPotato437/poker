@@ -1119,6 +1119,7 @@ DEFAULT_PARAMS = {
     "mw_behind": 0.0,         # equity tax per player still to act behind a shove call
     "cap_fade": 0.0,          # over the last this many hands before the cap, fade risk_av to 0
     "cap_hands": 200.0,       # ... and pf_shove_scale to 1 (hand cap of the tournament)
+    "pre_mw_behind": 1.0,     # facing a raise: weight of opponents yet to act in the multiway equity tax (1 = old)
 }
 
 PARAM_SPACE = {
@@ -1142,6 +1143,7 @@ PARAM_SPACE = {
     "resteal_on": (0.0, 2.0), "resteal_call": (0.3, 3.0), "resteal_margin": (-0.1, 0.3),
     "sh_open": (0.0, 1.0), "sh_open_scale": (0.6, 1.5), "hu_sb_play": (0.0, 1.0),
     "mw_call": (0.0, 1.0), "mw_behind": (0.0, 0.05), "cap_fade": (0.0, 60.0), "cap_hands": (100.0, 400.0),
+    "pre_mw_behind": (0.0, 1.0),
 }
 # The EV engine is a mode switch, not something to search over; nor are the preflop feature
 # switches or the tournament's hand cap.
@@ -1582,6 +1584,11 @@ class PrepBot(BotBase):
         y = _clamp(y, 0.01, 1.0)
         eq = T.eq_vs_range(cls, y)
         n_live = len(opps)
+        if p["pre_mw_behind"] != 1.0:
+            # Seats still to act have not entered the pot yet; weight them, not count them in.
+            acted = {h[0] for h in obs.history if h[1] == 0 and h[2] in (CALL, RAISE)}
+            n_in = sum(1 for s in opps if s in acted)
+            n_live = n_in + p["pre_mw_behind"] * (len(opps) - n_in)
         if n_live > 1:
             eq = eq ** (1 + 0.6 * (n_live - 1))
         pot_odds = obs.to_call / max(obs.pot + obs.to_call, 1)
