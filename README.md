@@ -92,7 +92,7 @@ On a CUDA box install the matching torch wheel; `--device auto` picks CUDA, then
 
 ```bash
 # 5. Check latency, then package and smoke-test the submission
-.venv/bin/python scripts/bench_latency.py --bundle bundles/nlhe_rng.nlb --params params/nlhe.json --no-numpy --gc freeze
+.venv/bin/python scripts/bench_latency.py --bundle bundles/nlhe_rng.nlb --params params/nlhe.json --no-numpy --gc settle
 ```
 
 ```bash
@@ -135,7 +135,8 @@ from their actions. In order, for one decision:
    Tables are precomputed per points table (2,527 spots in 0.7 s); the lookup is O(1).
 7. **Never crashes, never illegal:** any internal exception becomes check/fold, and every
    action passes through `legalize()`. Bundle loads once per process, `warmup()` runs 300
-   synthetic decisions at import, then `gc.freeze()`.
+   synthetic decisions at import, then `gc_settle()` (collect, freeze, automatic GC off; each
+   new table collects and freezes before its first decision).
 
 Two network sizes: big nets when numpy exists (postflop 1024×512, range 1024×512), 64×32
 nets when it doesn't, so pure Python stays under 1 ms. With `ev_post=0` the bot uses the

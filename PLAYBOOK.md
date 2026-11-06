@@ -145,7 +145,7 @@ hand.
   deadline guard caps slow decisions. If the kit's simulator shows latency spikes with
   numpy, rebuild with `--pure-python`:
   ```bash
-  .venv/bin/python scripts/bench_latency.py --bundle bundles/day_rng.nlb --params params/day.json --no-numpy --gc freeze
+  .venv/bin/python scripts/bench_latency.py --bundle bundles/day_rng.nlb --params params/day.json --no-numpy --gc settle
   ```
   ```bash
   .venv/bin/python scripts/package_bot.py --bundle bundles/day_rng.nlb --params params/day.json --adapter my_adapter.py --out dist/day_v2.py
