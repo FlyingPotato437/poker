@@ -466,7 +466,7 @@ def day_build(tag, adapter, kit_cmd, spec, sngs, workers, extra):
     return cmd
 
 
-def table_script(tag, vpath, spec, params, adapter, kit_cmd, profile, sngs, workers):
+def table_script(tag, vpath, spec, params, adapter, kit_cmd, profile, sngs, workers, device="auto"):
     """Background chain: build_tables -> range_eq -> day.py build <tag>_v1."""
     base = f"bundles/day/{tag}_base.nlb"
     rng = f"bundles/day/{tag}_base_rng.nlb"
@@ -475,15 +475,16 @@ def table_script(tag, vpath, spec, params, adapter, kit_cmd, profile, sngs, work
     prof_re = ["--laptop"] if profile == "laptop" else ["--laptop"] + FAST_RE
     q = lambda c: " ".join(shlex.quote(x) for x in c)  # noqa: E731
     bt = [PY, "-m", "gpu.build_tables", "--variant", vpath, "--out", base, "--work", work, "--skip", "pushfold",
-          "--payouts", pts_arg(spec)] + prof_bt
-    re = [PY, "-m", "gpu.range_eq", "--bundle", base, "--out", rng, "--work", work] + prof_re
+          "--payouts", pts_arg(spec), "--device", device] + prof_bt
+    re = [PY, "-m", "gpu.range_eq", "--bundle", base, "--out", rng, "--work", work, "--device", device] + prof_re
     v1 = day_build(f"{tag}_v1", adapter, kit_cmd, spec, sngs, workers,
                    ["--bundle", rng, "--params", params, "--points", pts_arg(spec), "--ante-bb", str(spec["ante_bb"])])
     lines = [
         "#!/bin/bash",
         f"# go.py background table build for {tag} ({profile} profile)",
         f"cd {shlex.quote(ROOT)}",
-        f"export OMP_NUM_THREADS={workers} MKL_NUM_THREADS={workers} PYTORCH_ENABLE_MPS_FALLBACK=1 PYTHONUNBUFFERED=1",
+        f"export OMP_NUM_THREADS={workers} MKL_NUM_THREADS={workers} PYTORCH_ENABLE_MPS_FALLBACK=1 PYTHONUNBUFFERED=1"
+        + (f" NOLIMIT_DEVICE={shlex.quote(device)}" if device != "auto" else ""),
         "set -e",
         "T0=$(date +%s); el() { echo \"[go +$(( ($(date +%s) - T0) / 60 ))m$(( ($(date +%s) - T0) % 60 ))s] $*\"; }",
         "el build_tables start",
@@ -521,6 +522,9 @@ def main(argv=None):
     ap.add_argument("--variant-out", default=os.path.join("variants", "day.json"))
     ap.add_argument("--sngs", type=int, default=20, help="SNGs per day.py check (2 seats each)")
     ap.add_argument("--workers", type=int, default=3, help="CPU workers/threads for builds")
+    ap.add_argument("--device", default=os.environ.get("NOLIMIT_DEVICE") or "auto",
+                    help="torch device for the table build, passed to build_tables/range_eq --device "
+                         "(default: $NOLIMIT_DEVICE, else auto = gpu/'s own choice)")
     ap.add_argument("--foreground-tables", action="store_true", help="wait for the table build (tests/timing)")
     args = ap.parse_args(argv)
 
@@ -598,13 +602,13 @@ def main(argv=None):
     if not has_bundle:
         eta = eta_minutes(vd, args.tables)
         script, v1_cmd, rng = table_script(args.tag, vpath, spec, params, adapter, kit_cmd, args.tables,
-                                           args.sngs, args.workers)
+                                           args.sngs, args.workers, args.device)
         spath = os.path.join(ROOT, "bench", "dayof", f"go_{args.tag}_tables.sh")
         bg_log = os.path.join("bench", "dayof", f"go_{args.tag}_tables.log")
         with open(spath, "w") as fh:
             fh.write(script)
         os.chmod(spath, 0o755)
-        log(f"tables: no bundle for this variant -> background build ({args.tables} profile, "
+        log(f"tables: no bundle for this variant -> background build ({args.tables} profile, device {args.device}, "
             f"~{eta:.0f} min + ~2 min for the v1 checks on an idle laptop): {os.path.relpath(spath, ROOT)}")
         log(f"        progress: tail -f {bg_log}")
         if args.foreground_tables:
