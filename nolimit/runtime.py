@@ -994,6 +994,17 @@ DEFAULT_PARAMS = {
     "risk_av": 0.0,           # survival premium over ICM: losses x (1 + risk_av * share of stack)^2
     "risk_depth": 0.0,        # premium fades below this many big blinds (0 = never fades)
     "pool_w": 0.0,            # unknown seats start from the table's pooled stats (0 = fixed PRIORS)
+    # short-stack / short-handed preflop (all off by default: 0 reproduces the older play)
+    "resteal_on": 0.0,        # >= 0.5: vs one non-all-in open in push/fold, jam on jam EV
+    "resteal_call": 1.0,      # scales how often the opener calls the jam (shove/pfr estimate)
+    "resteal_margin": 0.0,    # jam EV must beat folding by this share of the pot
+    "sh_open": 0.0,           # blend opens toward max(old, curve by players behind)
+    "sh_open_scale": 1.0,     # scales that curve (7 behind 14% ... 1 behind 50%)
+    "hu_sb_play": 0.0,        # > 0: heads-up SB completes up to this share of hands
+    "mw_call": 0.0,           # >= 0.5: multiway shove calls on equity vs every committed range
+    "mw_behind": 0.0,         # equity tax per player still to act behind a shove call
+    "cap_fade": 0.0,          # over the last this many hands before the cap, fade risk_av to 0
+    "cap_hands": 200.0,       # ... and pf_shove_scale to 1 (hand cap of the tournament)
 }
 
 PARAM_SPACE = {
@@ -1014,9 +1025,15 @@ PARAM_SPACE = {
     "cont_b4": (-3.0, 3.0), "call_width": (0.5, 2.5), "raise_cont": (0.5, 1.6),
     "realize_chk": (0.6, 1.1), "ev_margin": (-0.05, 0.2), "call_ev_margin": (-0.1, 0.4),
     "risk_av": (0.0, 3.0), "risk_depth": (0.0, 60.0), "pool_w": (0.0, 1.0),
+    "resteal_on": (0.0, 1.0), "resteal_call": (0.3, 3.0), "resteal_margin": (-0.1, 0.3),
+    "sh_open": (0.0, 1.0), "sh_open_scale": (0.6, 1.5), "hu_sb_play": (0.0, 1.0),
+    "mw_call": (0.0, 1.0), "mw_behind": (0.0, 0.05), "cap_fade": (0.0, 60.0), "cap_hands": (100.0, 400.0),
 }
-# The EV engine is a mode switch, not something to search over.
-TUNE_EXCLUDE = ("ev_post",)
+# The EV engine is a mode switch, not something to search over; nor are the preflop feature
+# switches or the tournament's hand cap.
+TUNE_EXCLUDE = ("ev_post", "resteal_on", "mw_call", "cap_hands")
+# Open-raise share by number of players still to act behind (short-handed opening, sh_open).
+SH_OPEN = (0.50, 0.50, 0.42, 0.28, 0.23, 0.19, 0.16, 0.14)
 POST_SIZES = (0.33, 0.66, 1.0, 1.5)    # bet sizes, fractions of the pot
 RAISE_SIZES = (0.8, 1.3)               # raise sizes, fractions of the pot after calling
 PO_REF = 0.65 / 2.3                    # pot odds of the 0.65-pot bets the stats mostly see
@@ -1097,9 +1114,45 @@ class PrepBot(BotBase):
         self._ingested_keys = set()
         self._cls = None
         self._ex_cache = {}      # seat -> (hands seen, lam) for the exploitation rule
+        self._nh = 0             # hands seen at this table (own count: hand ids may be anything)
+        self._hn_seen = set()
+        self._unfaded = None     # the params under the cap fade, while it is active
+        self._fade_cache = {}
+
+    def _count_hand(self, hand_no, new_key=False):
+        if hand_no not in self._hn_seen:
+            self._hn_seen.add(hand_no)
+            self._nh += 1
+        elif new_key:            # the host reuses one id for every hand: count new deals
+            self._nh += 1
+
+    def _unfade(self):
+        if self._unfaded is not None:
+            self.p, self._unfaded = self._unfaded, None
+
+    def _cap_fade(self):
+        """Near the hand cap the survivors are paid by ICM and there are few hands left to
+        use an edge in: fade the survival premium to 0 and the shove scale to the chart."""
+        p = self.p
+        k = p["cap_fade"]
+        t = (self._nh - (p["cap_hands"] - k)) / k
+        if t <= 0:
+            return
+        t = min(t, 1.0)
+        key = (id(p), round(t, 3))
+        q = self._fade_cache.get(key)
+        if q is None:
+            q = dict(p)
+            q["risk_av"] = p["risk_av"] * (1.0 - t)
+            q["pf_shove_scale"] = 1.0 + (p["pf_shove_scale"] - 1.0) * (1.0 - t)
+            self._fade_cache[key] = q
+        self._unfaded, self.p = p, q
 
     def observe(self, event):
         kind, info = event
+        self._unfade()
+        if kind == "hand_end":
+            self._count_hand(info["hand_no"])
         if kind == "hand_end" and info["hand_no"] not in self._ingested:
             self._ingested.add(info["hand_no"])
             ingest_history(self.stats, info["history"])
@@ -1118,10 +1171,12 @@ class PrepBot(BotBase):
 
     # -----------------------------------------------------------------------
     def _act(self, obs):
+        self._unfade()
         if len(self.stats) != len(obs.stacks):
             self.new_table(obs.seat, len(obs.stacks))
         key = (obs.hand_no, tuple(obs.hole))
         if key != self._hand_key:
+            self._count_hand(obs.hand_no, self._hand_key is not None and self._hand_key[0] == obs.hand_no)
             # Fall back to our own partial view if the host never sent hand_end.
             prev = self._hand_key
             if prev is not None and prev[0] not in self._ingested and prev not in self._ingested_keys:
@@ -1136,6 +1191,8 @@ class PrepBot(BotBase):
         self.seat = obs.seat
         if self._ex:
             self.p = self._ex_levels[self._ex_level(obs)]
+        if self.p["cap_fade"] > 0:
+            self._cap_fade()
         if obs.street == 0:
             return self._preflop(obs)
         return self._postflop(obs)
@@ -1277,6 +1334,11 @@ class PrepBot(BotBase):
                 return self._raise(obs, 3 * obs.bb + limpers * obs.bb) if pct <= p["iso_pct"] else (CALL, 0)
             n_others = max(len(order) - 1, 1)
             thr = p["open_base"] + (p["open_late"] - p["open_base"]) * (1 - len(behind) / n_others)
+            if p["sh_open"] > 0:
+                # The old rule keys on the share of the table behind, so heads-up SB and a
+                # 3-handed button open like UTG; key on how many are left to act instead.
+                cur = SH_OPEN[min(len(behind), len(SH_OPEN) - 1)] * p["sh_open_scale"]
+                thr += p["sh_open"] * (max(thr, cur) - thr)
             if limpers:
                 thr = p["iso_pct"]
             if behind:
@@ -1285,7 +1347,10 @@ class PrepBot(BotBase):
                 thr = min(1.0, thr * (PRIORS["vpip"] / max(vp, 0.05)) ** (0.5 * p["steal_exploit"]))
             if pct <= thr:
                 return self._raise(obs, p["open_bb"] * obs.bb + limpers * obs.bb)
-            if limpers == 0 and obs.to_call <= obs.bb // 2 + 1 and pct <= p["sb_complete_pct"]:
+            comp = p["sb_complete_pct"]
+            if p["hu_sb_play"] > 0 and len(order) == 2:
+                comp = p["hu_sb_play"]
+            if limpers == 0 and obs.to_call <= obs.bb // 2 + 1 and pct <= comp:
                 return (CALL, 0)
             return (FOLD, 0)
 
@@ -1331,6 +1396,9 @@ class PrepBot(BotBase):
             return (FOLD, 0)
 
         shover = raises[-1][0]
+        if (p["resteal_on"] >= 0.5 and len(raises) == 1 and not raises[-1][4]
+                and obs.min_raise_to > 0 and obs.to_call < obs.stacks[me]):
+            return self._resteal(obs, cls, shover)
         spos = order.index(shover) if shover in order else 0
         need = self._need(obs, shover, None) + p["pf_margin"]
         if obs.to_call >= obs.stacks[me] and not getattr(T, "has_bf", False):
@@ -1344,11 +1412,75 @@ class PrepBot(BotBase):
         else:
             call = pct <= thr * p["pf_call_scale"]
         n_in = sum(1 for s in order if obs.in_hand[s] and s != me)
-        if n_in > 1:
+        if n_in > 1 and p["mw_call"] >= 0.5:
+            cur = max(obs.bets)
+            others = [s for s in order if obs.in_hand[s] and s != me and s != shover]
+            done = [s for s in others if obs.bets[s] >= cur or obs.stacks[s] == 0]
+            k_act = len(others) - len(done)
+            if done:
+                # Equity vs every range already in, corrected for multiway the way the
+                # postflop engine does: eq vs k random hands over (eq vs one)^k.
+                y = _clamp(max(st.rate("shove"), st.rate("pfr") * 0.8) * 1.5, 0.02, 1.0)
+                eq = T.eq_vs_range(cls, y)
+                for s in done:
+                    o = self.stats[s]
+                    eq *= T.eq_vs_range(cls, _clamp(max(o.rate("shove"), o.rate("pfr") * 0.8) * 1.05, 0.02, 1.0))
+                k = len(done) + 1
+                e1 = T.eq(cls, 1)
+                eq = min(1.0, eq * T.eq(cls, k) / max(e1 ** k, 1e-6))
+                call = eq - p["mw_behind"] * k_act >= need
+            elif thr is None or st.hands >= 12:
+                call = call and T.eq_vs_range(cls, y) - p["mw_behind"] * k_act >= need
+        elif n_in > 1:
             call = call and T.eq_vs_range(cls, 0.08) >= 0.5
         if not call:
             return (FOLD, 0)
         return self._shove(obs) if obs.min_raise_to > 0 else (CALL, 0)
+
+    def _resteal(self, obs, cls, opener):
+        """Jam or fold vs one open that is not all-in, on the EV of the jam:
+        sum over who calls of P * (eq * (pot + their call) - (1 - eq) * our risk * BF),
+        plus P(all fold) * pot. The opener calls with the top share of their open range
+        (shove rate over raise rate, both shrunk to the priors, scaled by the price they
+        get); anyone else in calls with a tight range."""
+        p, T, me = self.p, self.T, obs.seat
+        stacks, bets = obs.stacks, obs.bets
+        pot = obs.pot
+        mine = stacks[me] + bets[me]
+        total = sum(stacks) + max(pot, sum(bets))
+        n_alive = sum(1 for s in range(len(stacks)) if stacks[s] + bets[s] > 0 or obs.in_hand[s])
+        w_icm = p["icm_weight"]
+
+        def ev_called(s, y):
+            theirs = stacks[s] + bets[s]
+            eff = min(mine, theirs)
+            risk = max(eff - bets[me], 0)
+            gain = pot + max(eff - bets[s], 0)
+            eq = T.eq_vs_range(cls, y)
+            bf = T.bubble_factor(n_alive, mine / max(total, 1), theirs / max(total, 1), risk / max(eff, 1))
+            bf = 1.0 if bf is None else 1.0 + w_icm * (bf - 1.0)
+            return eq * gain - (1.0 - eq) * risk * bf
+
+        st = self.stats[opener]
+        y_open = _clamp(st.rate("pfr"), 0.01, 1.0)
+        theirs = stacks[opener] + bets[opener]
+        eff = min(mine, theirs)
+        v_add = max(eff - bets[opener], 0)
+        need_v = v_add / max(pot + v_add + max(eff - bets[me], 0), 1)
+        c = st.rate("shove") / max(st.rate("pfr"), 0.01)
+        c = _clamp(c * p["resteal_call"] * 0.41 / max(need_v, 0.05), 0.05, 1.0)
+        ev = c * ev_called(opener, y_open * c)
+        fold_all = 1.0 - c
+        for s in range(len(stacks)):
+            if s == me or s == opener or not obs.in_hand[s] or stacks[s] + bets[s] <= 0:
+                continue
+            yb = _clamp(self.stats[s].rate("pfr") * 0.25, 0.01, 0.2)
+            ev += (1.0 - c) * yb * ev_called(s, yb)
+            fold_all *= 1.0 - yb
+        ev += fold_all * pot
+        if ev > p["resteal_margin"] * pot:
+            return self._shove(obs)
+        return (FOLD, 0)
 
     def _postflop(self, obs):
         if self.T.has_rng and self.p["ev_post"] >= 0.5:
