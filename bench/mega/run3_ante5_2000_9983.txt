@@ -1,0 +1,10 @@
+A = prep:params/cand_nlhe.json
+B = prep:params/ev_t4.json
+points    blinds  field             A-B pts/table    ±se  A-B % of fair   errors A/B
+default   normal  rival-real                +5.20   0.88         +15.0%   0/0
+default   normal  github                    +6.24   0.80         +17.9%   0/0
+default   normal  gate-mixed                +4.41   0.73         +12.7%   0/0
+default   normal  rival-strong+prep          +1.91   0.86          +5.5%   0/0
+default   normal  h2h 4v4           A 0.953x fair
+
+mean over 4 cells: A-B +12.77% of fair (±1.18)  [1179s]
