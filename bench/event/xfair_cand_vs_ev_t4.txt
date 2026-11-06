@@ -1,0 +1,21 @@
+A = prep:params/cand_nlhe.json
+B = prep:params/ev_t4.json
+blinds  style         A xfair   ±se  B xfair   ±se  A-B %fair   ±se
+normal  ev_codex_tag    1.403 0.044    1.283 0.045     +12.0%   5.0
+normal  ev_ghcp_fastrange    1.879 0.043    1.787 0.043      +9.1%   4.4
+normal  ev_pushfold4    1.511 0.042    1.401 0.042     +11.0%   4.8
+normal  ev_mc_mwbug     2.185 0.034    2.124 0.035      +6.1%   3.7
+normal  ev_strong1      1.552 0.046    1.537 0.046      +1.6%   5.5
+normal  ev_reshover     1.308 0.042    1.262 0.039      +4.6%   4.3
+normal  ev_policybot    1.382 0.048    1.235 0.047     +14.7%   5.0
+normal  ev_cfr_pushfold    1.411 0.045    1.251 0.045     +16.0%   4.9
+normal  ev_gunslinger    1.811 0.039    1.733 0.039      +7.7%   3.7
+fast    ev_codex_tag    1.155 0.040    1.048 0.040     +10.7%   4.2
+fast    ev_ghcp_fastrange    1.428 0.043    1.378 0.044      +5.0%   4.3
+fast    ev_pushfold4    1.120 0.039    0.998 0.038     +12.2%   3.9
+fast    ev_mc_mwbug     1.747 0.035    1.681 0.034      +6.6%   3.3
+fast    ev_strong1      1.209 0.042    1.252 0.042      -4.3%   4.7
+fast    ev_reshover     1.174 0.035    1.138 0.035      +3.6%   3.9
+fast    ev_policybot    1.132 0.044    1.077 0.045      +5.5%   4.4
+fast    ev_cfr_pushfold    1.022 0.040    0.927 0.040      +9.6%   3.9
+fast    ev_gunslinger    1.514 0.040    1.499 0.040      +1.5%   3.7
