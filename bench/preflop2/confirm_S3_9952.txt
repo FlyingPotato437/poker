@@ -1,0 +1,26 @@
+== S3
+default   normal  gate-weak                 +0.80   0.28          +2.3%   0/0
+default   normal  gate-strong               +0.39   0.38          +1.1%   0/0
+default   normal  gate-mixed                +0.76   0.39          +2.2%   0/0
+default   normal  rival-strong              -0.09   0.40          -0.3%   0/0
+default   normal  rival-strong+prep          +0.74   0.40          +2.1%   0/0
+default   normal  rival-real                -0.52   0.48          -1.5%   0/0
+default   normal  llm-bugs                  +0.02   0.39          +0.1%   0/0
+default   normal  github                    +0.73   0.40          +2.1%   0/0
+default   normal  event                     +0.42   0.42          +1.2%   0/0
+default   normal  event+prep                +0.21   0.44          +0.6%   0/0
+default   normal  h2h 4v4           A 0.988x fair
+default   fast    gate-weak                 +0.39   0.26          +1.1%   0/0
+default   fast    gate-strong               +0.01   0.25          +0.0%   0/0
+default   fast    gate-mixed                +0.05   0.27          +0.1%   0/0
+default   fast    rival-strong              +0.35   0.29          +1.0%   0/0
+default   fast    rival-strong+prep          -0.01   0.25          -0.0%   0/0
+default   fast    rival-real                +0.39   0.34          +1.1%   0/0
+default   fast    llm-bugs                  +0.46   0.28          +1.3%   0/0
+default   fast    github                    +0.61   0.37          +1.7%   0/0
+default   fast    event                     +0.17   0.29          +0.5%   0/0
+default   fast    event+prep                +0.12   0.28          +0.3%   0/0
+default   fast    h2h 4v4           A 1.001x fair
+
+mean over 20 cells: A-B +0.86% of fair (±0.23)  [2196s]
+DONE
