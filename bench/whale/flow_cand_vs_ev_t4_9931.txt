@@ -1,0 +1,20 @@
+
+== whale1 (normal), 1500 SNGs, whales ['strong_eq']; points per table (x fair) and chips per table won from (+) / lost to (-)
+  A=prep:params/cand_nlhe.json: us 1.697x (±0.027)  whale/seat 1.295x (±0.023)  weak/seat 0.835x (±0.005)   chips/table: us<-whale +593  us<-weak +3692  whale<-weak +1368
+  B=prep:params/ev_t4.json: us 1.602x (±0.028)  whale/seat 1.270x (±0.023)  weak/seat 0.855x (±0.005)   chips/table: us<-whale +565  us<-weak +3185  whale<-weak +1239
+  whale points with A minus with B (paired): +0.85 ±0.85 pts/table
+
+== whale-mirror (normal), 1500 SNGs, whales ['prep:whale_mirror']; points per table (x fair) and chips per table won from (+) / lost to (-)
+  A=prep:params/cand_nlhe.json: us 1.477x (±0.026)  whale/seat 1.542x (±0.027)  weak/seat 0.830x (±0.005)   chips/table: us<-whale -67  us<-weak +2732  whale<-weak +3181
+  B=prep:params/ev_t4.json: us 1.446x (±0.026)  whale/seat 1.580x (±0.027)  weak/seat 0.829x (±0.005)   chips/table: us<-whale +24  us<-weak +2416  whale<-weak +3396
+  whale points with A minus with B (paired): -1.31 ±0.97 pts/table
+
+== whale2 (normal), 1500 SNGs, whales ['prep:whale_mirror', 'strong_eq']; points per table (x fair) and chips per table won from (+) / lost to (-)
+  A=prep:params/cand_nlhe.json: us 1.498x (±0.027)  whale/seat 1.283x (±0.015)  weak/seat 0.787x (±0.006)   chips/table: us<-whale +402  us<-weak +2429  whale<-weak +2844
+  B=prep:params/ev_t4.json: us 1.401x (±0.027)  whale/seat 1.309x (±0.015)  weak/seat 0.796x (±0.006)   chips/table: us<-whale +516  us<-weak +1979  whale<-weak +3130
+  whale points with A minus with B (paired): -1.87 ±1.12 pts/table
+
+== whale-br (normal), 1500 SNGs, whales ['prep:whale_br']; points per table (x fair) and chips per table won from (+) / lost to (-)
+  A=prep:params/cand_nlhe.json: us 1.544x (±0.026)  whale/seat 1.429x (±0.027)  weak/seat 0.838x (±0.005)   chips/table: us<-whale -461  us<-weak +3223  whale<-weak +2100
+  B=prep:params/ev_t4.json: us 1.458x (±0.026)  whale/seat 1.387x (±0.026)  weak/seat 0.859x (±0.005)   chips/table: us<-whale -191  us<-weak +2650  whale<-weak +2004
+  whale points with A minus with B (paired): +1.46 ±0.99 pts/table

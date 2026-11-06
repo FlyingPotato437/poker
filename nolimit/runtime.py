@@ -1243,7 +1243,7 @@ class PrepBot(BotBase):
             # extra caution (taxes below), pots without it while one sits at the table may play
             # past the exploit params (boost), and a strong seat's measurable over-folding to
             # 3-bets is attacked. Keys (defaults = no effect): n, p_max, vpip (lo, hi), pfr_r,
-            # agg (lo, hi), ftb (lo, hi), ai_max, boost, steal, pf_tax, pre_tax, call_tax,
+            # agg (lo, hi), ftb (lo, hi), ai_max, boost, steal, shove, pf_tax, pre_tax, call_tax,
             # cont, f3_thr, f3_k, f3_n, lam0.
             sg = ex.get("strong")
             self._sg = dict(sg) if sg else None
@@ -1699,6 +1699,8 @@ class PrepBot(BotBase):
                 call_rate = sum(self.stats[s].rate("vpip") for s in behind) / len(behind)
                 thr *= (PRIORS["vpip"] / max(call_rate, 0.05)) ** (0.5 * p["pf_exploit"])
             thr = _clamp(thr * p["pf_shove_scale"], 0.0, 1.0)
+            if self._sg_in and any(s in self._sg_in for s in behind):
+                thr *= self._sg.get("shove", 1.0)       # a strong seat behind calls correctly
             if obs.to_call == 0:
                 # Limped to the big blind: shove for value only.
                 return self._shove(obs) if pct <= thr * 0.6 else (CALL, 0)

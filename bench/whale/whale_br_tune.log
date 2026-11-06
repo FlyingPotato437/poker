@@ -1,0 +1,9 @@
+gen  1/8: mean-params  35.72 (±2.35)  best  48.02  elite avg  41.98  sigma 0.187  (192s)
+gen  2/8: mean-params  40.34 (±2.51)  best  48.54  elite avg  46.03  sigma 0.148  (216s)
+gen  3/8: mean-params  46.07 (±2.45)  best  51.67  elite avg  48.91  sigma 0.120  (140s)
+gen  4/8: mean-params  45.64 (±2.58)  best  53.05  elite avg  50.20  sigma 0.106  (119s)
+gen  5/8: mean-params  47.76 (±2.76)  best  50.60  elite avg  49.98  sigma 0.094  (121s)
+gen  6/8: mean-params  52.77 (±2.73)  best  55.41  elite avg  53.93  sigma 0.074  (122s)
+gen  7/8: mean-params  49.94 (±2.63)  best  56.61  elite avg  53.88  sigma 0.061  (115s)
+gen  8/8: mean-params  52.76 (±2.65)  best  52.76  elite avg  52.06  sigma 0.047  (110s)
+saved params/whale_br.json
