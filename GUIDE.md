@@ -72,14 +72,24 @@ more hands than at a full table, but the old bot played almost as tightly as wit
 loosens up properly, and plays about 80% of hands heads-up from the small blind. *Helps:* the
 end of each table, which decides the biggest points, is played much better.
 
-**4. Upgraded settings for other kinds of poker** (Omaha 4 and 5, short deck, royal), in case
-one of those is announced. *Helps:* +8% to +10% in those games too.
+**4. A bug fix: it now re-raises and calls raises properly.** Facing a raise, the old bot
+counted players who hadn't acted yet as if they'd already put chips in, so on the button it
+folded hands like JJ and AK to an ordinary raise. *Helps:* stops throwing away strong hands.
 
-**Combined result:** the new bot beats the old one by about **+10% of fair** across 20 kinds of
-opponents, **+10.5%** against opponents it had never seen, **+14%** against bots copied from
-public GitHub projects, **+5%** against bots modeled on other teams' real preparation for this
-event, and **+18%** on average across five different scoring tables. It came out ahead in every
-one of the 40 scoring-table tests.
+**5. A smarter steal.** When everyone left to act almost always folds to raises, the bot now
+raises with any two cards (ignoring players who never put chips in, like crashed bots).
+*Helps:* free chips from tight and broken bots.
+
+**6. Upgraded settings for every other kind of poker we prepared** (Omaha 4 and 5, short deck
+and its Triton version, royal, 3-card hold'em), in case one of those is announced. *Helps:*
++7% to +10% in those games too.
+
+**Combined result:** the final bot (frozen as `frozen/rc2`) beats the old one (`frozen/rc1`) by
+**+11.3% of fair** in the official timing check (96,000 games, real 1 ms limit, all 16
+matchups positive) and **+9.1%** in a one-time test against opponents never used before (all 12
+positive). Earlier tests of the same upgrades showed **+14%** against bots copied from public
+GitHub projects, gains against bots modeled on other teams' real preparation for this event,
+and gains under all five different scoring tables tested (40 of 40 positive).
 
 ## What we tested and decided NOT to add
 
@@ -91,7 +101,11 @@ one of the 40 scoring-table tests.
 - **Several ideas from GitHub bots** (bet-size reading, small stabs, bigger opens): none beat
   the new bot.
 - **Re-shoving all-in over raises, smarter multiway calls, special play near the hand cap:**
-  lost or made no difference in early tests (being re-tested with better data).
+  re-tested with better data; still neutral or losing.
+- **Learning about opponents faster, or a "harder to exploit" setting:** each won in one
+  place and lost in another (usually against strong rival bots), so the current settings stay.
+- **More "textbook" play** (folding less, opening fewer hands, smaller raises): these lost
+  points. Our bot's unusual habits are deliberate edges against weak bots.
 
 ## On the day, in one line
 
