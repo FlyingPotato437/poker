@@ -156,3 +156,30 @@ rule). Otherwise HANDOFF.md "Live plan for T1-T6" and PLAYBOOK.md "When to fall 
   at the end of the adapter.
 - Report in the answer: the tag, the sha (first 12), `errors/illegal`, kit simulator line,
   and the exact command for the human to run next.
+
+## Real kit (Nov 6 announcement): memory-based state
+
+The real kit is `class Agent(poker_agent_sdk.Agent)` with `act(self, state, memory) -> (action, memory)`;
+`self`/globals do not survive between calls (pool of forked copies), so all per-table state must
+travel in `memory`. **Use `adapter_sdk2026.py` as the adapter (not adapter_template.py)**:
+`cp adapter_sdk2026.py my_adapter.py`. It already implements the whole protocol: it rebuilds
+PrepBot's per-table state (SeatStats counters, this hand's history, tracked stacks/bets/pot,
+hands seen) from memory on every call, replays `state.events`, ingests a finished hand when the
+next `hand` event arrives, and returns ~1.3 KB of crc-checked memory (bad memory -> fresh start,
+never raises). Do not change that logic; only fix the spots marked `# KIT-CHECK:` (list K1..K19
+in the file's header) once the kit README / SDK source shows the real formats: import path,
+event kind spellings and amounts (call = chips ADDED, raise = street TOTAL), whether events
+include our own actions (handled both ways), seat numbering, `seats[i].stack` = behind and
+`.bet` = this round, `state.blinds` format, `state.can()` argument type.
+
+Mock + parity check (no kit needed), run after every change to my_adapter.py:
+
+    .venv/bin/python scripts/package_bot.py --bundle bundles/nlhe_rng.nlb --params params/cand3_nlhe.json \
+        --adapter my_adapter.py --out dist/try_sdk.py
+    .venv/bin/python examples/sdk2026_mock/run_mock.py dist/try_sdk.py --games 30
+    # also: --omit-own, --rotate, --ante 10, --crash-rate 0.2 --sdk-seats 4
+
+Must print `exceptions 0  illegal 0` and parity 100.000% (cand3 + nlhe_rng.nlb). Heuristic v0
+builds show ~98% only because rules-mode bluffs draw from a per-decision seeded RNG; that is
+expected. If the real kit's simulator disagrees with the mock, the kit wins: fix the KIT-CHECK
+spot, not the mock. `examples/sdk2026_mock/poker_agent_sdk.py` is the fake SDK (our guesses).

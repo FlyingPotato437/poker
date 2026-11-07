@@ -1,0 +1,14 @@
+[+00:00] go.py variants/examples/plo4.json --check   (2026-11-06 05:29:21)
+[+00:00] Game: plo4 (high, no-limit)
+[+00:00]   deck 13 ranks 23456789TJQKA x 4 suits = 52 cards; 4 hole cards; board 3+1+1; exactly 2 hole + 3 board; ace low yes
+[+00:00]   ranking (weakest first): high < pair < two_pair < trips < straight < flush < full_house < quads < straight_flush < five_kind
+[+00:00]   -> preset plo4 (identical hand evaluation)
+[+00:00] Table: 8 players, stack 2000, 9 blind levels every 25 hands (10/20, 15/30, 25/50, 50/100, 75/150, 100/200, ...), hand cap 200
+[+00:00]   ante: none -> push/fold solved at ante 0 bb (no ante)
+[+00:00]   points 1st..last: 100,65,45,30,20,12,6,0
+[+00:00]   time limit 1 ms per decision
+[+00:00] Kit: raise-by, cards 'As' strings, class Bot.get_action, submit as bot.py
+[+00:00] Params for v1: params/cand_plo4.json (PARAMS_MAP preset.plo4)
+[+00:00] PLAN: Kit uses raise-BY: to_obs must give min_raise_to/max_raise_to as raise-TO totals (add the current bet) and to_kit_action must subtract it again.
+[+00:00] variant: preset plo4
+[+00:00] --check: nothing built

@@ -1,0 +1,25 @@
+A = astra_full
+B = astra_rc1
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  github            2.080    2.080    +0.00  0.00      +0.0%   0/0
+normal  llm-bugs          1.989    1.989    +0.00  0.00      +0.0%   0/0
+normal  rival-real        1.423    1.423    +0.00  0.00      +0.0%   0/0
+normal  gate-mixed        1.954    1.954    +0.00  0.00      +0.0%   0/0
+normal  h2h 4v4           1.000  (A's x fair with 4 A + 4 B)
+fast    github            1.770    1.770    +0.00  0.00      +0.0%   0/0
+fast    llm-bugs          1.687    1.687    +0.00  0.00      +0.0%   0/0
+fast    rival-real        1.084    1.084    +0.00  0.00      +0.0%   0/0
+fast    gate-mixed        1.606    1.606    +0.00  0.00      +0.0%   0/0
+fast    h2h 4v4           1.000  (A's x fair with 4 A + 4 B)
+normal  github            2.690    2.690    +0.00  0.00      +0.0%   0/0
+normal  llm-bugs          2.494    2.494    +0.00  0.00      +0.0%   0/0
+normal  rival-real        1.612    1.612    +0.00  0.00      +0.0%   0/0
+normal  gate-mixed        2.438    2.438    +0.00  0.00      +0.0%   0/0
+normal  h2h 4v4           1.000  (A's x fair with 4 A + 4 B)
+fast    github            2.206    2.206    +0.00  0.00      +0.0%   0/0
+fast    llm-bugs          1.908    1.908    +0.00  0.00      +0.0%   0/0
+fast    rival-real        1.186    1.186    +0.00  0.00      +0.0%   0/0
+fast    gate-mixed        1.885    1.885    +0.00  0.00      +0.0%   0/0
+fast    h2h 4v4           1.000  (A's x fair with 4 A + 4 B)
+
+mean over 16 cells: A 1.876x fair, B 1.876x fair, A-B +0.00% of fair (±0.00)  [161s]

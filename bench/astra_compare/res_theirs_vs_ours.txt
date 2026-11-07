@@ -1,0 +1,25 @@
+A = astra_full
+B = prep:params/cand3_nlhe.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  github            2.080    2.257    -6.14  0.98     -17.7%   0/0
+normal  llm-bugs          1.989    2.143    -5.35  0.89     -15.4%   0/0
+normal  rival-real        1.423    1.520    -3.37  1.05      -9.7%   0/0
+normal  gate-mixed        1.954    2.092    -4.77  0.91     -13.7%   0/0
+normal  h2h 4v4           1.048  (A's x fair with 4 A + 4 B)
+fast    github            1.770    1.925    -5.40  1.13     -15.5%   0/0
+fast    llm-bugs          1.687    1.759    -2.49  0.94      -7.2%   0/0
+fast    rival-real        1.084    1.186    -3.53  0.95     -10.2%   0/0
+fast    gate-mixed        1.606    1.750    -5.00  0.93     -14.4%   0/0
+fast    h2h 4v4           1.019  (A's x fair with 4 A + 4 B)
+normal  github            2.690    2.960    -3.38  0.60     -27.0%   0/0
+normal  llm-bugs          2.494    2.742    -3.10  0.56     -24.8%   0/0
+normal  rival-real        1.612    1.843    -2.89  0.64     -23.2%   0/0
+normal  gate-mixed        2.438    2.689    -3.14  0.57     -25.1%   0/0
+normal  h2h 4v4           1.069  (A's x fair with 4 A + 4 B)
+fast    github            2.206    2.457    -3.14  0.66     -25.1%   0/0
+fast    llm-bugs          1.908    2.068    -1.99  0.59     -15.9%   0/0
+fast    rival-real        1.186    1.325    -1.74  0.55     -13.9%   0/0
+fast    gate-mixed        1.885    2.085    -2.50  0.56     -20.0%   0/0
+fast    h2h 4v4           1.043  (A's x fair with 4 A + 4 B)
+
+mean over 16 cells: A 1.876x fair, B 2.050x fair, A-B -17.42% of fair (±0.98)  [119s]

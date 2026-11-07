@@ -1,0 +1,9 @@
+A = hyb_curve
+B = prep:params/cand3_nlhe.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  github            2.263    2.300    -1.27  1.36      -3.6%   0/0
+normal  llm-bugs          1.999    2.089    -3.12  1.39      -9.0%   0/0
+normal  rival-real        1.546    1.620    -2.59  1.53      -7.5%   0/0
+normal  gate-mixed        2.057    2.120    -2.20  1.46      -6.3%   0/0
+
+mean over 4 cells: A 1.966x fair, B 2.032x fair, A-B -6.60% of fair (±2.07)  [59s]

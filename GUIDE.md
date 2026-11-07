@@ -36,11 +36,11 @@ Think of the folder as a workshop with a few rooms.
 | `tests/` | **Automatic checks** (240 of them) that make sure nothing is broken: legal moves, no crashes, correct hand rankings. |
 | `variants/` | **Rule sheets** for different kinds of poker, including the template you fill in on the day (`ANNOUNCE.json`). |
 | `examples/` | **A fake competition kit** used to rehearse the day. |
-| `fallback/` | **A simpler backup bot** that can be rebuilt from scratch in 20–30 minutes if bringing our own code isn't allowed. |
+| `fallback/` | **The older, simpler backup bot** (about 84% of the full bot), kept as a last resort. |
 | `adapter_template.py` | **The plug adapter.** The competition gives its own way of talking to bots; this small file translates between their format and ours. It's the one part written fresh on the day. |
 | `DAYOF.md` | **The one page to follow at the event.** |
 | `AGENTS.md`, `CODEX_PROMPTS.md` | **Instructions for Codex** (OpenAI's coding assistant, the one allowed at the event) so it knows how to drive this folder. |
-| `FALLBACK_SPEC.md`, `CODEX_FALLBACK_PROMPTS.md` | The backup plan if pre-written code isn't allowed. |
+| `FALLBACK_SPEC.md`, `CODEX_FALLBACK_PROMPTS.md` | The backup plan if pre-written code isn't allowed: the full bot written out as notes and numbers, which Codex turns back into code (tested: about 98% of the full bot's strength). The older, simpler version is in `fallback/`. |
 | `VARIANTS.md` | What to do for each possible rule change. |
 | `HANDOFF.md`, `PLAYBOOK.md`, `REHEARSAL.md`, `README.md` | The original notes, the day-of playbook, a practice drill, and the technical overview. |
 

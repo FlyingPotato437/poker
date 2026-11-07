@@ -1,0 +1,29 @@
+A = c3_live
+B = prep:params/cand3_nlhe.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  github            2.892    2.910    -0.23  0.26      -1.8%   0/0
+normal  llm-bugs          2.692    2.682    +0.13  0.21      +1.0%   0/0
+normal  rival-real        1.835    1.849    -0.18  0.29      -1.5%   0/0
+normal  gate-mixed        2.636    2.615    +0.26  0.22      +2.1%   0/0
+fast    github            2.422    2.374    +0.60  0.43      +4.8%   0/0
+fast    llm-bugs          1.915    1.931    -0.19  0.32      -1.5%   0/0
+fast    rival-real        1.269    1.259    +0.13  0.37      +1.0%   0/0
+fast    gate-mixed        2.051    2.028    +0.29  0.36      +2.3%   0/0
+normal  github            3.176    3.218    -0.90  0.59      -4.1%   0/0
+normal  llm-bugs          2.881    2.863    +0.40  0.43      +1.8%   0/0
+normal  rival-real        1.950    1.918    +0.68  0.61      +3.1%   0/0
+normal  gate-mixed        2.879    2.869    +0.21  0.42      +1.0%   0/0
+fast    github            2.688    2.700    -0.26  0.83      -1.2%   0/0
+fast    llm-bugs          2.111    2.159    -1.05  0.70      -4.8%   0/0
+fast    rival-real        1.290    1.287    +0.07  0.77      +0.3%   0/0
+fast    gate-mixed        2.279    2.269    +0.22  0.71      +1.0%   0/0
+normal  github            1.674    1.673    +0.00  0.02      +0.1%   0/0
+normal  llm-bugs          1.658    1.650    +0.03  0.02      +0.8%   0/0
+normal  rival-real        1.339    1.353    -0.05  0.03      -1.3%   0/0
+normal  gate-mixed        1.611    1.600    +0.04  0.02      +1.1%   0/0
+fast    github            1.479    1.425    +0.19  0.04      +5.4%   0/0
+fast    llm-bugs          1.430    1.401    +0.10  0.03      +2.9%   0/0
+fast    rival-real        1.133    1.109    +0.08  0.04      +2.4%   0/0
+fast    gate-mixed        1.429    1.401    +0.10  0.03      +2.8%   0/0
+
+mean over 24 cells: A 2.030x fair, B 2.023x fair, A-B +0.74% of fair (±0.47)  [207s]

@@ -1,0 +1,13 @@
+A = hyb_allc2
+B = prep:params/cand3_nlhe.json
+blinds  field           A xfair  B xfair  A-B pts   ±se  A-B %fair   errors A/B
+normal  github            2.257    2.227    +1.02  0.97      +2.9%   0/0
+normal  llm-bugs          2.064    2.103    -1.39  0.91      -4.0%   0/0
+normal  rival-real        1.495    1.548    -1.83  1.05      -5.3%   0/0
+normal  gate-mixed        2.045    2.071    -0.89  0.94      -2.6%   0/0
+fast    github            1.910    1.941    -1.08  1.01      -3.1%   0/0
+fast    llm-bugs          1.635    1.712    -2.70  0.93      -7.8%   0/0
+fast    rival-real        1.218    1.184    +1.18  0.91      +3.4%   0/0
+fast    gate-mixed        1.694    1.738    -1.53  0.96      -4.4%   0/0
+
+mean over 8 cells: A 1.790x fair, B 1.815x fair, A-B -2.59% of fair (±0.98)  [389s]
